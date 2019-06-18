@@ -1,0 +1,229 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="dbMainModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="__RefactorLog">
+          <Key>
+            <PropertyRef Name="OperationKey" />
+          </Key>
+          <Property Name="OperationKey" Type="uniqueidentifier" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tblComments">
+          <Key>
+            <PropertyRef Name="comID" />
+          </Key>
+          <Property Name="comID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="comBody" Type="varchar" MaxLength="200" />
+          <Property Name="comDateTime" Type="datetimeoffset" Precision="7" />
+          <Property Name="comUser" Type="varchar" MaxLength="50" />
+          <Property Name="depID" Type="int" />
+        </EntityType>
+        <EntityType Name="tblDeploy">
+          <Key>
+            <PropertyRef Name="depID" />
+          </Key>
+          <Property Name="depID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="depVID" Type="int" />
+          <Property Name="depFeature" Type="varchar" MaxLength="50" />
+          <Property Name="depVersion" Type="varchar" MaxLength="50" />
+          <Property Name="depPlannedDate" Type="date" />
+          <Property Name="depPlannedTime" Type="datetimeoffset" Precision="7" />
+          <Property Name="depStartTime" Type="datetimeoffset" Precision="7" />
+          <Property Name="depEndTime" Type="datetimeoffset" Precision="7" />
+          <Property Name="depStatus" Type="varchar" MaxLength="50" />
+          <Property Name="depEnvironment" Type="varchar" MaxLength="50" />
+          <Property Name="depLocked" Type="bit" />
+          <Property Name="noteID" Type="int" />
+        </EntityType>
+        <EntityType Name="tblEnvironments">
+          <Key>
+            <PropertyRef Name="envID" />
+          </Key>
+          <Property Name="envID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="envName" Type="varchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="tblFeatures">
+          <Key>
+            <PropertyRef Name="feaID" />
+          </Key>
+          <Property Name="feaID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="feaName" Type="varchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="tblNotes">
+          <Key>
+            <PropertyRef Name="noteID" />
+          </Key>
+          <Property Name="noteID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="noteBody" Type="varchar" MaxLength="500" />
+          <Property Name="noteDateTime" Type="datetimeoffset" Precision="7" />
+        </EntityType>
+        <EntityContainer Name="dbMainModelStoreContainer">
+          <EntitySet Name="__RefactorLog" EntityType="Self.__RefactorLog" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblComments" EntityType="Self.tblComments" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblDeploy" EntityType="Self.tblDeploy" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblEnvironments" EntityType="Self.tblEnvironments" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblFeatures" EntityType="Self.tblFeatures" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tblNotes" EntityType="Self.tblNotes" Schema="dbo" store:Type="Tables" />
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="dbMainModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="C__RefactorLog">
+          <Key>
+            <PropertyRef Name="OperationKey" />
+          </Key>
+          <Property Name="OperationKey" Type="Guid" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tblComment">
+          <Key>
+            <PropertyRef Name="comID" />
+          </Key>
+          <Property Name="comID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="comBody" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
+          <Property Name="comDateTime" Type="DateTimeOffset" Precision="7" />
+          <Property Name="comUser" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depID" Type="Int32" />
+        </EntityType>
+        <EntityType Name="tblDeploy">
+          <Key>
+            <PropertyRef Name="depID" />
+          </Key>
+          <Property Name="depID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="depVID" Type="Int32" />
+          <Property Name="depFeature" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depVersion" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depPlannedDate" Type="DateTime" Precision="0" />
+          <Property Name="depPlannedTime" Type="DateTimeOffset" Precision="7" />
+          <Property Name="depStartTime" Type="DateTimeOffset" Precision="7" />
+          <Property Name="depEndTime" Type="DateTimeOffset" Precision="7" />
+          <Property Name="depStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depEnvironment" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depLocked" Type="Boolean" />
+          <Property Name="noteID" Type="Int32" />
+        </EntityType>
+        <EntityType Name="tblEnvironment">
+          <Key>
+            <PropertyRef Name="envID" />
+          </Key>
+          <Property Name="envID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="envName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="tblFeature">
+          <Key>
+            <PropertyRef Name="feaID" />
+          </Key>
+          <Property Name="feaID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="feaName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="tblNote">
+          <Key>
+            <PropertyRef Name="noteID" />
+          </Key>
+          <Property Name="noteID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="noteBody" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="noteDateTime" Type="DateTimeOffset" Precision="7" />
+        </EntityType>
+        <EntityContainer Name="dbMainEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="C__RefactorLog" EntityType="Self.C__RefactorLog" />
+          <EntitySet Name="tblComments" EntityType="Self.tblComment" />
+          <EntitySet Name="tblDeploys" EntityType="Self.tblDeploy" />
+          <EntitySet Name="tblEnvironments" EntityType="Self.tblEnvironment" />
+          <EntitySet Name="tblFeatures" EntityType="Self.tblFeature" />
+          <EntitySet Name="tblNotes" EntityType="Self.tblNote" />
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="dbMainModelStoreContainer" CdmEntityContainer="dbMainEntities">
+          <EntitySetMapping Name="C__RefactorLog">
+            <EntityTypeMapping TypeName="dbMainModel.C__RefactorLog">
+              <MappingFragment StoreEntitySet="__RefactorLog">
+                <ScalarProperty Name="OperationKey" ColumnName="OperationKey" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblComments">
+            <EntityTypeMapping TypeName="dbMainModel.tblComment">
+              <MappingFragment StoreEntitySet="tblComments">
+                <ScalarProperty Name="comID" ColumnName="comID" />
+                <ScalarProperty Name="comBody" ColumnName="comBody" />
+                <ScalarProperty Name="comDateTime" ColumnName="comDateTime" />
+                <ScalarProperty Name="comUser" ColumnName="comUser" />
+                <ScalarProperty Name="depID" ColumnName="depID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblDeploys">
+            <EntityTypeMapping TypeName="dbMainModel.tblDeploy">
+              <MappingFragment StoreEntitySet="tblDeploy">
+                <ScalarProperty Name="depID" ColumnName="depID" />
+                <ScalarProperty Name="depVID" ColumnName="depVID" />
+                <ScalarProperty Name="depFeature" ColumnName="depFeature" />
+                <ScalarProperty Name="depVersion" ColumnName="depVersion" />
+                <ScalarProperty Name="depPlannedDate" ColumnName="depPlannedDate" />
+                <ScalarProperty Name="depPlannedTime" ColumnName="depPlannedTime" />
+                <ScalarProperty Name="depStartTime" ColumnName="depStartTime" />
+                <ScalarProperty Name="depEndTime" ColumnName="depEndTime" />
+                <ScalarProperty Name="depStatus" ColumnName="depStatus" />
+                <ScalarProperty Name="depEnvironment" ColumnName="depEnvironment" />
+                <ScalarProperty Name="depLocked" ColumnName="depLocked" />
+                <ScalarProperty Name="noteID" ColumnName="noteID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblEnvironments">
+            <EntityTypeMapping TypeName="dbMainModel.tblEnvironment">
+              <MappingFragment StoreEntitySet="tblEnvironments">
+                <ScalarProperty Name="envID" ColumnName="envID" />
+                <ScalarProperty Name="envName" ColumnName="envName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblFeatures">
+            <EntityTypeMapping TypeName="dbMainModel.tblFeature">
+              <MappingFragment StoreEntitySet="tblFeatures">
+                <ScalarProperty Name="feaID" ColumnName="feaID" />
+                <ScalarProperty Name="feaName" ColumnName="feaName" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblNotes">
+            <EntityTypeMapping TypeName="dbMainModel.tblNote">
+              <MappingFragment StoreEntitySet="tblNotes">
+                <ScalarProperty Name="noteID" ColumnName="noteID" />
+                <ScalarProperty Name="noteBody" ColumnName="noteBody" />
+                <ScalarProperty Name="noteDateTime" ColumnName="noteDateTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

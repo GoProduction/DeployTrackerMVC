@@ -1,0 +1,28 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+    <head>
+        @section scripts{
+
+            <script src="~/Scripts/Daypilot/daypilot-all.min.js"></script>
+            <script src="~/Scripts/moment.min.js"></script>
+            <script src="~/App/HomeClientCode/HomeJS.js"></script>
+            <link href="~/App/monthcalendartheme.css" rel="stylesheet" />
+        }
+    </head>
+<body>
+    <div id="header" style="text-align:center; padding: 5px;">
+        <h4>Month in Review</h4>
+    </div>
+    <div id="monthDiv" style="text-align:center">
+        <span id="monthLabel" style="font-size: x-large; font-weight: bold"></span>
+    </div>
+    <div id="nav">
+        <button id="previous" class="btn btn-primary" onclick="previousDate()">&lArr; Previous</button>
+        <button id="previous" class="btn btn-primary" onclick="nextDate()">Next &rArr;</button>
+    </div>
+    <div id="calendar"></div>
+</body>
+
+

@@ -1,0 +1,115 @@
+﻿/* The Overlay (background) */
+.overlay {
+    /* Height & width depends on how you want to reveal the overlay (see JS below) */
+    height: 100%;
+    width: 100%;
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    background-color: #f1f1f1; /* White fallback color */
+    background-color: rgb(255, 255, 255); /* White w/opacity */
+    overflow-x: hidden; /* Disable horizontal scroll */
+    transition: 0.5s; /* 0.5 second transition effect to slide in or slide down the overlay (height or width, depending on reveal) */
+}
+
+/* Position the content inside the overlay */
+.overlay-content {
+    position: center;
+    top: 25%; /* 25% from the top */
+    width: 100%; /* 100% width */
+    /*text-align: center; /* Centered text/links */
+    margin-top: 30px; /* 30px top margin to avoid conflict with the close button on smaller screens */
+    margin-left: 10%;
+    margin-right: 10%;
+    align-content: center;
+}
+
+/* The navigation links inside the overlay */
+.overlay a {
+    padding: 8px;
+    text-decoration: none;
+    font-size: 36px;
+    color: #000000;
+    display: block; /* Display block instead of inline */
+    transition: 0.3s; /* Transition effects on hover (color) */
+}
+
+    /* When you mouse over the navigation links, change their color */
+    .overlay a:hover, .overlay a:focus {
+        color: #0026ff;
+    }
+
+/* Position the close button (top right corner) */
+.overlay .closebtn {
+    position: absolute;
+    top: -38px;
+    right: 10px;
+    font-size: 60px;
+}
+
+.header-div {
+    background: #808080;
+    height: 57px;
+    padding-bottom: 3em;
+}
+
+
+/* Create two equal columns that floats next to each other */
+.column-left {
+    /*float: left;*/
+    padding: 0;
+    width: 40%;
+}
+
+.column-right {
+    /*float: left;*/
+    width: 40%;
+}
+
+/* Clear floats after the columns */
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 965px) {
+    .column-left {
+        width: 90%;
+    }
+
+    .column-right {
+        width: 90%;
+    }
+
+    .overlay {
+        width: 100%;
+    }
+
+        .overlay a {
+            font-size: 20px
+        }
+
+        .overlay .closebtn {
+            font-size: 40px;
+            top: 4px;
+            right: 35px;
+        }
+}
+
+/* Comments table styles*/
+.table-comments {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+}
+
+.date-time-header {
+    padding: 0;
+    font-size: small;
+    font-weight: bold;
+    background-color: #81c5c7;
+    width: 100%;
+}

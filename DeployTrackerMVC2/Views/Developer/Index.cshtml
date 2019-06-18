@@ -1,0 +1,326 @@
+﻿<!DOCTYPE html>
+
+<!--Dev Page-->
+
+<html lang="en">
+<head>
+    @section scripts{
+
+        <script src="~/Scripts/knockout-3.5.0.js"></script>
+        <script src="~/Scripts/moment.min.js"></script>
+        <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+        <script src="~/signalr/hubs"></script>
+        <script src="~/App/CustomBindings.js"></script>
+        <script src="~/App/DeveloperClientCode/DeveloperJS.js"></script>
+        <link href="~/App/ButtonStyles.css" rel="stylesheet" />
+        <link href="~/App/FlyoutMenu.css" rel="stylesheet" />
+        <link href="~/App/TableStyles.css" rel="stylesheet" />
+        <link href="~/App/StatusModal.css" rel="stylesheet" />
+    }
+</head>
+<body id="BodyContent">
+    <div id="MainContent">
+        <button onclick="checkSelID()">Check selID</button>
+        <div style="display:none">
+            <span>Edit-Mode?:</span>
+            <input id="ctlEditMode" type="text" data-bind="value: obsCheckEdit" />
+        </div>
+        <div class="loadingIndicator" data-bind="visible: loading()" id="TableDiv"></div>
+
+        <!------Current Deploys------------------------>
+        <h3 style="text-align:center; width:100%">Current Deploys</h3>
+        <br />
+        <div id="TableCurrent" style="overflow-x: auto">
+            <table class="table" id="CurrentDeploysTable" data-bind="visible: !loading()">
+                <thead>
+                    <tr>
+                        <th style="display:none">ID</th>
+                        <th>Feature</th>
+                        <th class="column3">Version</th>
+                        <th>Environment</th>
+                        <th class="column1">Start Time</th>
+                        <th class="column1">End Time</th>
+                        <th class="column2">Status</th>
+                        <th>...</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: currentDeploys().sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1 ) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })" class="table">
+                    <tr data-bind="template: {name: $root.displayModeC, data: $data }" class="table table-on-hover"></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!------Queued Deploys------------------------->
+        <h3 class="text-center">Queued Deploys</h3>
+        <br />
+        <div id="TableQueue" style="overflow-x:auto">
+            <table class="table" id="DevTable" data-bind="visible: !loading()">
+                <thead>
+                    <tr>
+                        <th style="display:none">ID</th>
+                        <th>Feature</th>
+                        <th class="column3">Version</th>
+                        <th>Environment</th>
+                        <th class="column1">Planned Date</th>
+                        <th class="column1">Planned Time</th>
+                        <th class="column2">Status</th>
+                        <th>...</th>
+                    </tr>
+                </thead>
+                <tbody data-bind="foreach: queuedDeploys().sort(function (l, r) { return (l.depPlannedTime() == r.depPlannedTime()) ? (l.depPlannedDate() < r.depPlannedDate() ? 1 : -1) : (l.depPlannedTime() < r.depPlannedTime() ? 1 : -1) })" class="table">
+                    <tr data-bind="template: {name: $root.displayModeQ, data: $data }" class="table table-on-hover"></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-------CURRENT TABLE TEMPLATES-------->
+        <!--Read Template----------------------->
+        <script id="read-template-c" type="text/html">
+            <!--ID field-->
+            <td style="display:none" data-bind="text: depID"></td>
+            <!--Feature field-->
+            <td data-bind="text: depFeature,
+                        event: { click: $root.selectRecord},
+                        css: { 'css-deploying': depStatus() === 'Deploying',
+                                'css-failed': depStatus() === 'Failed',
+                                'css-completed': depStatus() === 'Completed'}"></td>
+            <!--Version field-->
+            <td class="column3"
+                data-bind="text: depVersion,
+                        event: { click: $root.selectRecord},
+                        css: { 'css-deploying': depStatus() === 'Deploying',
+                                'css-failed': depStatus() === 'Failed',
+                                'css-completed': depStatus() === 'Completed'}"></td>
+            <!--Environment field-->
+            <td data-bind="text: depEnvironment,
+                        event: { click: $root.selectRecord},
+                        css: { 'css-deploying': depStatus() === 'Deploying',
+                                'css-failed': depStatus() === 'Failed',
+                                'css-completed': depStatus() === 'Completed'}"></td>
+            <!--Start Time field-->
+            <td class="column1"
+                data-bind="timeFormatted: depStartTime,
+                        format: 'h:mm a',
+                        event: { click: $root.selectRecord},
+                        css: { 'css-deploying': depStatus() === 'Deploying',
+                                'css-failed': depStatus() === 'Failed',
+                                'css-completed': depStatus() === 'Completed'}"></td>
+            <!--End Time field-->
+            <td class="column1"
+                data-bind="timeFormatted: depEndTime,
+                        format: 'h:mm a',
+                        event: { click: $root.selectRecord},
+                        css: { 'css-deploying': depStatus() === 'Deploying',
+                                'css-failed': depStatus() === 'Failed',
+                                'css-completed': depStatus() === 'Completed'}"></td>
+            <!--Status field-->
+            <td class="column2"
+                data-bind='text: depStatus,
+                        event: { click: $root.selectRecord},
+                        css: { "css-deploying": depStatus() === "Deploying",
+                                "css-failed": depStatus() === "Failed",
+                                "css-completed": depStatus() === "Completed"}'></td>
+            <!--Button control field-->
+            <td data-bind="css: { 'css-deploying': depStatus() === 'Deploying',
+                              'css-failed': depStatus() === 'Failed',
+                              'css-completed': depStatus() === 'Completed'}">
+                <!--STATUS BUTTON-->
+                <button id="btnStatusCurrent" class="btn btn-primary" type="button" data-toggle="modal" data-bind="click: $root.openModal">
+                    <i class="fa fa-tasks"></i>
+                    <span class="button-text">Update Status</span>
+                </button>
+                <!--EDIT BUTTON-->
+                <button class="btn btn-light" data-bind="click: $root.edit">
+                    <i class="fa fa-edit"></i>
+                    <span class="button-text">Edit</span>
+                </button>
+            </td>
+        </script>
+        <!--Edit Template----------------------->
+        <script id="edit-template-c" type="text/html">
+
+            <td style="display:none"><input type="text" data-bind="value: depID" /></td>
+            <td><select id="ctlFeature" name="ctlFeature" data-bind="options: $root.feature, optionsText: 'feaName', optionsValue: 'feaName', value: depFeature"></select></td>
+            <td><input type="text" data-bind="value: depVersion" /></td>
+            <td>
+                <select id="ctlEnvironment"
+                        name="ctlEnvironment"
+                        data-bind="options: $root.environment, optionsText: 'envName', optionsValue: 'envName', value: depEnvironment"></select>
+            </td>
+            <td><input type="text" data-bind="timeFormatted: depStartTime, format: 'LT'" disabled /></td>
+            <td><input type="text" data-bind="timeFormatted: depEndTime, format: 'LT'" disabled /></td>
+            <td><select type="text" data-bind="options: $root.status, optionsText: 'tmpStatus', optionsValue: 'tmpStatus', value: depStatus"> </select></td>
+            <td><a class="btn btn-success" data-bind="click: $root.done">Done</a></td>
+        </script>
+        <!--Locked Template--------------------->
+        <script id="locked-template-c" type="text/html">
+
+            <td style="display:none" data-bind="text: depID"></td>
+            <td data-bind="text: depFeature"></td>
+            <td class="column3" data-bind="text: depVersion"></td>
+            <td data-bind="text: depEnvironment"></td>
+            <td class="column1" data-bind="timeFormatted: depStartTime, format: 'LT'"></td>
+            <td class="column1" data-bind="timeFormatted: depEndTime, format: 'LT'"></td>
+            <td class="column2" data-bind="text: depStatus"></td>
+            <td class="btn btn-danger"><i class="fa fa-times"></i>Locked</td>
+        </script>
+
+        <!-------QUEUED TABLE TEMPLATES--------->
+        <!--Read Template----------------------->
+        <script id="read-template-q" type="text/html">
+
+            <td style="display:none" data-bind="text: depID"></td>
+            <td data-bind="text: depFeature, event: { click: $root.selectRecord}"></td>
+            <td class="column3" data-bind="text: depVersion, event: { click: $root.selectRecord}"></td>
+            <td data-bind="text: depEnvironment, event: { click: $root.selectRecord}"></td>
+            <td class="column1" data-bind="dateFormatted: depPlannedDate, format: 'MMMM DD YYYY', event: { click: $root.selectRecord}"></td>
+            <td class="column1" data-bind="timeFormatted: depPlannedTime, format: 'LT', event: { click: $root.selectRecord}"></td>
+            <td class="column2" data-bind="text: depStatus, event: { click: $root.selectRecord}"></td>
+            <td>
+                <button id="btnStatusCurrent" class="btn btn-primary" type="button" data-toggle="modal" data-bind="click: $root.openModal">
+                    <i class="fa fa-tasks"></i>
+                    <span class="button-text">Update Status</span>
+                </button>
+                <button class="btn btn-light" data-bind="click: $root.edit">
+                    <i class="fa fa-edit"></i>
+                    <span class="button-text">Edit</span>
+                </button>
+            </td>
+        </script>
+        <!--Edit Template----------------------->
+        <script id="edit-template-q" type="text/html">
+
+            <td style="display:none"><input type="text" data-bind="value: depID" /></td>
+            <td><select id="ctlFeature" name="ctlFeature" data-bind="options: $root.feature, optionsText: 'feaName', optionsValue: 'feaName', value: depFeature"></select></td>
+            <td><input type="text" data-bind="value: depVersion" /></td>
+            <td>
+                <select id="ctlEnvironment"
+                        name="ctlEnvironment"
+                        data-bind="options: $root.environment, optionsText: 'envName', optionsValue: 'envName', value: depEnvironment"></select>
+            </td>
+            <td><input type="date" data-bind="dateFormatted: depPlannedDate, format: 'YYYY-MM-DD'" /></td>
+            <!--Planned Time-->
+            <td>
+                <input id="ctlPlannedTime"
+                       name="ctlPlannedTime"
+                       data-bind="timepickerInput: depPlannedTime, format: 'HH:mm'"
+                       type="time" />
+            </td>
+            <td><select type="text" data-bind="options: $root.status, optionsText: 'tmpStatus', optionsValue: 'tmpStatus', value: depStatus"> </select></td>
+            <td><a class="btn btn-success" data-bind="click: $root.done">Done</a></td>
+        </script>
+        <!--Locked Template--------------------->
+        <script id="locked-template-q" type="text/html">
+
+            <td style="display:none" data-bind="text: depID"></td>
+            <td data-bind="text: depFeature"></td>
+            <td class="column3" data-bind="text: depVersion"></td>
+            <td data-bind="text: depEnvironment"></td>
+            <td class="column1" data-bind="dateFormatted: depPlannedDate, format: 'MMMM DD YYYY'"></td>
+            <td class="column1" data-bind="timeFormatted: depPlannedTime, format: 'LT'"></td>
+            <td class="column2" data-bind="text: depStatus"></td>
+            <td class="btn btn-danger"><i class="fa fa-times"></i>Locked</td>
+        </script>
+
+        <!--Notifications/Toasts-->
+        <div aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;">
+            <!-- Position it -->
+            <div style="position: absolute; top: 90%; right: 90%;">
+                <!-- Then put toasts within -->
+                <div id="newDeployToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header">
+                        <img src="..." class="rounded mr-2" alt="...">
+                        <strong class="mr-auto">New Deploy Batch</strong>
+                        <small class="text-muted">just now</small>
+                        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="toast-body">
+                        A new batch of deploys have been submitted. Refresh the browser to view them.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--STATUS MODAL-->
+        <div class="modal" id="statusModal">
+            <div class="modal-content">
+                <div class="modal-header" style="text-align: center">
+                    <h3>Select Status...</h3>
+                    <span class="close" data-bind="click: $root.closeModal">&times;</span>
+                </div>
+                <div id="mainContent" class="modal-body">
+                    <p>
+                        <span>Change the status of </span>
+                        <span id="spFeature" style="text-transform:uppercase; font-weight:bold"></span>
+                        <span> </span>
+                        <span id="spVersion" style="text-transform:uppercase; font-weight:bold"></span>
+                    </p>
+                    <!--Status Drop-down-->
+                    <select id="ctlmodalStatus"
+                            data-bind="options: $root.status, optionsText: 'tmpStatus', optionsValue: 'tmpStatus'"
+                            onchange="checkStatus()"></select>
+                    <!--depID Field-->
+                    <p style="display:none">ID<input type="text" id="ctlmodalID" /></p>
+                    <!--ERROR status field-->
+                    <span id="errorStatusModalChange" style="text-align:center; color: red; display:none;"></span>
+
+                </div>
+                <!--Comment DIV(to become visible when status == 'Failed')-->
+                <div id="commentBody" class="modal-comment" style="display:none">
+                    <p><span>Please enter a reason for failure</span></p>
+                    <textarea id="commentField" rows="10" cols="50"></textarea>
+                </div>
+                <div id="mainFooter" class="modal-footer" style="text-align:center">
+                    <button id="btnSubmitStatus" class="btn btn-success" data-bind="click: $root.submitStatus">Submit</button>
+                    <button id="btnCancel" class="btn btn-warning" data-bind="click: $root.closeModal">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!--Record Details Side Bar-->
+        <div id="recordDetails" class="overlay" style="width:0%; border:1.5px solid ">
+            <div class="header-div">
+                <h2 style="text-align:center">Deploy Details</h2>
+                <!-- Button to close the overlay navigation -->
+                <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+            </div>
+            <!-- Overlay content -->
+            <div class="row overlay-content">
+                <!--Details column-->
+                <div id="leftColumn" class="column-left" display:none">
+                    <div><h5>ID: </h5><input id="ctlID" type="text" data-bind="value: selected().depID" disabled /></div>
+                    <div><h5>Feature: </h5><input id="ctlFeature" type="text" data-bind="value: selected().depFeature" disabled /></div>
+                    <div><h5>Version: </h5><input id="ctlVersion" type="text" data-bind="value: selected().depVersion" disabled /></div>
+                    <div><h5>Environment: </h5><input id="ctlEnvironment" type="text" data-bind="value: selected().depEnvironment" disabled /></div>
+                    <div><h5>Planned Date: </h5><input id="ctlPlannedDate" type="text" data-bind="dateFormatted: selected().depPlannedDate, format: 'MMMM DD YYYY'" disabled /></div>
+                    <div><h5>Planned Time: </h5><input id="ctlPlannedTime" type="text" data-bind="timeFormatted: selected().depPlannedTime, format: 'LT'" disabled /></div>
+                    <div><h5>Start Time: </h5><input id="ctlStartTime" type="text" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" disabled /></div>
+                    <div><h5>End Time: </h5><input id="ctlEndTime" type="text" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" disabled /></div>
+                    <div><h5>Status: </h5><input id="ctlStatus" type="text" data-bind="value: selected().depStatus" disabled /></div>
+                </div>
+                <!--Comments column-->
+                <div id="rightColumn" class="column-right" display:none">
+                    <h4 style="text-align:center">Comments:</h4>
+                    <table class="table-comments">
+                        <tbody data-bind="foreach: commentsFiltered">
+                            <tr class="date-time-header">
+                                <td data-bind="fullDateTime: comDateTime" height="2px">
+                                    <span> by User: </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <span data-bind="text: comBody"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,143 @@
+﻿<!DOCTYPE html>
+
+<!--New Deploy page-->
+
+<html lang="en">
+<head>
+    @{
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    @section scripts{
+        <script src="~/Scripts/knockout-3.5.0.js"></script>
+        <script src="~/Scripts/knockout.mapping-latest.js"></script>
+        <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+        <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+        <script src="~/signalr/hubs"></script>
+        <script src="~/Scripts/moment.min.js"></script>
+        <link href="~/App/ButtonStyles.css" rel="stylesheet" />
+        <link href="~/App/BodyStyles.css" rel="stylesheet" />
+        <script src="~/App/CustomBindings.js"></script>
+        <script src="~/App/NewDeployClientCode/NewDeployJS.js"></script>
+    }
+</head>
+<body>
+    <form id="FieldsForm" class="jumbotron">
+        <div>
+            <h2 style="text-align: center">New Deploy</h2>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Version</th>
+                        <th>Environment</th>
+                        <th>Planned Date</th>
+                        <th>Planned Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <select id="txtFeature" name="txtFeature" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName'"></select>
+                        </td>
+                        <td>
+                            <input type="text" id="txtVersion" name="txtVersion" class="table" />
+                        </td>
+                        <td>
+                            <select id="txtEnvironment" name="txtEnvironment" data-bind="options: $root.environmentList, optionsText: 'envName', optionsValue: 'envName'"></select>
+                        </td>
+                        <td>
+                            <input type="date" id="txtPlannedDate" name="txtPlannedDate" class="table" />
+                        </td>
+                        <td>
+                            <input type="time" id="txtPlannedTime" name="txtPlannedTime" class="table" data-bind="timepickerInput: tempTime, format: 'HH:mm'" />
+                        </td>
+                        <td>
+                            <input type="text" id="txtStatus" class="table" value="Queued" disabled />
+                        </td>
+                        <td>
+                            <button id="btnAdd" class="btn btn-success" data-bind="click: $root.add">Add</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="timeviewerdiv">
+            <h4 style="text-align:center">Time:</h4>
+            <span id="timeVal" data-bind="text: tempTime" style="text-align:center"></span>
+        </div>
+    </form>
+    <br />
+    <hr />
+    <div id="DataTable">
+        <table class="table" id="DeploysTable">
+            <thead>
+                <tr>
+                    <th>Feature</th>
+                    <th>Version</th>
+                    <th>Environment</th>
+                    <th>Planned Date</th>
+                    <th>Planned Time</th>
+                    <th>Status</th>
+                    <th>...</th>
+                </tr>
+            </thead>
+            <tbody data-bind="foreach: deploys" class="table">
+                <tr data-bind="template: {name: $root.displayMode, data: $data }" class="table"></tr>
+            </tbody>
+        </table>
+    </div>
+    <div id="submitDiv">
+        <button class="btn btn-primary" data-bind="click: $root.submit">Submit</button>
+    </div>
+
+    <!--Read template for table-->
+    <script id="read-template" type="text/html">
+        <td data-bind="text: depFeature"></td>
+        <td data-bind="text: depVersion"></td>
+        <td data-bind="text: depEnvironment"></td>
+        <td data-bind="dateFormatted: depPlannedDate, format: 'MMMM DD YYYY'"></td>
+        <td data-bind="timeFormatted: depPlannedTime, format: 'LT'"></td>
+        <td data-bind="text: depStatus"></td>
+        <td>
+            <a class="btn btn-light" data-bind="click: $root.edit">Edit</a>
+        </td>
+    </script>
+
+    <!--Edit template for table-->
+    <script id="edit-template" type="text/html">
+        <td>
+            <select id="ctlFeature" name="ctlFeature" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName', value: depFeature"></select>
+        </td>
+        <td>
+            <input type="text" data-bind="value: depVersion" />
+        </td>
+        <td>
+            <select id="ctlEnvironment" name="ctlEnvironment" data-bind="options: $root.environmentList, optionsText: 'envName', optionsValue: 'envName', value: depEnvironment"></select>
+        </td>
+        <td>
+            <input type="date" data-bind="dateFormatted: depPlannedDate, format: 'YYYY-MM-DD'" />
+        </td>
+        <td>
+            <input type="time" data-bind="timepickerInput: depPlannedTime" />
+        </td>
+        <td>
+            <input type="text" data-bind="value: depStatus" disabled />
+        </td>
+        <td>
+            <a class="btn btn-success" data-bind="click: $root.done">Done</a>
+        </td>
+    </script>
+
+    <!--Empty template for data-->
+    <script id="empty-template" type="text/html">
+        <td>
+            <h3 style="text-align: center">There are no added deploys yet...</h3>
+        </td>
+    </script>
+    <div id="submitOverlay" class="success-overlay" style="width:0">
+    </div>
+    @Html.Hidden("Redirect", Url.Action("Index", "Developer"))
+</body>
+</html>

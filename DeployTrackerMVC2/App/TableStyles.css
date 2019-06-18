@@ -1,0 +1,41 @@
+﻿.table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.table-on-hover:hover {
+    background-color: lightgrey;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.css-deploying {
+    background: rgba(255, 255, 0, .5);
+}
+
+.css-completed {
+    background: rgba(0, 255, 33, .5);
+}
+
+.css-failed {
+    background: rgba(255, 0, 0, .5);
+    font-weight: bold;
+}
+
+@media only screen and (max-width: 990px) {
+    .column1 {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 820px) {
+    .column2 {
+        display: none;
+    }
+}
+
+@media only screen and (max-width: 605px) {
+    .column3 {
+        display: none;
+    }
+}
