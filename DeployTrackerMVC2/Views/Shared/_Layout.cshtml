@@ -4,16 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>@ViewBag.Title</title>
-    <style>
-        .navbar-text {
-            color: azure;
-        }
-
-        .nav-style {
-            padding-top: 0px;
-            width: 100%;
-        }
-    </style>
 </head>
 
 <body class="nav-style">
@@ -31,7 +21,7 @@
             <span class="nav-link navbar-text">@Html.ActionLink("New Deploy", "Index", "NewDeploy", new { area = "" }, null)</span>
         </div>
     </nav>
-    <div class="body-style">
+    <div class="body-content">
         @RenderBody()
         <hr />
         <footer>

@@ -41,7 +41,28 @@ dp.onBeforeEventRender = function (args) {
 dp.init();
 
 dp.onEventClicked = function (args) {
-    alert("clicked: " + args.e.id());
+    var txtID = document.getElementById("txtID");
+    var txtStatus = document.getElementById("txtStatus");
+    var paramID = args.e.id().toString();
+    var source = [];
+    $.ajax('/api/DeployAPI? ' + $.param({"depID": paramID}), {
+        type: 'GET',
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function (response) {
+            console.log("YES! DID IT!");
+            console.log(response);
+            console.log(source);
+        },
+        error: function (xhr) {
+            console.log(xhr);
+        }
+    });
+
+    $('#recordModal').modal('show');
+    txtID.innerText = args.e.id();
+    /*txtStatus.innerText = args.data.status;*/
+    /*alert("clicked: " + args.e.id());*/
 };
 
 var previousDate = function () {

@@ -1,28 +1,63 @@
-﻿@{
+﻿
+<!--Home Page-->
+@{
     ViewBag.Title = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
     <head>
         @section scripts{
 
+            <script type="module" src="~/Scripts/popper.min.js"></script>
             <script src="~/Scripts/Daypilot/daypilot-all.min.js"></script>
             <script src="~/Scripts/moment.min.js"></script>
             <script src="~/App/HomeClientCode/HomeJS.js"></script>
             <link href="~/App/monthcalendartheme.css" rel="stylesheet" />
+            
         }
     </head>
-<body>
-    <div id="header" style="text-align:center; padding: 5px;">
-        <h4>Month in Review</h4>
-    </div>
-    <div id="monthDiv" style="text-align:center">
-        <span id="monthLabel" style="font-size: x-large; font-weight: bold"></span>
-    </div>
-    <div id="nav">
-        <button id="previous" class="btn btn-primary" onclick="previousDate()">&lArr; Previous</button>
-        <button id="previous" class="btn btn-primary" onclick="nextDate()">Next &rArr;</button>
-    </div>
-    <div id="calendar"></div>
-</body>
+    <body>
+        <div id="header" style="text-align:center; padding: 5px;">
+            <h4>Month in Review</h4>
+        </div>
+        <div id="monthDiv" style="text-align:center">
+            <span id="monthLabel" style="font-size: x-large; font-weight: bold"></span>
+        </div>
+        <div id="nav">
+            <button id="previous" class="btn btn-primary" onclick="previousDate()">&lArr; Previous</button>
+            <button id="previous" class="btn btn-primary" onclick="nextDate()">Next &rArr;</button>
+        </div>
+        <div id="calendar"></div>
+
+        <!-- Button trigger modal -->
+        <button id="modalActivate" type="button" class="btn btn-danger" data-toggle="modal" data-target="#recordModal">
+            Launch demo modal
+        </button>
+        <!-- Modal -->
+        <div class="modal fade right" id="recordModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalPreviewLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalPreviewLabel">Modal title</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <label>ID: </label>
+                        <span id="txtID"></span>
+                        <br />
+                        <label>Status: </label>
+                        <span id="txtStatus"></span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary">Save changes</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Modal -->
+
+    </body>
 
 

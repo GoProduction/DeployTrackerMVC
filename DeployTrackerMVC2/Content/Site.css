@@ -1,13 +1,27 @@
-﻿body {
-    padding-top: 50px;
-    padding-bottom: 20px;
+﻿
+/*Navbar styles*/
+.navbar-text {
+    color: azure;
     
 }
 
-/* Set padding to keep content from hitting the edges */
+.nav-style {
+    padding-top: 0px;
+    width: 100%;
+    
+}
+
+/*Body styles*/
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
 .body-content {
-    padding-left: 25px;
-    padding-right: 25px;
+    padding-left: 50px !important;
+    padding-right: 50px !important;
+    margin-left: 0px;
+    margin-right: 0px;
 }
 
 /* Set width on the form input elements since they're 100% wide by default */

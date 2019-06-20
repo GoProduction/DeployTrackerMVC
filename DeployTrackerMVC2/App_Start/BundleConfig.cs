@@ -19,6 +19,9 @@ namespace DeployTrackerMVC2
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
                       "~/Scripts/bootstrap.js"));
 
+            bundles.Add(new ScriptBundle("~/bundles/scripts").Include(
+                      "~/Scripts/popper.js",
+                      "~/Scripts/popper-utils.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",

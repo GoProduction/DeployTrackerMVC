@@ -34,6 +34,12 @@
     }
 }
 
+@media only screen and (max-width: 685px){
+    .button-text{
+        display: none;
+    }
+}
+
 @media only screen and (max-width: 605px) {
     .column3 {
         display: none;
