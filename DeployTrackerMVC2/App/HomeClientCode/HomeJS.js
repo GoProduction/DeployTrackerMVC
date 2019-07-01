@@ -41,18 +41,35 @@ dp.onBeforeEventRender = function (args) {
 dp.init();
 
 dp.onEventClicked = function (args) {
+    var header = document.getElementById("modalHeader");
     var txtID = document.getElementById("txtID");
+    var txtPlannedDate = document.getElementById("txtPlannedDate");
+    var txtPlannedTime = document.getElementById("txtPlannedTime");
     var txtStatus = document.getElementById("txtStatus");
-    var paramID = args.e.id().toString();
-    var source = [];
-    $.ajax('/api/DeployAPI? ' + $.param({"depID": paramID}), {
+    var paramID = args.e.id();
+    
+    $.ajax({
         type: 'GET',
+        url: "/api/DeployAPI",
+        data: {
+            depID: paramID
+        },
         dataType: 'json',
         contentType: 'application/json',
-        success: function (response) {
-            console.log("YES! DID IT!");
-            console.log(response);
-            console.log(source);
+        success: function (data) {
+            $.each(data, function (i, item) {
+
+                if (item.depID == paramID) {
+
+                    header.innerText = item.depFeature + " v" + item.depVersion;
+                    txtID.innerText = item.depID;
+                    txtStatus.innerText = item.depStatus;
+                    txtPlannedDate.innerText = moment(item.depPlannedDate).format("MMM DD YYYY");
+                    txtPlannedTime.innerText = moment(item.depPlannedTime).format("LT");
+                }
+                
+            });
+            
         },
         error: function (xhr) {
             console.log(xhr);
@@ -60,7 +77,7 @@ dp.onEventClicked = function (args) {
     });
 
     $('#recordModal').modal('show');
-    txtID.innerText = args.e.id();
+    //txtID.innerText = args.e.id();
     /*txtStatus.innerText = args.data.status;*/
     /*alert("clicked: " + args.e.id());*/
 };

@@ -256,6 +256,7 @@
     <Content Include="App\DeveloperClientCode\DeveloperJS.js" />
     <Content Include="App\FlyoutMenu.css" />
     <Content Include="App\HomeClientCode\HomeJS.js" />
+    <Content Include="App\HomeModal.css" />
     <Content Include="App\monthcalendartheme.css" />
     <Content Include="App\NewDeployClientCode\NewDeployJS.js" />
     <Content Include="App\StatusModal.css" />

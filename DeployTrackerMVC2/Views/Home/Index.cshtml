@@ -12,6 +12,7 @@
             <script src="~/Scripts/moment.min.js"></script>
             <script src="~/App/HomeClientCode/HomeJS.js"></script>
             <link href="~/App/monthcalendartheme.css" rel="stylesheet" />
+            <link href="../../App/HomeModal.css" rel="stylesheet" />
             
         }
     </head>
@@ -24,7 +25,7 @@
         </div>
         <div id="nav">
             <button id="previous" class="btn btn-primary" onclick="previousDate()">&lArr; Previous</button>
-            <button id="previous" class="btn btn-primary" onclick="nextDate()">Next &rArr;</button>
+            <button id="next" class="btn btn-primary" onclick="nextDate()">Next &rArr;</button>
         </div>
         <div id="calendar"></div>
 
@@ -37,16 +38,26 @@
             <div class="modal-dialog modal-lg" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="exampleModalPreviewLabel">Modal title</h5>
+                        <span id="modalHeader"></span>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
                     <div class="modal-body">
-                        <label>ID: </label>
+                        <!--ID Field-->
+                        <label class="modal-label">ID: </label>
                         <span id="txtID"></span>
                         <br />
-                        <label>Status: </label>
+                        <!--Planned Date Field-->
+                        <label class="modal-label">Planned Date: </label>
+                        <span id="txtPlannedDate"></span>
+                        <br />
+                        <!--Planned Time Field-->
+                        <label class="modal-label">Planned Time: </label>
+                        <span id="txtPlannedTime"></span>
+                        <br />
+                        <!--Status Field-->
+                        <label class="modal-label">Status: </label>
                         <span id="txtStatus"></span>
                     </div>
                     <div class="modal-footer">
