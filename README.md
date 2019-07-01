@@ -15,6 +15,7 @@ Red | Failed
 
 
 Selecting a ribbon will prompt a modal that displays a brief summary of the deploys details.
+
 <img src="/readme_images/HomeModal.JPG">
 
 ## The Developer Page
@@ -24,4 +25,5 @@ The developer page is separated by two tables: Queued Deploys (bottom) and Curre
 
 
 The status of the deploy can be changed by selecting the "Update Status" button in the deploy field.
+
 <img src="/readme_images/DeveloperStatusModal.JPG">
