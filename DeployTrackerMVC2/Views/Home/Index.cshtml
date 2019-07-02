@@ -44,25 +44,65 @@
                         </button>
                     </div>
                     <div class="modal-body">
-                        <!--ID Field-->
-                        <label class="modal-label">ID: </label>
-                        <span id="txtID"></span>
-                        <br />
-                        <!--Planned Date Field-->
-                        <label class="modal-label">Planned Date: </label>
-                        <span id="txtPlannedDate"></span>
-                        <br />
-                        <!--Planned Time Field-->
-                        <label class="modal-label">Planned Time: </label>
-                        <span id="txtPlannedTime"></span>
-                        <br />
-                        <!--Status Field-->
-                        <label class="modal-label">Status: </label>
-                        <span id="txtStatus"></span>
+                        <div class="row">
+                            <div id="leftColumn" class="col">
+                                <div class="border-bottom">
+                                    <h5>Deploy Details</h5>
+                                </div>
+                                <!--ID Field-->
+                                <label class="modal-label">ID: </label>
+                                <span id="txtID"></span>
+                                <br />
+                                <!--Environment field-->
+                                <label class="modal-label">Environment: </label>
+                                <span id="txtEnvironment"></span>
+                                <br />
+                                <!--Planned Date Field-->
+                                <label class="modal-label">Planned Date: </label>
+                                <span id="txtPlannedDate"></span>
+                                <br />
+                                <!--Planned Time Field-->
+                                <label class="modal-label">Planned Time: </label>
+                                <span id="txtPlannedTime"></span>
+                                <br />
+                            </div>
+                            <div id="rightColumn" class="col">
+                                <div class="border-bottom">
+                                    <h5>Status</h5>
+                                </div>
+                                <div id="divStart">
+                                    <!--Start Time Field-->
+                                    <label id="lblStartTime" class="modal-label">Start Time: </label>
+                                    <span id="txtStartTime"></span>
+                                    <br />
+                                </div>
+                                <div id="divEnd">
+                                    <!--End Time Field-->
+                                    <label id="lblEndTime" class="modal-label">End Time: </label>
+                                    <span id="txtEndTime"></span>
+                                    <br />
+                                </div>
+                                <!--Status Field-->
+                                <label class="modal-label">Status: </label>
+                                <span id="txtStatus"></span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col border border-secondary rounded">
+                                <div style="text-align: center" class="border-bottom">
+                                    <h5>Comments</h5>
+                                </div>
+                                <div id="divComment" style="text-align:center">
+                                    <span id="txtComment"></span>
+                                </div>
+                                <div id="divCommentless" style="text-align:center">
+                                    <span style="color:red">There are no comments to show...</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary">Save changes</button>
                     </div>
                 </div>
             </div>

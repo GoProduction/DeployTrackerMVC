@@ -41,13 +41,27 @@ dp.onBeforeEventRender = function (args) {
 dp.init();
 
 dp.onEventClicked = function (args) {
+    /*ID declaration*/
+    var paramID = args.e.id();
+
+    /*HTML elements for deploy details*/
     var header = document.getElementById("modalHeader");
     var txtID = document.getElementById("txtID");
+    var txtEnvironment = document.getElementById("txtEnvironment");
     var txtPlannedDate = document.getElementById("txtPlannedDate");
     var txtPlannedTime = document.getElementById("txtPlannedTime");
+    var txtStartTime = document.getElementById("txtStartTime");
+    var txtEndTime = document.getElementById("txtEndTime");
     var txtStatus = document.getElementById("txtStatus");
-    var paramID = args.e.id();
+    var txtComment = document.getElementById("txtComment");
     
+    /*Declare divs for visibility of StartTime, EndTime, & Comments*/
+    var divStart = document.getElementById("divStart");
+    var divEnd = document.getElementById("divEnd");
+    var divComment = document.getElementById("divComment");
+    var divCommentless = document.getElementById("divCommentless");
+
+    /*GET for tblDeploys*/    
     $.ajax({
         type: 'GET',
         url: "/api/DeployAPI",
@@ -63,9 +77,25 @@ dp.onEventClicked = function (args) {
 
                     header.innerText = item.depFeature + " v" + item.depVersion;
                     txtID.innerText = item.depID;
-                    txtStatus.innerText = item.depStatus;
+                    txtEnvironment.innerText = item.depEnvironment;
                     txtPlannedDate.innerText = moment(item.depPlannedDate).format("MMM DD YYYY");
                     txtPlannedTime.innerText = moment(item.depPlannedTime).format("LT");
+                    txtStartTime.innerText = moment(item.depStartTime).format("LT");
+                    txtEndTime.innerText = moment(item.depEndTime).format("LT");
+                    txtStatus.innerText = item.depStatus;
+
+                    if (item.depStatus == "Queued") {
+                        divStart.style.display = "none";
+                        divEnd.style.display = "none";
+                    }
+                    else if (item.depStatus == "Deploying") {
+                        divStart.style.display = "block";
+                        divEnd.style.display = "none";
+                    }
+                    else {
+                        divStart.style.display = "block";
+                        divEnd.style.display = "block";
+                    }
                 }
                 
             });
@@ -76,10 +106,39 @@ dp.onEventClicked = function (args) {
         }
     });
 
+    /*GET for tblComments*/
+    $.ajax({
+        type: 'GET',
+        url: "/api/CommentAPI",
+        data: {
+            depID: paramID
+        },
+        dataType: 'json',
+        contentType: 'application/json',
+        success: function (data) {
+            $.each(data, function (i, item) {
+
+                if (item.depID == paramID) {
+
+                    txtComment.innerHTML = item.comBody;
+                    divComment.style.display = "block";
+                    divCommentless.style.display = "none";
+
+                }
+                else {
+                    divComment.style.display = "none";
+                    divCommentless.style.display = "block";
+                }
+
+            });
+
+        },
+        error: function (xhr) {
+            console.log(xhr);
+        }
+    });
+
     $('#recordModal').modal('show');
-    //txtID.innerText = args.e.id();
-    /*txtStatus.innerText = args.data.status;*/
-    /*alert("clicked: " + args.e.id());*/
 };
 
 var previousDate = function () {
