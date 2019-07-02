@@ -29,6 +29,10 @@ The status of the deploy can be changed by selecting the "Update Status" button 
 
 <img src="/readme_images/DeveloperStatusModal.JPG">
 
+If a deploys' status is set to FAILED, the user will be prompted to enter a comment into the comment box. They will not be able to save the status until a comment is entered.
+
+<img src="/readme_images/DeveloperStatusModalFail.JPG">
+
 Selecting a deploy within a table will open the deploy details window of the selected deploy.
 
 <img src="/readme_images/RecordDetails.JPG">
