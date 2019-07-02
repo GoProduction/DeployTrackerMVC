@@ -4,7 +4,7 @@ The main function of this program is to help assist the communication between th
 ## The Calendar
 <img src="/readme_images/Calendar.png">
 
-The calendar is used to display the planned dates of the deploys using ribbons, as well as their status via color-code.
+The calendar, powered by DayPilot Lite, is used to display the planned dates of the deploys using ribbons, as well as their status via color-code.
 
 Color | Status
 ------|-------
