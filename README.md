@@ -15,7 +15,7 @@ Red | Failed
 
 
 
-Selecting a ribbon will prompt a modal that displays a brief summary of the deploys details.
+Selecting a ribbon will prompt a modal that displays the deploys details.
 
 <img src="/readme_images/HomeModal.JPG">
 
