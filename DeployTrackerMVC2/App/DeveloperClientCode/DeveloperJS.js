@@ -406,7 +406,7 @@ $(function () {
 
     //CONNECTION FUNCTIONS/////////////////////////////////////////
     $.connection.hub.start().done(function () {
-        ko.applyBindings(viewModel, document.getElementById("MainContent"));
+        ko.applyBindings(viewModel, document.getElementById("BodyContent"));
         console.log("Connected to SignalR hub");
 
     }); // Connection (to SignalR hub) start function
@@ -420,42 +420,13 @@ $(function () {
 
 });
 
-$("recordDetails").focusout(function () {
-    closeNav();
-}); // Selecting outside of fly-out menu... still a work in progress
-
 
 /* Open when someone selects a record */
 function openNav() {
-    var menu = document.getElementById("recordDetails");
-    $("#recordDetails").fadeIn('fast');
-    $("#leftColumn").fadeIn("fast");
-    $("#rightColumn").fadeIn("fast");
-
-    if (window.innerWidth <= 800) {
-        menu.style.width = "100%";
-        return;
-    }
-
-    menu.style.width = "80%";
-
-    window.onclick = function (event) {
-        if (event.target == menu) {
-            closeNav();
-        }
-    }
-
+   
+    $("#DetailsView").modal("show");
 }
 
-/* Close when someone clicks on the "x" symbol inside the overlay */
-function closeNav() {
-    var menu = document.getElementById("recordDetails");
-    $("#recordDetails").fadeOut('slow');
-    $("#leftColumn").fadeOut("slow");
-    $("#rightColumn").fadeOut("slow");
-    menu.style.width = "0%";
-
-}
 
 function updateCurrentPaginate() {
 

@@ -16,10 +16,12 @@
         <link href="~/App/FlyoutMenu.css" rel="stylesheet" />
         <link href="~/App/TableStyles.css" rel="stylesheet" />
         <link href="~/App/StatusModal.css" rel="stylesheet" />
+        <link href="../../App/HomeModal.css" rel="stylesheet" />
     }
 </head>
 <body id="BodyContent">
-    <div id="MainContent">
+    <!--Tables View-->
+    <div id="TablesView">
         <button onclick="checkSelID()">Check selID</button>
         <div style="display:none">
             <span>Edit-Mode?:</span>
@@ -221,106 +223,143 @@
             <td class="column2" data-bind="text: depStatus"></td>
             <td class="btn btn-danger"><i class="fa fa-times"></i>Locked</td>
         </script>
-
-        <!--Notifications/Toasts-->
-        <div aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;">
-            <!-- Position it -->
-            <div style="position: absolute; top: 90%; right: 90%;">
-                <!-- Then put toasts within -->
-                <div id="newDeployToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="toast-header">
-                        <img src="..." class="rounded mr-2" alt="...">
-                        <strong class="mr-auto">New Deploy Batch</strong>
-                        <small class="text-muted">just now</small>
-                        <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
-                    <div class="toast-body">
-                        A new batch of deploys have been submitted. Refresh the browser to view them.
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!--STATUS MODAL-->
-        <div class="modal" id="statusModal">
-            <div class="modal-content">
-                <div class="modal-header" style="text-align: center">
-                    <h3>Select Status...</h3>
-                    <span class="close" data-bind="click: $root.closeModal">&times;</span>
-                </div>
-                <div id="mainContent" class="modal-body">
-                    <p>
-                        <span>Change the status of </span>
-                        <span id="spFeature" style="text-transform:uppercase; font-weight:bold"></span>
-                        <span> </span>
-                        <span id="spVersion" style="text-transform:uppercase; font-weight:bold"></span>
-                    </p>
-                    <!--Status Drop-down-->
-                    <select id="ctlmodalStatus"
-                            data-bind="options: $root.status, optionsText: 'tmpStatus', optionsValue: 'tmpStatus'"
-                            onchange="checkStatus()"></select>
-                    <!--depID Field-->
-                    <p style="display:none">ID<input type="text" id="ctlmodalID" /></p>
-                    <!--ERROR status field-->
-                    <span id="errorStatusModalChange" style="text-align:center; color: red; display:none;"></span>
-
-                </div>
-                <!--Comment DIV(to become visible when status == 'Failed')-->
-                <div id="commentBody" class="modal-comment" style="display:none">
-                    <p><span>Please enter a reason for failure</span></p>
-                    <textarea id="commentField" rows="10" cols="50"></textarea>
-                </div>
-                <div id="mainFooter" class="modal-footer" style="text-align:center">
-                    <button id="btnSubmitStatus" class="btn btn-success" data-bind="click: $root.submitStatus">Submit</button>
-                    <button id="btnCancel" class="btn btn-warning" data-bind="click: $root.closeModal">Cancel</button>
-                </div>
-            </div>
-        </div>
-
-        <!--Record Details Side Bar-->
-        <div id="recordDetails" class="overlay" style="width:0%; border:1.5px solid ">
-            <div class="header-div">
-                <h2 style="text-align:center">Deploy Details</h2>
-                <!-- Button to close the overlay navigation -->
-                <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
-            </div>
-            <!-- Overlay content -->
-            <div class="row overlay-content">
-                <!--Details column-->
-                <div id="leftColumn" class="column-left" display:none">
-                    <div><h5>ID: </h5><input id="ctlID" type="text" data-bind="value: selected().depID" disabled /></div>
-                    <div><h5>Feature: </h5><input id="ctlFeature" type="text" data-bind="value: selected().depFeature" disabled /></div>
-                    <div><h5>Version: </h5><input id="ctlVersion" type="text" data-bind="value: selected().depVersion" disabled /></div>
-                    <div><h5>Environment: </h5><input id="ctlEnvironment" type="text" data-bind="value: selected().depEnvironment" disabled /></div>
-                    <div><h5>Planned Date: </h5><input id="ctlPlannedDate" type="text" data-bind="dateFormatted: selected().depPlannedDate, format: 'MMMM DD YYYY'" disabled /></div>
-                    <div><h5>Planned Time: </h5><input id="ctlPlannedTime" type="text" data-bind="timeFormatted: selected().depPlannedTime, format: 'LT'" disabled /></div>
-                    <div><h5>Start Time: </h5><input id="ctlStartTime" type="text" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" disabled /></div>
-                    <div><h5>End Time: </h5><input id="ctlEndTime" type="text" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" disabled /></div>
-                    <div><h5>Status: </h5><input id="ctlStatus" type="text" data-bind="value: selected().depStatus" disabled /></div>
-                </div>
-                <!--Comments column-->
-                <div id="rightColumn" class="column-right" display:none">
-                    <h4 style="text-align:center">Comments:</h4>
-                    <table class="table-comments">
-                        <tbody data-bind="foreach: commentsFiltered">
-                            <tr class="date-time-header">
-                                <td data-bind="fullDateTime: comDateTime" height="2px">
-                                    <span> by User: </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <span data-bind="text: comBody"></span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
     </div>
+    <!--Record Details Side Bar-->
+    <div class="modal fade right" id="DetailsView" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="exampleModalPreviewLabel">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 style="text-align: center">Deploy Details</h2>
+                    <!-- Button to close the overlay navigation -->
+                    <button type="button" class="close" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <!-- Overlay content -->
+                <div class="modal-body">
+                    <!--Details column-->
+                    <div class="row">
+                        <div id="leftColumn" class="col">
+                            <div>
+                                <h5>ID: </h5>
+                                <input id="ctlID" type="text" data-bind="value: selected().depID" disabled />
+                            </div>
+                            <div>
+                                <h5>Feature: </h5>
+                                <input id="ctlFeature" type="text" data-bind="value: selected().depFeature" disabled />
+                            </div>
+                            <div>
+                                <h5>Version: </h5>
+                                <input id="ctlVersion" type="text" data-bind="value: selected().depVersion" disabled />
+                            </div>
+                            <div>
+                                <h5>Environment: </h5>
+                                <input id="ctlEnvironment" type="text" data-bind="value: selected().depEnvironment" disabled />
+                            </div>
+                            <div>
+                                <h5>Planned Date: </h5>
+                                <input id="ctlPlannedDate" type="text" data-bind="dateFormatted: selected().depPlannedDate, format: 'MMMM DD YYYY'" disabled />
+                            </div>
+                            <div>
+                                <h5>Planned Time: </h5>
+                                <input id="ctlPlannedTime" type="text" data-bind="timeFormatted: selected().depPlannedTime, format: 'LT'" disabled />
+                            </div>
+                            <div>
+                                <h5>Start Time: </h5>
+                                <input id="ctlStartTime" type="text" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" disabled />
+                            </div>
+                            <div>
+                                <h5>End Time: </h5>
+                                <input id="ctlEndTime" type="text" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" disabled />
+                            </div>
+                            <div>
+                                <h5>Status: </h5>
+                                <input id="ctlStatus" type="text" data-bind="value: selected().depStatus" disabled />
+                            </div>
+                        </div>
+                        <!--Comments column-->
+                        <div id="rightColumn" class="col">
+                            <h4 style="text-align: center">Comments:</h4>
+                            <table class="table-comments">
+                                <tbody data-bind="foreach: commentsFiltered">
+                                    <tr class="date-time-header">
+                                        <td data-bind="fullDateTime: comDateTime" style="height: 2px">
+                                            <span>by User: </span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <span data-bind="text: comBody"></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btnNew btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--Notifications/Toasts-->
+    <div aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;">
+        <!-- Position it -->
+        <div style="position: absolute; top: 90%; right: 90%;">
+            <!-- Then put toasts within -->
+            <div id="newDeployToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="toast-header">
+                    <img src="..." class="rounded mr-2" alt="...">
+                    <strong class="mr-auto">New Deploy Batch</strong>
+                    <small class="text-muted">just now</small>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="toast-body">
+                    A new batch of deploys have been submitted. Refresh the browser to view them.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--STATUS MODAL-->
+    <div class="modal" id="statusModal">
+        <div class="modal-content">
+            <div class="modal-header" style="text-align: center">
+                <h3>Select Status...</h3>
+                <span class="close" data-bind="click: $root.closeModal">&times;</span>
+            </div>
+            <div id="mainContent" class="modal-body">
+                <p>
+                    <span>Change the status of </span>
+                    <span id="spFeature" style="text-transform: uppercase; font-weight: bold"></span>
+                    <span></span>
+                    <span id="spVersion" style="text-transform: uppercase; font-weight: bold"></span>
+                </p>
+                <!--Status Drop-down-->
+                <select id="ctlmodalStatus"
+                    data-bind="options: $root.status, optionsText: 'tmpStatus', optionsValue: 'tmpStatus'"
+                    onchange="checkStatus()">
+                </select>
+                <!--depID Field-->
+                <p style="display: none">ID<input type="text" id="ctlmodalID" /></p>
+                <!--ERROR status field-->
+                <span id="errorStatusModalChange" style="text-align: center; color: red; display: none;"></span>
+
+            </div>
+            <!--Comment DIV(to become visible when status == 'Failed')-->
+            <div id="commentBody" class="modal-comment" style="display: none">
+                <p><span>Please enter a reason for failure</span></p>
+                <textarea id="commentField" rows="10" cols="50"></textarea>
+            </div>
+            <div id="mainFooter" class="modal-footer" style="text-align: center">
+                <button id="btnSubmitStatus" class="btn btn-success" data-bind="click: $root.submitStatus">Submit</button>
+                <button id="btnCancel" class="btn btn-warning" data-bind="click: $root.closeModal">Cancel</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
