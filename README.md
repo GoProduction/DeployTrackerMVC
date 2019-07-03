@@ -4,7 +4,7 @@ The main function of this program is to help assist the communication between th
 ## The Calendar
 <img src="/readme_images/Calendar.png">
 
-The calendar is used to display the planned dates of the deploys using ribbons, as well as their status via color-code.
+The calendar, powered by DayPilot Lite, is used to display the planned dates of the deploys using ribbons, as well as their status via color-code.
 
 Color | Status
 ------|-------
@@ -15,7 +15,7 @@ Red | Failed
 
 
 
-Selecting a ribbon will prompt a modal that displays a brief summary of the deploys details.
+Selecting a ribbon will prompt a modal that displays the deploys details.
 
 <img src="/readme_images/HomeModal.JPG">
 
@@ -28,6 +28,10 @@ The developer page is separated by two tables: Queued Deploys (bottom) and Curre
 The status of the deploy can be changed by selecting the "Update Status" button in the deploy field.
 
 <img src="/readme_images/DeveloperStatusModal.JPG">
+
+If a deploys' status is set to FAILED, the user will be prompted to enter a comment into the comment box. They will not be able to save the status until a comment is entered.
+
+<img src="/readme_images/DeveloperStatusModalFail.JPG">
 
 Selecting a deploy within a table will open the deploy details window of the selected deploy.
 
