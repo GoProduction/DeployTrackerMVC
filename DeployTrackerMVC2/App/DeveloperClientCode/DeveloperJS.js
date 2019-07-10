@@ -39,7 +39,7 @@ var DeployViewModel = function (deploySignalR) {
         console.log(selID);
         openNav();
 
-    }; // Run when record is selected, and open the record fly-out
+    }; // Run when record is selected, and open the record modal
     self.displayModeQ = function (deploy) {
         if (deploy.depLocked()) {
             console.log('Locked row');

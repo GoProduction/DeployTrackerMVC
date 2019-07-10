@@ -254,12 +254,11 @@
     <Content Include="App\CalendarStyles.css" />
     <Content Include="App\CustomBindings.js" />
     <Content Include="App\DeveloperClientCode\DeveloperJS.js" />
-    <Content Include="App\FlyoutMenu.css" />
     <Content Include="App\HomeClientCode\HomeJS.js" />
     <Content Include="App\HomeModal.css" />
     <Content Include="App\monthcalendartheme.css" />
     <Content Include="App\NewDeployClientCode\NewDeployJS.js" />
-    <Content Include="App\StatusModal.css" />
+    <Content Include="App\ModalStyles.css" />
     <Content Include="App\TableStyles.css" />
     <Content Include="App\WeekViewStyles.css" />
     <Content Include="Areas\HelpPage\HelpPage.css" />

@@ -1,5 +1,5 @@
-﻿/* The Modal (background) */
-.modal {
+﻿/* Status Modal */
+.status-modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
@@ -14,7 +14,7 @@
 }
 
 /* Modal Content */
-.modal-content {
+.status-modal-content {
     position: relative;
     align-content: center;
     background-color: #fefefe;
@@ -30,7 +30,7 @@
 }
 
 @media screen and (max-width: 850px) {
-    .modal-content {
+    .status-modal-content {
         width: 90%;
     }
 }
@@ -74,28 +74,55 @@
         cursor: pointer;
     }
 
-.modal-header {
+.status-modal-header {
     text-align: center;
     padding: 2px 16px;
     background-color: #0094ff;
     color: white;
 }
 
-.modal-body {
+.status-modal-body {
     text-align: center;
     padding: 2px 16px 30px;
 }
 
-.modal-footer {
+.status-modal-footer {
     text-align: center;
     padding: 10px 16px;
     background-color: #ffffff;
     color: rgb(0,0,0);
 }
 
-.modal-comment {
+.status-modal-comment {
     height: 400px;
     padding: 2px 16px 30px;
     border: thin;
     text-align: center;
+}
+
+/*Record Details Modal*/
+.record-modal-col{
+    padding: 40px;
+}
+
+/* Comments table styles*/
+.table-comments {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+}
+
+.date-time-header {
+    padding: 0;
+    font-size: small;
+    font-weight: bold;
+    background-color: #81c5c7;
+    width: 100%;
+}
+
+rightRibbon {
+    width: 20%;
+    height: 100%;
+    background-color: #808080;
+    float: right;
 }
