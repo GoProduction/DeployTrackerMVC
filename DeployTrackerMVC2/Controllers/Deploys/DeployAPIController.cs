@@ -30,20 +30,25 @@ namespace DeployTrackerMVC2.Controllers
         {
             return db.tblDeploys;
         }
-
-        // GET: api/DeployAPI/5
-        [ResponseType(typeof(tblDeploy))]
-        public IHttpActionResult GettblDeploy(int id)
+        
+        
+        // GET: api/DeployAPI/deployByID
+        
+        [HttpGet]
+        [Route("{deployByID}")]
+        public IHttpActionResult GetSingleDeploy(int depID)
         {
-            tblDeploy tblDeploy = db.tblDeploys.Find(id);
-            if (tblDeploy == null)
+            
+            tblDeploy deploy = db.tblDeploys.Find(depID);
+            if (deploy == null)
             {
                 return NotFound();
             }
 
-            return Ok(tblDeploy);
+            return Ok(deploy);
+            
         }
-
+        
         // PUT: api/DeployAPI/5
         [ResponseType(typeof(void))]
         public IHttpActionResult PuttblDeploy(int id, tblDeploy tblDeploy)

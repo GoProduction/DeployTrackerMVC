@@ -43,7 +43,7 @@ dp.init();
 dp.onEventClicked = function (args) {
     /*ID declaration*/
     var paramID = args.e.id();
-
+    paramID.toString();
     /*HTML elements for deploy details*/
     var header = document.getElementById("modalHeader");
     var txtID = document.getElementById("txtID");
@@ -64,42 +64,33 @@ dp.onEventClicked = function (args) {
     /*GET for tblDeploys*/    
     $.ajax({
         type: 'GET',
-        url: "/api/DeployAPI",
-        data: {
-            depID: paramID
-        },
+        url: "/api/DeployAPI/deployByID",
+        data: { depID: paramID },
         dataType: 'json',
         contentType: 'application/json',
         success: function (data) {
-            $.each(data, function (i, item) {
 
-                if (item.depID == paramID) {
+            header.innerText = data.depFeature + " v" + data.depVersion;
+            txtID.innerText = data.depID;
+            txtEnvironment.innerText = data.depEnvironment;
+            txtPlannedDate.innerText = moment(data.depPlannedDate).format("MMM DD YYYY");
+            txtPlannedTime.innerText = moment(data.depPlannedTime).format("LT");
+            txtStartTime.innerText = moment(data.depStartTime).format("LT");
+            txtEndTime.innerText = moment(data.depEndTime).format("LT");
+            txtStatus.innerText = data.depStatus;
 
-                    header.innerText = item.depFeature + " v" + item.depVersion;
-                    txtID.innerText = item.depID;
-                    txtEnvironment.innerText = item.depEnvironment;
-                    txtPlannedDate.innerText = moment(item.depPlannedDate).format("MMM DD YYYY");
-                    txtPlannedTime.innerText = moment(item.depPlannedTime).format("LT");
-                    txtStartTime.innerText = moment(item.depStartTime).format("LT");
-                    txtEndTime.innerText = moment(item.depEndTime).format("LT");
-                    txtStatus.innerText = item.depStatus;
-
-                    if (item.depStatus == "Queued") {
-                        divStart.style.display = "none";
-                        divEnd.style.display = "none";
-                    }
-                    else if (item.depStatus == "Deploying") {
-                        divStart.style.display = "block";
-                        divEnd.style.display = "none";
-                    }
-                    else {
-                        divStart.style.display = "block";
-                        divEnd.style.display = "block";
-                    }
-                }
-                
-            });
-            
+            if (data.depStatus == "Queued") {
+                divStart.style.display = "none";
+                divEnd.style.display = "none";
+            }
+            else if (data.depStatus == "Deploying") {
+                divStart.style.display = "block";
+                divEnd.style.display = "none";
+            }
+            else {
+                divStart.style.display = "block";
+                divEnd.style.display = "block";
+            }
         },
         error: function (xhr) {
             console.log(xhr);
@@ -110,9 +101,7 @@ dp.onEventClicked = function (args) {
     $.ajax({
         type: 'GET',
         url: "/api/CommentAPI",
-        data: {
-            depID: paramID
-        },
+        data: { depID: paramID },
         dataType: 'json',
         contentType: 'application/json',
         success: function (data) {

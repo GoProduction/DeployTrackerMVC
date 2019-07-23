@@ -22,17 +22,18 @@ namespace DeployTrackerMVC2.Controllers.Comments
             return db.tblComments;
         }
 
-        // GET: api/CommentAPI/5
-        [ResponseType(typeof(tblComment))]
-        public IHttpActionResult GettblComment(int id)
+        // GET: api/CommentAPI/commentByDepID
+        [HttpGet]
+        [Route("{commentByDepID}")]
+        public IHttpActionResult GettblComment(int depID)
         {
-            tblComment tblComment = db.tblComments.Find(id);
-            if (tblComment == null)
+            tblComment comment = db.tblComments.Find(depID);
+            if (comment == null)
             {
                 return NotFound();
             }
 
-            return Ok(tblComment);
+            return Ok(comment);
         }
 
         // PUT: api/CommentAPI/5
