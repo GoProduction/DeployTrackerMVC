@@ -349,6 +349,22 @@
                                     </tr>
                                 </tbody>
                             </table>
+                            <div id="comment-button-div-1">
+                                <button class="btn btn-info btn-sm" style="text-align:center; width:100%" data-bind="click: newComment">
+                                    <i class="fa fa-comment"></i>
+                                    <span>New Comment</span>
+                                </button>
+                            </div>
+                            <div id="record-comment-text-field" style="display:none; width:100%; text-align:center">
+                                <textarea id="recordCommentField" rows="10" cols="10" style="width:100%; -moz-box-sizing:border-box; box-sizing: border-box"></textarea>
+                            </div>
+                            <div id="comment-button-div-2" class="status-modal-footer" style="display:none">
+                                <button class="btn btn-primary btn-sm" style="text-align:center; width:40%">
+                                    <i class="fa fa-cloud"></i>
+                                    <span>Save</span>
+                                </button>
+                                <button class="btn btn-warning btn-sm" style="text-align:center; width:40%" data-bind="click: cancelComment">Cancel</button>
+                            </div>
                         </div>
                     </div>
                 </div>

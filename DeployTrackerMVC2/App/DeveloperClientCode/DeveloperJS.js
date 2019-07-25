@@ -506,3 +506,20 @@ String.prototype.trim = function () {
 function checkSelID() {
     console.log(selID);
 }
+
+function newComment() {
+    var buttonDiv1 = document.getElementById("comment-button-div-1");
+    var buttonDiv2 = document.getElementById("comment-button-div-2");
+    var commentField = document.getElementById("record-comment-text-field");
+    buttonDiv1.style.display = "none";
+    buttonDiv2.style.display = "block";
+    commentField.style.display = "block";
+}
+function cancelComment() {
+    var buttonDiv1 = document.getElementById("comment-button-div-1");
+    var buttonDiv2 = document.getElementById("comment-button-div-2");
+    var commentField = document.getElementById("record-comment-text-field");
+    buttonDiv1.style.display = "block";
+    buttonDiv2.style.display = "none";
+    commentField.style.display = "none";
+}

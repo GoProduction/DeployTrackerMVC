@@ -17,7 +17,7 @@ namespace DeployTrackerMVC2.Models
         public Nullable<int> depID { get; set; }
         public int comID { get; set; }
         public string comBody { get; set; }
-        public Nullable<System.DateTimeOffset> comDateTime { get; set; }
+        public DateTimeOffset comDateTime { get; set; }
         public string comUser { get; set; }
         
     }

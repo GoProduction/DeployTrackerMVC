@@ -34,6 +34,7 @@ namespace DeployTrackerMVC2.Controllers.Comments
                 if(com.depID == depID)
                 {
                     list.Add(com);
+                    list.Sort((x, y) => DateTimeOffset.Compare(y.comDateTime, x.comDateTime));
                 }
             }
             int empty = 0;
@@ -42,7 +43,7 @@ namespace DeployTrackerMVC2.Controllers.Comments
             {
                 return Ok(empty);
             }
-
+            
             return Ok(list);
             
         }

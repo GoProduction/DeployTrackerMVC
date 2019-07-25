@@ -11,7 +11,7 @@ $.get("/api/DeployAPI", function (data) {
             start: moment(source.depPlannedDate).format('YYYY-MM-DDTHH:mm:ss'),
             end: moment(source.depPlannedDate).format('YYYY-MM-DDTHH:mm:ss'),
             status: source.depStatus
-
+            
         };
     });
     dp.update();
@@ -39,6 +39,7 @@ dp.onBeforeEventRender = function (args) {
     }
 };
 dp.init();
+
 
 dp.onEventClicked = function (args) {
     /*ID declaration*/
