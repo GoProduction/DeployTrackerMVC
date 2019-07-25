@@ -14,10 +14,11 @@ namespace DeployTrackerMVC2.Models
     
     public partial class tblComment
     {
+        public Nullable<int> depID { get; set; }
         public int comID { get; set; }
         public string comBody { get; set; }
         public Nullable<System.DateTimeOffset> comDateTime { get; set; }
         public string comUser { get; set; }
-        public Nullable<int> depID { get; set; }
+        
     }
 }

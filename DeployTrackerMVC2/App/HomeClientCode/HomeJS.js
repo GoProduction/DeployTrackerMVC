@@ -53,7 +53,7 @@ dp.onEventClicked = function (args) {
     var txtStartTime = document.getElementById("txtStartTime");
     var txtEndTime = document.getElementById("txtEndTime");
     var txtStatus = document.getElementById("txtStatus");
-    var txtComment = document.getElementById("txtComment");
+    var table = document.getElementById("commentTable");
     
     /*Declare divs for visibility of StartTime, EndTime, & Comments*/
     var divStart = document.getElementById("divStart");
@@ -97,10 +97,13 @@ dp.onEventClicked = function (args) {
         }
     });
 
+    //Clear the comments table
+    $("#commentTable tr").remove();
+  
     /*GET for tblComments*/
     $.ajax({
         type: 'GET',
-        url: "/api/CommentAPI",
+        url: "/api/CommentAPI/commentByID",
         data: { depID: paramID },
         dataType: 'json',
         contentType: 'application/json',
@@ -108,14 +111,21 @@ dp.onEventClicked = function (args) {
             $.each(data, function (i, item) {
 
                 if (item.depID == paramID) {
-
-                    txtComment.innerHTML = item.comBody;
-                    divComment.style.display = "block";
+                    var row = table.insertRow(0);
+                    row.className = "home-comment-table-row";
+                    var dateCell = row.insertCell(0);
+                    var commentCell = row.insertCell(1);
+                    dateCell.style.fontWeight = "bold";
+                    dateCell.innerHTML = moment(item.comDateTime).format("LLL") + " " + "by Erick McCoy";
+                    dateCell.style.backgroundColor = "rgb(173, 251, 255)";
+                    commentCell.innerHTML = item.comBody;
+                    table.style.display = "block";
                     divCommentless.style.display = "none";
 
                 }
-                else {
-                    divComment.style.display = "none";
+                else if (data == 0) {
+                    console.log("Null");
+                    table.style.display = "none";
                     divCommentless.style.display = "block";
                 }
 

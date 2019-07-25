@@ -17,25 +17,36 @@ namespace DeployTrackerMVC2.Controllers.Comments
         private dbMainEntities db = new dbMainEntities();
 
         // GET: api/CommentAPI
+
         public IQueryable<tblComment> GettblComments()
         {
             return db.tblComments;
         }
 
-        // GET: api/CommentAPI/commentByDepID
+        // GET: api/CommentAPI
         [HttpGet]
-        [Route("{commentByDepID}")]
-        public IHttpActionResult GettblComment(int depID)
+        [Route("{commentByID}")]
+        public IHttpActionResult GetCommentByID(int depID)
         {
-            tblComment comment = db.tblComments.Find(depID);
-            if (comment == null)
+            List<tblComment> list = new List<tblComment>();
+            foreach(tblComment com in db.tblComments)
             {
-                return NotFound();
+                if(com.depID == depID)
+                {
+                    list.Add(com);
+                }
+            }
+            int empty = 0;
+            bool isEmpty = !list.Any();
+            if(isEmpty)
+            {
+                return Ok(empty);
             }
 
-            return Ok(comment);
+            return Ok(list);
+            
         }
-
+        
         // PUT: api/CommentAPI/5
         [ResponseType(typeof(void))]
         public IHttpActionResult PuttblComment(int id, tblComment tblComment)

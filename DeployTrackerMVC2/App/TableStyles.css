@@ -45,3 +45,19 @@
         display: none;
     }
 }
+
+.home-comment-table{
+    width: 100%;
+    border: none;
+    
+    
+}
+
+.home-comment-table-row {
+    border-bottom: thin;
+}
+
+tr.home-comment-table-row>td{
+    padding: 4px;
+    
+}
