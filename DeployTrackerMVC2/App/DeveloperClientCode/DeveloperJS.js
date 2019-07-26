@@ -78,7 +78,7 @@ var DeployViewModel = function (deploySignalR) {
                     }
 
                     self.watchModel(obsDeploy, self.modelChanged);
-                    console.log("Updated viewmodel...");
+                    console.log("Updated deploys...");
                     return obsDeploy;
                 }));
 
@@ -87,7 +87,30 @@ var DeployViewModel = function (deploySignalR) {
         catch (err) {
             errorToast(err);
         }
-    } // Updates the viewmodel when new deploys have been submitted
+    } // Updates the viewmodel when new DEPLOYS have been submitted
+    self.updateViewModelComment = function () {
+        try {
+            $.getJSON('/odata/Comments', function (data) {
+                self.comment(ko.utils.arrayMap(data.value, function (comment) {
+                    var obsComment = {
+                        comID: comment.comID,
+                        comBody: ko.observable(comment.comBody),
+                        comDateTime: ko.observable(new Date(comment.comDateTime)),
+                        comUser: ko.observable(comment.comUser),
+                        depID: ko.observable(comment.depID)
+                    }
+
+                    self.watchModel(obsComment, self.modelChanged);
+                    console.log("Updated comments...");
+                    return obsComment;
+                }));
+
+            });
+        }
+        catch (err) {
+            errorToast(err);
+        }
+    } // Updates the viewmodel when new COMMENT has been submitted
     self.edit = function (deploy) {
         self.obsCheckEdit(self.obsCheckEdit() + 1);
         deploy.Edit(true);
@@ -339,15 +362,57 @@ var DeployViewModel = function (deploySignalR) {
         comment.style.display = "none";
         comment.value = "";
     } // Submit new status
+    self.submitComment = function () {
+        var commentField = document.getElementById("recordCommentField");
+        if (commentField.value.trim() == "") {
+            console.log("Empty comment field... can not continue.");
+            return;
+        }
 
+        var json = {};
+        json["comBody"] = commentField.value;
+        json["comDateTime"] = dateNow();
+        json["depID"] = self.obsID();
+        console.log(JSON.stringify(json));
+
+        $.ajax({
+            url: "/api/CommentAPI",
+            type: "POST",
+            async: true,
+            mimeType: "text/html",
+            data: JSON.stringify(json),
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                console.log("Successfully posted comment");
+            },
+
+            error: function (msg) {
+                console.log("error: ", msg.status);
+                console.log(msg.statusText);
+                console.log(msg.responseText);
+                console.log("Ready state: ", msg.readyState);
+            }
+        });
+        deploySignalR.server.updateAll();
+        self.updateViewModelComment();
+        cancelComment();
+    } //Submit new comment (in RECORD DETAILS modal)
 }
 
 //SignalR Events
 $(function () {
 
     var deploySignalR = $.connection.deploy;
-    //ko.options.deferUpdates = true;
     var viewModel = new DeployViewModel(deploySignalR);
+    var findDeploy = function (id) {
+        return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
+            if (item.depID == id) {
+                return item;
+            }
+        });
+    } // Helper function that iterates over each record within the ViewModel, and finds and returns the ID that matches
 
     //SIGNALR FUNCTIONS//////////////////////////////////////////////
     deploySignalR.client.updateAll = function () {
@@ -356,39 +421,17 @@ $(function () {
 
         //Warning toast triggered if client is engaged in editing a row
         if (viewModel.obsCheckEdit() >= 1) {
-            toastr["info"]("A new deploy batch has been submitted. Please refresh the browser.", "New deploy batch...");
-
-            toastr.options = {
-                "closeButton": true,
-                "debug": false,
-                "limit": "5",
-                "newestOnTop": false,
-                "progressBar": true,
-                "positionClass": "toast-top-right",
-                "preventDuplicates": false,
-                "onclick": null,
-                "showDuration": "300",
-                "hideDuration": "1000",
-                "timeOut": "9000",
-                "extendedTimeOut": "1000",
-                "showEasing": "swing",
-                "hideEasing": "linear",
-                "showMethod": "fadeIn",
-                "hideMethod": "fadeOut"
-            }
+            var msg = "You are currently editing a record. Changes have been made to other records. Please refresh your browser when you are finished.";
+            var cont = "Changes have been made...";
+            infoToast(msg, cont);
         }
         else if (viewModel.obsCheckEdit() == 0) {
             viewModel.updateViewModel();
+            viewModel.updateViewModelComment();
+            notifyMe();
             console.log('Viewmodel updated');
         }
     } // Update all function, to be triggered when new batch of deploys are created
-    var findDeploy = function (id) {
-        return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
-            if (item.depID == id) {
-                return item;
-            }
-        });
-    } // Helper function that iterates over each record within the ViewModel, and finds and returns the ID that matches
     deploySignalR.client.updateDeploy = function (id, key, value) {
         var deploy = findDeploy(id);
         deploy[key](value);
@@ -426,8 +469,7 @@ function openNav() {
    
     $("#DetailsView").modal("show");
 }
-
-
+//Updates the paginate function (work in progress)
 function updateCurrentPaginate() {
 
     $('#CurrentDeploysTable').after('<div id="nav"></div>');
@@ -452,12 +494,12 @@ function updateCurrentPaginate() {
             css('display', 'table-row').animate({ opacity: 1 }, 300);
     });
 };
-
+//Error toast
 function errorToast(err) {
     toastr.error(err, 'Error:');
     console.log(err);
 }
-
+//Success toast
 function successToast(msg) {
     toastr.success(msg, "Success!");
 
@@ -480,12 +522,61 @@ function successToast(msg) {
         "hideMethod": "fadeOut"
     }
 }
+//Info toast
+function infoToast(msg, cont) {
+    toastr["info"](msg, cont);
 
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "limit": "5",
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "9000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+}
+//Browser notification
+function notifyMe() {
+    // Let's check if the browser supports notifications
+    if (!("Notification" in window)) {
+        alert("This browser does not support desktop notification");
+    }
+
+    // Let's check whether notification permissions have already been granted
+    else if (Notification.permission === "granted") {
+        // If it's okay let's create a notification
+        var notification = new Notification("Hi there!");
+    }
+
+    // Otherwise, we need to ask the user for permission
+    else if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(function (permission) {
+            // If the user accepts, let's create a notification
+            if (permission === "granted") {
+                var notification = new Notification("Hi there!");
+            }
+        });
+    }
+
+    // At last, if the user has denied notifications, and you 
+    // want to be respectful there is no need to bother them any more.
+}
+//Returns today's date
 function dateNow() {
     var now = new Date();
     return new Date(now.getTime() + now.getTimezoneOffset());
 }
-
+//Checks the value of a status field
 function checkStatus() {
     var ctl = document.getElementById("ctlmodalStatus");
     var cmtBody = document.getElementById("commentBody");
@@ -499,27 +590,32 @@ function checkStatus() {
     }
 }
 
-String.prototype.trim = function () {
-    return this.replace(/^\s+|\s+$/g, "");
-}
-
 function checkSelID() {
     console.log(selID);
 }
-
+//Shows comment field and buttons in record details modal
 function newComment() {
-    var buttonDiv1 = document.getElementById("comment-button-div-1");
-    var buttonDiv2 = document.getElementById("comment-button-div-2");
-    var commentField = document.getElementById("record-comment-text-field");
-    buttonDiv1.style.display = "none";
-    buttonDiv2.style.display = "block";
-    commentField.style.display = "block";
+    
+    $("#comment-button-div-1").fadeOut("fast");
+    $("#comment-button-div-2").fadeIn("fast");
+    $("#record-comment-text-field").fadeIn("fast");
 }
+//Hides comment field and buttons in record details modal
 function cancelComment() {
-    var buttonDiv1 = document.getElementById("comment-button-div-1");
-    var buttonDiv2 = document.getElementById("comment-button-div-2");
-    var commentField = document.getElementById("record-comment-text-field");
-    buttonDiv1.style.display = "block";
-    buttonDiv2.style.display = "none";
-    commentField.style.display = "none";
+    
+    $("#comment-button-div-1").fadeIn("fast");
+    $("#comment-button-div-2").fadeOut("fast");
+    $("#recordCommentField").val("");
+    $("#record-comment-text-field").fadeOut("fast");
+    
+}
+//NOTE: The save comment function is located inside the viewmodel as submitComment
+
+//Fires when record details modal is closed
+$("#DetailsView").on("hidden.bs.modal", function () {
+    cancelComment();
+});
+
+String.prototype.trim = function () {
+    return this.replace(/^\s+|\s+$/g, "");
 }
