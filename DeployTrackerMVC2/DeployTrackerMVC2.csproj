@@ -213,9 +213,6 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Hubs\DeployHub.cs" />
-    <Compile Include="Models\C__RefactorLog.cs">
-      <DependentUpon>dbMainDataModel.tt</DependentUpon>
-    </Compile>
     <Compile Include="Models\dbMainDataModel.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

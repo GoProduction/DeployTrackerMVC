@@ -14,6 +14,12 @@ namespace DeployTrackerMVC2.Models
     
     public partial class tblDeploy
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public tblDeploy()
+        {
+            this.tblComments = new HashSet<tblComment>();
+        }
+    
         public int depID { get; set; }
         public Nullable<int> depVID { get; set; }
         public string depFeature { get; set; }
@@ -26,5 +32,10 @@ namespace DeployTrackerMVC2.Models
         public string depEnvironment { get; set; }
         public Nullable<bool> depLocked { get; set; }
         public Nullable<int> noteID { get; set; }
+        public string depSmoke { get; set; }
+    
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tblComment> tblComments { get; set; }
+        public virtual tblNote tblNote { get; set; }
     }
 }

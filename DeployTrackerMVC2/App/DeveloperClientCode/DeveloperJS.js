@@ -16,6 +16,10 @@ var DeployViewModel = function (deploySignalR) {
         { tmpStatus: "Failed" }
 
     ]); // Status observable array
+    self.smoke = ko.observableArray([
+        { tmpSmoke: "Ready" },
+        { tmpSmoke: "Not Ready" }
+    ]);
     self.comment = ko.observableArray(); // Comment observable array
     self.selected = ko.observableArray(self.deploy()[0]); //Determines if record is selected
 
@@ -189,6 +193,7 @@ var DeployViewModel = function (deploySignalR) {
                 depStartTime: ko.observable(deploy.depStartTime),
                 depEndTime: ko.observable(deploy.depEndTime),
                 depStatus: ko.observable(deploy.depStatus),
+                depSmoke: ko.observable(deploy.depSmoke),
                 Edit: ko.observable(false),
                 depLocked: ko.observable(deploy.depLocked)
 
@@ -244,6 +249,11 @@ var DeployViewModel = function (deploySignalR) {
             return rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed';
         });
     }); // Current Deploys table filter
+    self.smokeDeploys = ko.computed(function () {
+        return ko.utils.arrayFilter(self.deploy(), function (rec) {
+            return rec.depSmoke() === 'Ready';
+        });
+    }); // Current Deploys table filter
     self.commentsFiltered = ko.computed(function () {
         return ko.utils.arrayFilter(self.comment(), function (rec) {
             return rec.depID() == self.obsID();
@@ -277,9 +287,11 @@ var DeployViewModel = function (deploySignalR) {
     } // Open Modal
     self.closeModal = function () {
         var error = document.getElementById("errorStatusModalChange");
+        var smokeDiv = document.getElementById("smoke-div");
         $("#statusModal").fadeOut();
         $("#commentBody").fadeOut();
         error.style.display = "none";
+        smokeDiv.style.display = 'none';
 
     } // Close Modal
     self.submitStatus = function () {
@@ -288,6 +300,8 @@ var DeployViewModel = function (deploySignalR) {
         var id = document.getElementById("ctlmodalID");
         var errorMsg = document.getElementById("errorStatusModalChange");
         var comment = document.getElementById("commentField");
+        var smokeField = document.getElementById("ctlSmokeStatus");
+        var selSmoke = smokeField.options[smokeField.selectedIndex].text;
 
         //Checks if status has NOT been changed
         if (objstatus == ctl.value) {
@@ -313,6 +327,8 @@ var DeployViewModel = function (deploySignalR) {
             if (id.value == mainItem.depID) {
                 if (ctl.value == 'Completed') {
                     mainItem.depEndTime(dateNow());
+                    mainItem.depSmoke(selSmoke);
+                    console.log(selSmoke);
                     console.log(mainItem.depEndTime());
                 }
                 else if (ctl.value == 'Failed') {
@@ -466,7 +482,7 @@ $(function () {
 
 /* Open when someone selects a record */
 function openNav() {
-   
+    
     $("#DetailsView").modal("show");
 }
 //Updates the paginate function (work in progress)
@@ -585,6 +601,10 @@ function checkStatus() {
         $("#commentBody").fadeIn('slow');
         console.log("Set to fail");
     }
+    else if (ctl.value == "Completed") {
+        $("#smoke-div").fadeIn();
+        $("#commentBody").fadeOut();
+    }
     else {
         $("#commentBody").fadeOut();
     }
@@ -610,6 +630,11 @@ function cancelComment() {
     
 }
 //NOTE: The save comment function is located inside the viewmodel as submitComment
+
+//Hide the Smoke Queue div
+function hideSmoke() {
+    $("#smokeDiv").fadeOut("fast");
+}
 
 //Fires when record details modal is closed
 $("#DetailsView").on("hidden.bs.modal", function () {

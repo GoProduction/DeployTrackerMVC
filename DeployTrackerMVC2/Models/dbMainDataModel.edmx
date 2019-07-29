@@ -4,20 +4,14 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="dbMainModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
-        <EntityType Name="__RefactorLog">
-          <Key>
-            <PropertyRef Name="OperationKey" />
-          </Key>
-          <Property Name="OperationKey" Type="uniqueidentifier" Nullable="false" />
-        </EntityType>
+    <Schema Namespace="dbMainModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="tblComments">
           <Key>
             <PropertyRef Name="comID" />
           </Key>
           <Property Name="comID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="comBody" Type="varchar" MaxLength="200" />
-          <Property Name="comDateTime" Type="datetimeoffset" Precision="7" />
+          <Property Name="comBody" Type="varchar" MaxLength="500" />
+          <Property Name="comDateTime" Type="datetimeoffset" Precision="7" Nullable="false" />
           <Property Name="comUser" Type="varchar" MaxLength="50" />
           <Property Name="depID" Type="int" />
         </EntityType>
@@ -37,6 +31,7 @@
           <Property Name="depEnvironment" Type="varchar" MaxLength="50" />
           <Property Name="depLocked" Type="bit" />
           <Property Name="noteID" Type="int" />
+          <Property Name="depSmoke" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="tblEnvironments">
           <Key>
@@ -57,37 +52,64 @@
             <PropertyRef Name="noteID" />
           </Key>
           <Property Name="noteID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="noteBody" Type="varchar" MaxLength="500" />
+          <Property Name="noteBody" Type="varchar" MaxLength="2000" />
           <Property Name="noteDateTime" Type="datetimeoffset" Precision="7" />
         </EntityType>
+        <Association Name="comment-deploy-relationship">
+          <End Role="tblDeploy" Type="Self.tblDeploy" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tblComments" Type="Self.tblComments" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tblDeploy">
+              <PropertyRef Name="depID" />
+            </Principal>
+            <Dependent Role="tblComments">
+              <PropertyRef Name="depID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="note-deploy-relationship">
+          <End Role="tblNotes" Type="Self.tblNotes" Multiplicity="0..1" />
+          <End Role="tblDeploy" Type="Self.tblDeploy" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tblNotes">
+              <PropertyRef Name="noteID" />
+            </Principal>
+            <Dependent Role="tblDeploy">
+              <PropertyRef Name="noteID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="dbMainModelStoreContainer">
-          <EntitySet Name="__RefactorLog" EntityType="Self.__RefactorLog" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tblComments" EntityType="Self.tblComments" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tblDeploy" EntityType="Self.tblDeploy" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tblEnvironments" EntityType="Self.tblEnvironments" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tblFeatures" EntityType="Self.tblFeatures" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="tblNotes" EntityType="Self.tblNotes" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="comment-deploy-relationship" Association="Self.comment-deploy-relationship">
+            <End Role="tblDeploy" EntitySet="tblDeploy" />
+            <End Role="tblComments" EntitySet="tblComments" />
+          </AssociationSet>
+          <AssociationSet Name="note-deploy-relationship" Association="Self.note-deploy-relationship">
+            <End Role="tblNotes" EntitySet="tblNotes" />
+            <End Role="tblDeploy" EntitySet="tblDeploy" />
+          </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="dbMainModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityType Name="C__RefactorLog">
-          <Key>
-            <PropertyRef Name="OperationKey" />
-          </Key>
-          <Property Name="OperationKey" Type="Guid" Nullable="false" />
-        </EntityType>
         <EntityType Name="tblComment">
           <Key>
             <PropertyRef Name="comID" />
           </Key>
           <Property Name="comID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="comBody" Type="String" MaxLength="200" FixedLength="false" Unicode="false" />
-          <Property Name="comDateTime" Type="DateTimeOffset" Precision="7" />
+          <Property Name="comBody" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="comDateTime" Type="DateTimeOffset" Precision="7" Nullable="false" />
           <Property Name="comUser" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="depID" Type="Int32" />
+          <NavigationProperty Name="tblDeploy" Relationship="dbMainModel.comment_deploy_relationship" FromRole="tblComment" ToRole="tblDeploy" />
         </EntityType>
         <EntityType Name="tblDeploy">
           <Key>
@@ -105,6 +127,9 @@
           <Property Name="depEnvironment" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="depLocked" Type="Boolean" />
           <Property Name="noteID" Type="Int32" />
+          <Property Name="depSmoke" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="tblComments" Relationship="dbMainModel.comment_deploy_relationship" FromRole="tblDeploy" ToRole="tblComment" />
+          <NavigationProperty Name="tblNote" Relationship="dbMainModel.note_deploy_relationship" FromRole="tblDeploy" ToRole="tblNote" />
         </EntityType>
         <EntityType Name="tblEnvironment">
           <Key>
@@ -125,30 +150,57 @@
             <PropertyRef Name="noteID" />
           </Key>
           <Property Name="noteID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="noteBody" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="noteBody" Type="String" MaxLength="2000" FixedLength="false" Unicode="false" />
           <Property Name="noteDateTime" Type="DateTimeOffset" Precision="7" />
+          <NavigationProperty Name="tblDeploys" Relationship="dbMainModel.note_deploy_relationship" FromRole="tblNote" ToRole="tblDeploy" />
         </EntityType>
         <EntityContainer Name="dbMainEntities" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="C__RefactorLog" EntityType="Self.C__RefactorLog" />
           <EntitySet Name="tblComments" EntityType="Self.tblComment" />
           <EntitySet Name="tblDeploys" EntityType="Self.tblDeploy" />
           <EntitySet Name="tblEnvironments" EntityType="Self.tblEnvironment" />
           <EntitySet Name="tblFeatures" EntityType="Self.tblFeature" />
           <EntitySet Name="tblNotes" EntityType="Self.tblNote" />
+          <AssociationSet Name="comment_deploy_relationship" Association="dbMainModel.comment_deploy_relationship">
+            <End Role="tblDeploy" EntitySet="tblDeploys" />
+            <End Role="tblComment" EntitySet="tblComments" />
+          </AssociationSet>
+          <AssociationSet Name="note_deploy_relationship" Association="dbMainModel.note_deploy_relationship">
+            <End Role="tblNote" EntitySet="tblNotes" />
+            <End Role="tblDeploy" EntitySet="tblDeploys" />
+          </AssociationSet>
         </EntityContainer>
+        <Association Name="comment_deploy_relationship">
+          <End Type="dbMainModel.tblDeploy" Role="tblDeploy" Multiplicity="0..1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Type="dbMainModel.tblComment" Role="tblComment" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tblDeploy">
+              <PropertyRef Name="depID" />
+            </Principal>
+            <Dependent Role="tblComment">
+              <PropertyRef Name="depID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="note_deploy_relationship">
+          <End Type="dbMainModel.tblNote" Role="tblNote" Multiplicity="0..1" />
+          <End Type="dbMainModel.tblDeploy" Role="tblDeploy" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tblNote">
+              <PropertyRef Name="noteID" />
+            </Principal>
+            <Dependent Role="tblDeploy">
+              <PropertyRef Name="noteID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="dbMainModelStoreContainer" CdmEntityContainer="dbMainEntities">
-          <EntitySetMapping Name="C__RefactorLog">
-            <EntityTypeMapping TypeName="dbMainModel.C__RefactorLog">
-              <MappingFragment StoreEntitySet="__RefactorLog">
-                <ScalarProperty Name="OperationKey" ColumnName="OperationKey" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="tblComments">
             <EntityTypeMapping TypeName="dbMainModel.tblComment">
               <MappingFragment StoreEntitySet="tblComments">
@@ -163,6 +215,7 @@
           <EntitySetMapping Name="tblDeploys">
             <EntityTypeMapping TypeName="dbMainModel.tblDeploy">
               <MappingFragment StoreEntitySet="tblDeploy">
+                <ScalarProperty Name="depSmoke" ColumnName="depSmoke" />
                 <ScalarProperty Name="depID" ColumnName="depID" />
                 <ScalarProperty Name="depVID" ColumnName="depVID" />
                 <ScalarProperty Name="depFeature" ColumnName="depFeature" />

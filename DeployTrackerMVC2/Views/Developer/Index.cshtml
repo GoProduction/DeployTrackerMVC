@@ -21,59 +21,84 @@
 <body id="BodyContent">
     <!--Tables View-->
     <div id="TablesView">
-        <button onclick="checkSelID()">Check selID</button>
         <div style="display:none">
             <span>Edit-Mode?:</span>
             <input id="ctlEditMode" type="text" data-bind="value: obsCheckEdit" />
         </div>
         <div class="loadingIndicator" data-bind="visible: loading()" id="TableDiv"></div>
+        <div class="row">
+            <!--Current and Queued Tables column-->
+            <div class="col" style="width:70%">
+                <!------Current Deploys------------------------>
+                <h3 style="text-align:center; width:100%">Current Deploys</h3>
+                <br />
+                <div id="TableCurrent" style="overflow-x: auto">
+                    <table class="table" id="CurrentDeploysTable" data-bind="visible: !loading()">
+                        <thead>
+                            <tr>
+                                <th style="display:none">ID</th>
+                                <th>Feature</th>
+                                <th class="column3">Version</th>
+                                <th>Environment</th>
+                                <th class="column1">Start Time</th>
+                                <th class="column1">End Time</th>
+                                <th class="column2">Status</th>
+                                <th>...</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: currentDeploys().sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1 ) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })" class="table">
+                            <tr data-bind="template: {name: $root.displayModeC, data: $data }" class="table table-on-hover"></tr>
+                        </tbody>
+                    </table>
+                </div>
 
-        <!------Current Deploys------------------------>
-        <h3 style="text-align:center; width:100%">Current Deploys</h3>
-        <br />
-        <div id="TableCurrent" style="overflow-x: auto">
-            <table class="table" id="CurrentDeploysTable" data-bind="visible: !loading()">
-                <thead>
-                    <tr>
-                        <th style="display:none">ID</th>
-                        <th>Feature</th>
-                        <th class="column3">Version</th>
-                        <th>Environment</th>
-                        <th class="column1">Start Time</th>
-                        <th class="column1">End Time</th>
-                        <th class="column2">Status</th>
-                        <th>...</th>
-                    </tr>
-                </thead>
-                <tbody data-bind="foreach: currentDeploys().sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1 ) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })" class="table">
-                    <tr data-bind="template: {name: $root.displayModeC, data: $data }" class="table table-on-hover"></tr>
-                </tbody>
-            </table>
+                <!------Queued Deploys------------------------->
+                <h3 class="text-center">Queued Deploys</h3>
+                <br />
+                <div id="TableQueue" style="overflow-x:auto">
+                    <table class="table" id="DevTable" data-bind="visible: !loading()">
+                        <thead>
+                            <tr>
+                                <th style="display:none">ID</th>
+                                <th>Feature</th>
+                                <th class="column3">Version</th>
+                                <th>Environment</th>
+                                <th class="column1">Planned Date</th>
+                                <th class="column1">Planned Time</th>
+                                <th class="column2">Status</th>
+                                <th>...</th>
+                            </tr>
+                        </thead>
+                        <tbody data-bind="foreach: queuedDeploys().sort(function (l, r) { return (l.depPlannedTime() == r.depPlannedTime()) ? (l.depPlannedDate() < r.depPlannedDate() ? 1 : -1) : (l.depPlannedTime() < r.depPlannedTime() ? 1 : -1) })" class="table">
+                            <tr data-bind="template: {name: $root.displayModeQ, data: $data }" class="table table-on-hover"></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!--Smoke queue column-->
+            <div id="smokeDiv" class="col-sm-4" style="width:30%; border:solid; border-width:thin">
+                <button data-bind="click: hideSmoke">
+                    <i class="fa fa-align-left"></i>
+                    <span>Hide</span>
+                </button>
+                <h3 style="text-align:center">Smoke Queue</h3>
+                <br />
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th style="display:none">ID</th>
+                            <th>Feature</th>
+                            <th>Version</th>
+                            <th>Environment</th>
+                            <th>Smoke Status</th>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: smokeDeploys()">
+                        <tr data-bind="template: { name: 'read-template-s', data: $data }" class="table table-on-hover"></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-
-        <!------Queued Deploys------------------------->
-        <h3 class="text-center">Queued Deploys</h3>
-        <br />
-        <div id="TableQueue" style="overflow-x:auto">
-            <table class="table" id="DevTable" data-bind="visible: !loading()">
-                <thead>
-                    <tr>
-                        <th style="display:none">ID</th>
-                        <th>Feature</th>
-                        <th class="column3">Version</th>
-                        <th>Environment</th>
-                        <th class="column1">Planned Date</th>
-                        <th class="column1">Planned Time</th>
-                        <th class="column2">Status</th>
-                        <th>...</th>
-                    </tr>
-                </thead>
-                <tbody data-bind="foreach: queuedDeploys().sort(function (l, r) { return (l.depPlannedTime() == r.depPlannedTime()) ? (l.depPlannedDate() < r.depPlannedDate() ? 1 : -1) : (l.depPlannedTime() < r.depPlannedTime() ? 1 : -1) })" class="table">
-                    <tr data-bind="template: {name: $root.displayModeQ, data: $data }" class="table table-on-hover"></tr>
-                </tbody>
-            </table>
-        </div>
-
         <!-------CURRENT TABLE TEMPLATES-------->
         <!--Read Template----------------------->
         <script id="read-template-c" type="text/html">
@@ -222,6 +247,15 @@
             <td class="column2" data-bind="text: depStatus"></td>
             <td class="btn btn-danger"><i class="fa fa-times"></i>Locked</td>
         </script>
+
+        <!-------SMOKE TABLE TEMPLATES-->
+        <script id="read-template-s" type="text/html">
+            <td style="display:none" data-bind="text: depID"></td>
+            <td data-bind="text: depFeature, event: { click: $root.selectRecord}"></td>
+            <td data-bind="text: depVersion, event: { click: $root.selectRecord}"></td>
+            <td data-bind="text: depEnvironment, event: { click: $root.selectRecord}"></td>
+            <td data-bind="text: depSmoke, event: { click: $root.selectRecord}"></td>
+        </script>
     </div>
     <!--Notifications/Toasts-->
     <div aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;">
@@ -243,7 +277,6 @@
             </div>
         </div>
     </div>
-
     <!--STATUS MODAL-->
     <div class="modal status-modal" id="statusModal">
         <div class="status-modal-content">
@@ -262,11 +295,19 @@
                 <select id="ctlmodalStatus"
                         data-bind="options: $root.status, optionsText: 'tmpStatus', optionsValue: 'tmpStatus'"
                         onchange="checkStatus()"></select>
+                
                 <!--depID Field-->
                 <p style="display: none">ID<input type="text" id="ctlmodalID" /></p>
                 <!--ERROR status field-->
                 <span id="errorStatusModalChange" style="text-align: center; color: red; display: none;"></span>
 
+                <!--Smoke Drop-down-->
+                <div id="smoke-div" style="display:none" class="status-modal-body">
+                    <br />
+                    <span>Ready for smoke pass?</span>
+                    <br />
+                    <select id="ctlSmokeStatus" data-bind="options: $root.smoke, optionsText: 'tmpSmoke', optionsValue: 'tmpSmoke'"></select>
+                </div>
             </div>
             <!--Comment DIV(to become visible when status == 'Failed')-->
             <div id="commentBody" class="status-modal-comment" style="display: none">

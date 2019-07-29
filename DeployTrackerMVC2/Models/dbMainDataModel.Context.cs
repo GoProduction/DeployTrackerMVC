@@ -25,7 +25,6 @@ namespace DeployTrackerMVC2.Models
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<C__RefactorLog> C__RefactorLog { get; set; }
         public virtual DbSet<tblComment> tblComments { get; set; }
         public virtual DbSet<tblDeploy> tblDeploys { get; set; }
         public virtual DbSet<tblEnvironment> tblEnvironments { get; set; }

@@ -6,12 +6,13 @@ var plannedDate = document.getElementById("txtPlannedDate");
 var plannedTime = document.getElementById("txtPlannedTime");
 
 //Deploy template
-var Deploy = function (depFeature, depVersion, depEnvironment, depPlannedDate, depPlannedTime, depStatus, Edit) {
+var Deploy = function (depFeature, depVersion, depEnvironment, depPlannedDate, depPlannedTime, depStatus, depSmoke, Edit) {
     this.depFeature = ko.observable(depFeature);
     this.depVersion = ko.observable(depVersion);
     this.depPlannedDate = ko.observable(depPlannedDate);
     this.depPlannedTime = ko.observable(depPlannedTime);
     this.depStatus = ko.observable(depStatus);
+    this.depSmoke = ko.observable(depSmoke);
     this.depEnvironment = ko.observable(depEnvironment);
     this.Edit = ko.observable(Edit);
 };
@@ -51,6 +52,7 @@ var TempDeployViewModel = function (signalR) {
             depPlannedDate: document.getElementById("txtPlannedDate").value,
             depPlannedTime: datetime,
             depStatus: 'Queued',
+            depSmoke: "Not Ready",
             depEnvironment: document.getElementById("txtEnvironment").value,
             Edit: false
 
@@ -63,7 +65,7 @@ var TempDeployViewModel = function (signalR) {
         }
         else {
             var newDeploy = ko.utils.arrayMap(newRecord, function (data) {
-                return new Deploy(data.depFeature, data.depVersion, data.depEnvironment, data.depPlannedDate, data.depPlannedTime, data.depStatus, data.Edit)
+                return new Deploy(data.depFeature, data.depVersion, data.depEnvironment, data.depPlannedDate, data.depPlannedTime, data.depStatus, data.depSmoke, data.Edit)
             });
 
             //Push the new record to the temp table

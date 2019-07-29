@@ -14,8 +14,17 @@ namespace DeployTrackerMVC2.Models
     
     public partial class tblNote
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public tblNote()
+        {
+            this.tblDeploys = new HashSet<tblDeploy>();
+        }
+    
         public int noteID { get; set; }
         public string noteBody { get; set; }
         public Nullable<System.DateTimeOffset> noteDateTime { get; set; }
+    
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<tblDeploy> tblDeploys { get; set; }
     }
 }

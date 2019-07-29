@@ -49,8 +49,6 @@
 .home-comment-table{
     width: 100%;
     border: none;
-    
-    
 }
 
 .home-comment-table-row {
@@ -59,5 +57,4 @@
 
 tr.home-comment-table-row>td{
     padding: 4px;
-    
 }
