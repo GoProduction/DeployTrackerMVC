@@ -1,5 +1,10 @@
 ﻿var array = [];
 
+//Loading function
+$(window).on('load', function () {
+    $(".loading-class").fadeOut("slow");
+});
+
 //Week calendar initialization
 var dp = new DayPilot.Month("calendar");
 dp.theme = "monthcalendartheme";

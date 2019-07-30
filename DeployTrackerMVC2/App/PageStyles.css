@@ -1,0 +1,106 @@
+﻿.no-js #loader{display: none;}
+.js #loader {
+    display: block;
+    position: absolute;
+    left: 100px;
+    top: 0;
+}
+.loading-class {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: url('../Images/loading.gif') center no-repeat #fff;
+}
+
+*{
+    box-sizing: border-box;
+}
+/*Dev page styles*/
+.dev-left-panel{
+    float: left;
+    width: 65%;
+    flex: 65%;
+    padding-top: 10px;
+}
+
+.dev-smoke-panel-tab {
+    width: 2%;
+    background-color: grey;
+    text-align: center;
+    padding-top: 10px;
+}
+
+.dev-smoke-panel {
+
+    width: 33%;
+    flex: 0 0 33%;
+    border: solid;
+    border-width: thin;
+    background-color: rgb(247, 247, 247);
+    padding-top: 10px;
+}
+.row:after{
+    content: "";
+    display: table;
+    clear: both;
+}
+@media only screen and (max-width: 1200px) {
+    .dev-smoke-panel-tab{
+        display: none;
+    }
+    .dev-left-panel{
+        width: 100%;
+    }
+    .dev-smoke-panel{
+        width: 100%;
+        flex: 100%;
+    }
+}
+
+/*QA page styles*/
+.qa-left-panel {
+    float: left;
+    width: 50%;
+    flex: 50%;
+    padding-top: 10px;
+}
+
+.qa-smoke-panel-tab {
+    width: 2%;
+    background-color: grey;
+    text-align: center;
+    padding-top: 10px;
+}
+
+.qa-smoke-panel {
+    width: 48%;
+    flex: 0 0 48%;
+    border: solid;
+    border-width: thin;
+    background-color: rgb(247, 247, 247);
+    padding-top: 10px;
+}
+
+.row:after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+@media only screen and (max-width: 1200px) {
+    .qa-smoke-panel-tab {
+        display: none;
+    }
+
+    .qa-left-panel {
+        width: 100%;
+    }
+
+    .qa-smoke-panel {
+        width: 100%;
+        flex: 100%;
+    }
+}

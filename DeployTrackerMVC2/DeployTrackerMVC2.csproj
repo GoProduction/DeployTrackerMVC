@@ -202,6 +202,7 @@
     <Compile Include="Controllers\Deploys\DeployAPIController.cs" />
     <Compile Include="Controllers\Deploys\DeploysController.cs" />
     <Compile Include="Controllers\Deploys\EntitySetControllerWithHub.cs" />
+    <Compile Include="Controllers\QAController.cs" />
     <Compile Include="Controllers\DeveloperController.cs" />
     <Compile Include="Controllers\Environments\EnvironmentEntitySetController.cs" />
     <Compile Include="Controllers\Environments\EnvironmentsController.cs" />
@@ -256,6 +257,8 @@
     <Content Include="App\monthcalendartheme.css" />
     <Content Include="App\NewDeployClientCode\NewDeployJS.js" />
     <Content Include="App\ModalStyles.css" />
+    <Content Include="App\PageStyles.css" />
+    <Content Include="App\QAClientCode\QAJS.js" />
     <Content Include="App\TableStyles.css" />
     <Content Include="App\WeekViewStyles.css" />
     <Content Include="Areas\HelpPage\HelpPage.css" />
@@ -613,6 +616,7 @@
     <Content Include="Scripts\popper-utils.js.map" />
     <Content Include="Views\Developer\Index.cshtml" />
     <Content Include="Views\NewDeploy\Index.cshtml" />
+    <Content Include="Views\QA\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

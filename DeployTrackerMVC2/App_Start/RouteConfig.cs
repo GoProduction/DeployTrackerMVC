@@ -31,6 +31,12 @@ namespace DeployTrackerMVC2
                 url: "{controller}/{action}/{id}",
                 defaults: new { controller = "Developer", action = "Index", id = UrlParameter.Optional }
             );
+
+            routes.MapRoute(
+                name: "QA",
+                url: "{controller}/{action}/{id}",
+                defaults: new { controller = "QA", action = "Index", id = UrlParameter.Optional }
+            );
         }
 
         public static void RegisterHttp(HttpConfiguration config)

@@ -1,6 +1,6 @@
 ﻿<!DOCTYPE html>
 
-<!--Dev Page-->
+<!--QA Page-->
 
 <html lang="en">
 <head>
@@ -29,7 +29,7 @@
         <div class="loadingIndicator" data-bind="visible: loading()" id="TableDiv"></div>
         <div class="row">
             <!--Current and Queued Tables column-->
-            <div class="dev-left-panel">
+            <div class="qa-left-panel">
                 <!------Current Deploys------------------------>
                 <h3 style="text-align:center; width:100%">Current Deploys</h3>
                 <br />
@@ -44,11 +44,10 @@
                                 <th class="column1">Start Time</th>
                                 <th class="column1">End Time</th>
                                 <th class="column2">Status</th>
-                                <th>...</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: currentDeploys().sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1 ) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })" class="table">
-                            <tr data-bind="template: {name: $root.displayModeC, data: $data }" class="table table-on-hover"></tr>
+                            <tr data-bind="template: {name: 'read-template-c', data: $data }" class="table table-on-hover"></tr>
                         </tbody>
                     </table>
                 </div>
@@ -67,23 +66,22 @@
                                 <th class="column1">Planned Date</th>
                                 <th class="column1">Planned Time</th>
                                 <th class="column2">Status</th>
-                                <th>...</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: queuedDeploys().sort(function (l, r) { return (l.depPlannedTime() == r.depPlannedTime()) ? (l.depPlannedDate() < r.depPlannedDate() ? 1 : -1) : (l.depPlannedTime() < r.depPlannedTime() ? 1 : -1) })" class="table">
-                            <tr data-bind="template: {name: $root.displayModeQ, data: $data }" class="table table-on-hover"></tr>
+                            <tr data-bind="template: {name: 'read-template-q', data: $data }" class="table table-on-hover"></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
             <!--Smoke queue TAB-->
             <div id="smokeTab" class="dev-smoke-panel-tab">
-                <button data-bind="click: toggleSmokeWindow" class="btn btn-sm btn-light">
+                <button data-bind="click: toggleSmokeWindow" class="btn btn-sm btn-light" data-toggle="tooltip" data-placement="top" title="Expand/contract Smoke Queue panel">
                     <i id="smokeToggleButton" class="fa fa-angle-right" style="width:100%"></i>
                 </button>
             </div>
             <!--Smoke queue column-->
-            <div id="smokeWindow" class="dev-smoke-panel">
+            <div id="smokeWindow" class="qa-smoke-panel">
                 <h3 style="text-align:center">Smoke Queue</h3>
                 <br />
                 <div>
@@ -95,6 +93,7 @@
                                 <th>Version</th>
                                 <th>Environment</th>
                                 <th>Smoke Status</th>
+                                <th>...</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: smokeDeploys()">
@@ -151,55 +150,11 @@
                         css: { "css-deploying": depStatus() === "Deploying",
                                 "css-failed": depStatus() === "Failed",
                                 "css-completed": depStatus() === "Completed"}'></td>
-            <!--Button control field-->
-            <td data-bind="css: { 'css-deploying': depStatus() === 'Deploying',
-                              'css-failed': depStatus() === 'Failed',
-                              'css-completed': depStatus() === 'Completed'}">
-                <!--STATUS BUTTON-->
-                <button id="btnStatusCurrent" class="btn btn-sm btn-primary" type="button" data-toggle="modal" data-bind="click: $root.openModal">
-                    <i class="fa fa-tasks"></i>
-                    <span class="button-text">Update Status</span>
-                </button>
-                <!--EDIT BUTTON-->
-                <button class="btn btn-sm btn-light" data-bind="click: $root.edit">
-                    <i class="fa fa-edit"></i>
-                    <span class="button-text">Edit</span>
-                </button>
-            </td>
-        </script>
-        <!--Edit Template----------------------->
-        <script id="edit-template-c" type="text/html">
-
-            <td style="display:none"><input type="text" data-bind="value: depID" /></td>
-            <td><select id="ctlFeature" name="ctlFeature" data-bind="options: $root.feature, optionsText: 'feaName', optionsValue: 'feaName', value: depFeature"></select></td>
-            <td><input type="text" data-bind="value: depVersion" /></td>
-            <td>
-                <select id="ctlEnvironment"
-                        name="ctlEnvironment"
-                        data-bind="options: $root.environment, optionsText: 'envName', optionsValue: 'envName', value: depEnvironment"></select>
-            </td>
-            <td><input type="text" data-bind="timeFormatted: depStartTime, format: 'LT'" disabled /></td>
-            <td><input type="text" data-bind="timeFormatted: depEndTime, format: 'LT'" disabled /></td>
-            <td><select type="text" data-bind="options: $root.status, optionsText: 'tmpStatus', optionsValue: 'tmpStatus', value: depStatus"> </select></td>
-            <td><a class="btn btn-sm btn-success" data-bind="click: $root.done">Done</a></td>
-        </script>
-        <!--Locked Template--------------------->
-        <script id="locked-template-c" type="text/html">
-
-            <td style="display:none" data-bind="text: depID"></td>
-            <td data-bind="text: depFeature"></td>
-            <td class="column3" data-bind="text: depVersion"></td>
-            <td data-bind="text: depEnvironment"></td>
-            <td class="column1" data-bind="timeFormatted: depStartTime, format: 'LT'"></td>
-            <td class="column1" data-bind="timeFormatted: depEndTime, format: 'LT'"></td>
-            <td class="column2" data-bind="text: depStatus"></td>
-            <td class="btn btn-sm btn-danger"><i class="fa fa-times"></i>Locked</td>
         </script>
 
         <!-------QUEUED TABLE TEMPLATES--------->
         <!--Read Template----------------------->
         <script id="read-template-q" type="text/html">
-
             <td style="display:none" data-bind="text: depID"></td>
             <td data-bind="text: depFeature, event: { click: $root.selectRecord}"></td>
             <td class="column3" data-bind="text: depVersion, event: { click: $root.selectRecord}"></td>
@@ -207,50 +162,6 @@
             <td class="column1" data-bind="dateFormatted: depPlannedDate, format: 'MMMM DD YYYY', event: { click: $root.selectRecord}"></td>
             <td class="column1" data-bind="timeFormatted: depPlannedTime, format: 'LT', event: { click: $root.selectRecord}"></td>
             <td class="column2" data-bind="text: depStatus, event: { click: $root.selectRecord}"></td>
-            <td>
-                <button id="btnStatusCurrent" class="btn btn-sm btn-primary" type="button" data-toggle="modal" data-bind="click: $root.openModal">
-                    <i class="fa fa-tasks"></i>
-                    <span class="button-text">Update Status</span>
-                </button>
-                <button class="btn btn-sm btn-light" data-bind="click: $root.edit">
-                    <i class="fa fa-edit"></i>
-                    <span class="button-text">Edit</span>
-                </button>
-            </td>
-        </script>
-        <!--Edit Template----------------------->
-        <script id="edit-template-q" type="text/html">
-
-            <td style="display:none"><input type="text" data-bind="value: depID" /></td>
-            <td><select id="ctlFeature" name="ctlFeature" data-bind="options: $root.feature, optionsText: 'feaName', optionsValue: 'feaName', value: depFeature"></select></td>
-            <td><input type="text" data-bind="value: depVersion" /></td>
-            <td>
-                <select id="ctlEnvironment"
-                        name="ctlEnvironment"
-                        data-bind="options: $root.environment, optionsText: 'envName', optionsValue: 'envName', value: depEnvironment"></select>
-            </td>
-            <td><input type="date" data-bind="dateFormatted: depPlannedDate, format: 'YYYY-MM-DD'" /></td>
-            <!--Planned Time-->
-            <td>
-                <input id="ctlPlannedTime"
-                       name="ctlPlannedTime"
-                       data-bind="timepickerInput: depPlannedTime, format: 'HH:mm'"
-                       type="time" />
-            </td>
-            <td><select type="text" data-bind="options: $root.status, optionsText: 'tmpStatus', optionsValue: 'tmpStatus', value: depStatus"> </select></td>
-            <td><a class="btn btn-sm btn-success" data-bind="click: $root.done">Done</a></td>
-        </script>
-        <!--Locked Template--------------------->
-        <script id="locked-template-q" type="text/html">
-
-            <td style="display:none" data-bind="text: depID"></td>
-            <td data-bind="text: depFeature"></td>
-            <td class="column3" data-bind="text: depVersion"></td>
-            <td data-bind="text: depEnvironment"></td>
-            <td class="column1" data-bind="dateFormatted: depPlannedDate, format: 'MMMM DD YYYY'"></td>
-            <td class="column1" data-bind="timeFormatted: depPlannedTime, format: 'LT'"></td>
-            <td class="column2" data-bind="text: depStatus"></td>
-            <td class="btn btn-sm btn-danger"><i class="fa fa-times"></i>Locked</td>
         </script>
 
         <!-------SMOKE TABLE TEMPLATES-->
@@ -260,6 +171,12 @@
             <td data-bind="text: depVersion, event: { click: $root.selectRecord}"></td>
             <td data-bind="text: depEnvironment, event: { click: $root.selectRecord}"></td>
             <td data-bind="text: depSmoke, event: { click: $root.selectRecord}"></td>
+            <td>
+                <button class="btn btn-sm btn-primary">
+                    <i class="fa fa-tasks"></i>
+                    <span>Update Status</span>
+                </button>
+            </td>
         </script>
     </div>
     <!--Notifications/Toasts-->
@@ -422,3 +339,4 @@
     </div>
 </body>
 </html>
+

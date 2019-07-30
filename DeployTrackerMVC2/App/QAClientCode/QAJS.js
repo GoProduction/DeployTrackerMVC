@@ -9,6 +9,10 @@ var selID = '';
 $(window).on('load', function () {
     $(".loading-class").fadeOut("slow");
 });
+//Initialize the Bootstrap tooltip
+$(document).ready(function () {
+    $('[data-toggle="tooltip"]').tooltip();
+});
 
 var DeployViewModel = function (deploySignalR) {
 
@@ -53,24 +57,6 @@ var DeployViewModel = function (deploySignalR) {
         openNav();
 
     }; // Run when record is selected, and open the record modal
-    self.displayModeQ = function (deploy) {
-        if (deploy.depLocked()) {
-            console.log('Locked row');
-            return 'locked-template-q';
-        }
-        else {
-            return deploy.Edit() ? 'edit-template-q' : 'read-template-q';
-        }
-    } // Changes the display mode of a table when a client is editing a row in the QUEUED table
-    self.displayModeC = function (deploy) {
-        if (deploy.depLocked()) {
-            console.log('Locked row');
-            return 'locked-template-c';
-        }
-        else {
-            return deploy.Edit() ? 'edit-template-c' : 'read-template-c';
-        }
-    } // Changes the display mode of a table when a client is editing a row in the CURRENT table
     self.updateViewModel = function () {
         try {
             $.getJSON('/odata/Deploys', function (data) {
@@ -500,7 +486,7 @@ $(function () {
 
 /* Open when someone selects a record */
 function openNav() {
-    
+
     $("#DetailsView").modal("show");
 }
 //Updates the paginate function (work in progress)
@@ -633,19 +619,19 @@ function checkSelID() {
 }
 //Shows comment field and buttons in record details modal
 function newComment() {
-    
+
     $("#comment-button-div-1").fadeOut("fast");
     $("#comment-button-div-2").fadeIn("fast");
     $("#record-comment-text-field").fadeIn("fast");
 }
 //Hides comment field and buttons in record details modal
 function cancelComment() {
-    
+
     $("#comment-button-div-1").fadeIn("fast");
     $("#comment-button-div-2").fadeOut("fast");
     $("#recordCommentField").val("");
     $("#record-comment-text-field").fadeOut("fast");
-    
+
 }
 //NOTE: The save comment function is located inside the viewmodel as submitComment
 
