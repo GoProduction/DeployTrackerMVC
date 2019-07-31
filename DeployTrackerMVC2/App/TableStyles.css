@@ -8,7 +8,7 @@
     text-decoration: underline;
     cursor: pointer;
 }
-
+/*Colors for queued and current deploys tables*/
 .css-deploying {
     background: rgba(255, 255, 0, .5);
 }
@@ -20,6 +20,17 @@
 .css-failed {
     background: rgba(255, 0, 0, .5);
     font-weight: bold;
+}
+/*Colors for smoke table*/
+.css-smoke-pass {
+    background: rgba(0, 255, 33, .5);
+}
+.css-smoke-fail {
+    background: rgba(255, 0, 0, .5);
+    font-weight: bold;
+}
+.css-smoke-conditional {
+    background: rgba(255, 255, 0, .5);
 }
 
 @media only screen and (max-width: 990px) {

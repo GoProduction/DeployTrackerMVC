@@ -15,21 +15,40 @@
     background: url('../Images/loading.gif') center no-repeat #fff;
 }
 
+.filter-tab{
+    text-align: left;
+    font-size: small;
+    font-weight: 700;
+}
+.main-header{
+    text-align: center;
+    padding: 5px
+}
+
 *{
     box-sizing: border-box;
 }
+/*Global smoke panel styles*/
+.smoke-panel-header {
+    background-color: #343a40;
+    color: aliceblue;
+    text-align: center;
+    
+}
+    .smoke-panel-header div {
+        background-color: #343a40;
+    }
+.smoke-panel-tab {
+    width: 2%;
+    background-color: #343a40;
+    text-align: center;
+}
+
 /*Dev page styles*/
 .dev-left-panel{
     float: left;
     width: 65%;
     flex: 65%;
-    padding-top: 10px;
-}
-
-.dev-smoke-panel-tab {
-    width: 2%;
-    background-color: grey;
-    text-align: center;
     padding-top: 10px;
 }
 
@@ -40,7 +59,6 @@
     border: solid;
     border-width: thin;
     background-color: rgb(247, 247, 247);
-    padding-top: 10px;
 }
 .row:after{
     content: "";
@@ -48,7 +66,7 @@
     clear: both;
 }
 @media only screen and (max-width: 1200px) {
-    .dev-smoke-panel-tab{
+    .smoke-panel-tab{
         display: none;
     }
     .dev-left-panel{
@@ -68,20 +86,13 @@
     padding-top: 10px;
 }
 
-.qa-smoke-panel-tab {
-    width: 2%;
-    background-color: grey;
-    text-align: center;
-    padding-top: 10px;
-}
-
 .qa-smoke-panel {
     width: 48%;
     flex: 0 0 48%;
     border: solid;
     border-width: thin;
     background-color: rgb(247, 247, 247);
-    padding-top: 10px;
+    
 }
 
 .row:after {
@@ -91,10 +102,7 @@
 }
 
 @media only screen and (max-width: 1200px) {
-    .qa-smoke-panel-tab {
-        display: none;
-    }
-
+   
     .qa-left-panel {
         width: 100%;
     }

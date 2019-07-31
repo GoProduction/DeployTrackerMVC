@@ -73,5 +73,10 @@ namespace DeployTrackerMVC2.Hubs
             Clients.All.updateAll();
 
         }
+
+        public void UpdateComments()
+        {
+            Clients.All.updateComments();
+        }
     }
 }

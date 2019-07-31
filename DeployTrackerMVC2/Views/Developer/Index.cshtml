@@ -77,14 +77,16 @@
                 </div>
             </div>
             <!--Smoke queue TAB-->
-            <div id="smokeTab" class="dev-smoke-panel-tab">
+            <div id="smokeTab" class="smoke-panel-tab">
                 <button data-bind="click: toggleSmokeWindow" class="btn btn-sm btn-light">
                     <i id="smokeToggleButton" class="fa fa-angle-right" style="width:100%"></i>
                 </button>
             </div>
             <!--Smoke queue column-->
             <div id="smokeWindow" class="dev-smoke-panel">
-                <h3 style="text-align:center">Smoke Queue</h3>
+                <div class="smoke-panel-header">
+                    <h3>Smoke Queue</h3>
+                </div>
                 <br />
                 <div>
                     <table class="table">

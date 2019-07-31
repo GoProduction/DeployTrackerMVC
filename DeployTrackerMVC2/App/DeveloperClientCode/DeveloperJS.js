@@ -261,7 +261,7 @@ var DeployViewModel = function (deploySignalR) {
     }); // Current Deploys table filter
     self.smokeDeploys = ko.computed(function () {
         return ko.utils.arrayFilter(self.deploy(), function (rec) {
-            return rec.depSmoke() === 'Ready';
+            return rec.depSmoke() === 'Ready' || rec.depSmoke() === 'Fail' || rec.depSmoke() === 'Pass' || rec.depSmoke() === 'Conditional';
         });
     }); // Current Deploys table filter
     self.commentsFiltered = ko.computed(function () {
@@ -372,7 +372,8 @@ var DeployViewModel = function (deploySignalR) {
                     });
                     mainItem.depEndTime(dateNow());
                     console.log(mainItem.depEndTime());
-
+                    deploySignalR.server.updateAll();
+                    self.updateViewModelComment();
                 }
                 else if (ctl.value == 'Deploying') {
                     mainItem.depStartTime(dateNow());

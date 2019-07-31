@@ -7,11 +7,12 @@ var selID = '';
 
 //Loading function
 $(window).on('load', function () {
-    $(".loading-class").fadeOut("slow");
+   
 });
 //Initialize the Bootstrap tooltip
 $(document).ready(function () {
     $('[data-toggle="tooltip"]').tooltip();
+    
 });
 
 var DeployViewModel = function (deploySignalR) {
@@ -31,15 +32,22 @@ var DeployViewModel = function (deploySignalR) {
     ]); // Status observable array
     self.smoke = ko.observableArray([
         { tmpSmoke: "Ready" },
-        { tmpSmoke: "Not Ready" }
+        { tmpSmoke: "Pass" },
+        { tmpSmoke: "Conditional" },
+        { tmpSmoke: "Fail" }
     ]);
     self.comment = ko.observableArray(); // Comment observable array
     self.selected = ko.observableArray(self.deploy()[0]); //Determines if record is selected
+    self.timeArray = ko.observableArray([
+        { text: 'Past 24 hours', val: '24' },
+        { text: 'Past week', val: '168' }
+    ]);
 
     //ObSERVABLES///////////////////////////////////////////////////////////
     self.obsCheckEdit = ko.observable(0); // Observable that is used to check if any field is being edited
     self.loading = ko.observable(true); // Loading function that triggers the loading animation
     self.obsID = ko.observable(''); // Observable that is used to filter any results by ID
+    self.searchTime = ko.observable(''); //Used for filtering table data
 
     //FUNCTIONS///////////////////////////////////////////////////////////
     self.dateAndUser = function (date, user) {
@@ -72,6 +80,7 @@ var DeployViewModel = function (deploySignalR) {
                         depEndTime: ko.observable(deploy.depEndTime),
                         depStatus: ko.observable(deploy.depStatus),
                         depSmoke: ko.observable(deploy.depSmoke),
+                        formattedDate: ko.observable(moment(new Date(deploy.depStartTime)).format('MMMM Do')),
                         Edit: ko.observable(false),
                         depLocked: ko.observable(deploy.depLocked)
 
@@ -190,6 +199,7 @@ var DeployViewModel = function (deploySignalR) {
                 depEndTime: ko.observable(deploy.depEndTime),
                 depStatus: ko.observable(deploy.depStatus),
                 depSmoke: ko.observable(deploy.depSmoke),
+                formattedDate: ko.observable(moment(new Date(deploy.depStartTime)).format('MMMM Do')),
                 Edit: ko.observable(false),
                 depLocked: ko.observable(deploy.depLocked)
 
@@ -242,12 +252,17 @@ var DeployViewModel = function (deploySignalR) {
     }); // Queued Deploys table filter
     self.currentDeploys = ko.computed(function () {
         return ko.utils.arrayFilter(self.deploy(), function (rec) {
-            return rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed';
+            var date = rec.depStartTime();
+            var val = dateTimeDifference(date)
+            if (val <= self.searchTime()) {
+                return rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed'
+            }
+            
         });
     }); // Current Deploys table filter
     self.smokeDeploys = ko.computed(function () {
         return ko.utils.arrayFilter(self.deploy(), function (rec) {
-            return rec.depSmoke() === 'Ready';
+            return rec.depSmoke() === 'Ready' || rec.depSmoke() === 'Fail' || rec.depSmoke() === 'Pass' || rec.depSmoke() === 'Conditional';
         });
     }); // Current Deploys table filter
     self.commentsFiltered = ko.computed(function () {
@@ -265,8 +280,8 @@ var DeployViewModel = function (deploySignalR) {
         var feature = document.getElementById("spFeature");
         var version = document.getElementById("spVersion");
 
-        ctl.value = deploy.depStatus();
-        objstatus = deploy.depStatus();
+        ctl.value = deploy.depSmoke();
+        objstatus = deploy.depSmoke();
         console.log(objstatus);
         id.value = deploy.depID;
         feature.innerText = deploy.depFeature();
@@ -312,22 +327,22 @@ var DeployViewModel = function (deploySignalR) {
             return;
         }
         //Checks if status was set to failed, but comment was NOT entered
-        if (ctl.value == 'Failed' && comment.value.trim() == "") {
+        if (ctl.value == 'Fail' && comment.value.trim() == "") {
             errorMsg.style.display = "block";
-            errorMsg.textContent = "You must enter a comment before you can submit the status as FAILED.";
+            errorMsg.textContent = "You must enter the issues that caused the smoke to fail.";
+            return;
+        }
+        else if (ctl.value == 'Conditional' && comment.value.trim() == "") {
+            errorMsg.style.display = "block";
+            errorMsg.textContent = "You must enter the issues that caused the smoke to conditionally pass.";
             return;
         }
 
         ko.utils.arrayForEach(self.deploy(), function (mainItem) {
 
             if (id.value == mainItem.depID) {
-                if (ctl.value == 'Completed') {
-                    mainItem.depEndTime(dateNow());
-                    mainItem.depSmoke(selSmoke);
-                    console.log(selSmoke);
-                    console.log(mainItem.depEndTime());
-                }
-                else if (ctl.value == 'Failed') {
+
+                if (ctl.value == 'Fail' || ctl.value == 'Conditional') {
                     //Comment JSON string
                     var json = {};
                     //json["odata.type"] = "DeployTrackerMVC2.tblComment";
@@ -356,15 +371,10 @@ var DeployViewModel = function (deploySignalR) {
                             console.log("Ready state: ", msg.readyState);
                         }
                     });
-                    mainItem.depEndTime(dateNow());
-                    console.log(mainItem.depEndTime());
-
+                    
                 }
-                else if (ctl.value == 'Deploying') {
-                    mainItem.depStartTime(dateNow());
-                    console.log(mainItem.depStartTime());
-                }
-                mainItem.depStatus(ctl.value);
+                
+                mainItem.depSmoke(ctl.value);
 
             }
 
@@ -373,6 +383,7 @@ var DeployViewModel = function (deploySignalR) {
         errorMsg.style.display = "none";
         comment.style.display = "none";
         comment.value = "";
+        deploySignalR.server.updateAll();
     } // Submit new status
     self.submitComment = function () {
         var commentField = document.getElementById("recordCommentField");
@@ -411,6 +422,11 @@ var DeployViewModel = function (deploySignalR) {
         self.updateViewModelComment();
         cancelComment();
     } //Submit new comment (in RECORD DETAILS modal)
+
+    //TEST FUNCTIONS////////
+    self.testTimeFilter = function () {
+        console.log(self.searchTime().toString());
+    }
 }
 
 //SignalR Events
@@ -449,6 +465,10 @@ $(function () {
         deploy[key](value);
 
     } // updateDeploy function, to be triggered through SignalR
+    deploySignalR.client.updateComments = function () {
+        viewModel.updateViewModelComment();
+        console.log("New comment submitted...");
+    }
     deploySignalR.client.unlockDeploy = function (id) {
         var deploy = findDeploy(id);
         deploy.depLocked(false);
@@ -463,6 +483,7 @@ $(function () {
     $.connection.hub.start().done(function () {
         ko.applyBindings(viewModel, document.getElementById("BodyContent"));
         console.log("Connected to SignalR hub");
+        $(".loading-class").fadeOut("slow");
         if (smokeWindow.style.display == 'block') {
             smokeState = 1;
         }
@@ -601,7 +622,7 @@ function checkStatus() {
     var ctl = document.getElementById("ctlmodalStatus");
     var cmtBody = document.getElementById("commentBody");
     //console.log("Check status");
-    if (ctl.value == "Failed") {
+    if (ctl.value == "Fail" || ctl.value == "Conditional") {
         $("#commentBody").fadeIn('slow');
         console.log("Set to fail");
     }
@@ -669,4 +690,12 @@ $("#DetailsView").on("hidden.bs.modal", function () {
 
 String.prototype.trim = function () {
     return this.replace(/^\s+|\s+$/g, "");
+}
+
+//Calculates the difference in hours between two dates
+function dateTimeDifference(date) {
+    var now = new Date();
+    var then = new Date(date);
+    var hours = Math.abs(now.valueOf() - then.valueOf())/3600000
+    return hours;
 }

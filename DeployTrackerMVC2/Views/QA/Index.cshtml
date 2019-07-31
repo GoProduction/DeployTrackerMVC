@@ -11,7 +11,7 @@
         <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
         <script src="~/signalr/hubs"></script>
         <script src="~/App/CustomBindings.js"></script>
-        <script src="~/App/DeveloperClientCode/DeveloperJS.js"></script>
+        <script src="~/App/QAClientCode/QAJS.js"></script>
         <link href="~/App/ButtonStyles.css" rel="stylesheet" />
         <link href="~/App/TableStyles.css" rel="stylesheet" />
         <link href="~/App/ModalStyles.css" rel="stylesheet" />
@@ -31,8 +31,20 @@
             <!--Current and Queued Tables column-->
             <div class="qa-left-panel">
                 <!------Current Deploys------------------------>
-                <h3 style="text-align:center; width:100%">Current Deploys</h3>
-                <br />
+                <div class="main-header">
+                    <h3>Current Deploys</h3>
+                </div>
+                <div class="filter-tab">
+                    Filter:
+                    <select id="timeFilter" 
+                            data-bind="options: $root.timeArray, 
+                                        optionsText: 'text', 
+                                        optionsValue: 'val',
+                                        value: $root.searchTime,
+                                        event: { change: $root.testTimeFilter }">
+                    </select>
+                    <button data-bind="click: $root.testTimeFilter">Check filter</button>
+                </div>
                 <div id="TableCurrent" style="overflow-x: auto">
                     <table class="table" id="CurrentDeploysTable" data-bind="visible: !loading()">
                         <thead>
@@ -47,14 +59,17 @@
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: currentDeploys().sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1 ) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })" class="table">
+                            <tr data-bind="template: {name: 'read-template-c-date', data: $data }" class="table"></tr>
                             <tr data-bind="template: {name: 'read-template-c', data: $data }" class="table table-on-hover"></tr>
                         </tbody>
                     </table>
                 </div>
 
                 <!------Queued Deploys------------------------->
-                <h3 class="text-center">Queued Deploys</h3>
-                <br />
+                <div class="main-header">
+                    <h3>Queued Deploys</h3>
+                </div>
+                <div class="filter-tab">Filter:</div>
                 <div id="TableQueue" style="overflow-x:auto">
                     <table class="table" id="DevTable" data-bind="visible: !loading()">
                         <thead>
@@ -75,14 +90,16 @@
                 </div>
             </div>
             <!--Smoke queue TAB-->
-            <div id="smokeTab" class="dev-smoke-panel-tab">
-                <button data-bind="click: toggleSmokeWindow" class="btn btn-sm btn-light" data-toggle="tooltip" data-placement="top" title="Expand/contract Smoke Queue panel">
+            <div id="smokeTab" class="smoke-panel-tab">
+                <button data-bind="click: toggleSmokeWindow" class="btn btn-sm btn-light">
                     <i id="smokeToggleButton" class="fa fa-angle-right" style="width:100%"></i>
                 </button>
             </div>
             <!--Smoke queue column-->
             <div id="smokeWindow" class="qa-smoke-panel">
-                <h3 style="text-align:center">Smoke Queue</h3>
+                <div class="smoke-panel-header main-header">
+                    <h3>Smoke Queue</h3>
+                </div>
                 <br />
                 <div>
                     <table class="table">
@@ -151,6 +168,10 @@
                                 "css-failed": depStatus() === "Failed",
                                 "css-completed": depStatus() === "Completed"}'></td>
         </script>
+        <!--Date Group Template-->
+        <script id="read-template-c-date" type="text/html">
+            <td data-bind="text: formattedDate" style="font-size: large; font-weight: 700"></td>
+        </script>
 
         <!-------QUEUED TABLE TEMPLATES--------->
         <!--Read Template----------------------->
@@ -167,12 +188,35 @@
         <!-------SMOKE TABLE TEMPLATES-->
         <script id="read-template-s" type="text/html">
             <td style="display:none" data-bind="text: depID"></td>
-            <td data-bind="text: depFeature, event: { click: $root.selectRecord}"></td>
-            <td data-bind="text: depVersion, event: { click: $root.selectRecord}"></td>
-            <td data-bind="text: depEnvironment, event: { click: $root.selectRecord}"></td>
-            <td data-bind="text: depSmoke, event: { click: $root.selectRecord}"></td>
-            <td>
-                <button class="btn btn-sm btn-primary">
+            <!--Feature field-->
+            <td data-bind="text: depFeature, 
+                            event: { click: $root.selectRecord},
+                            css: { 'css-smoke-pass': depSmoke() === 'Pass',
+                                    'css-smoke-conditional': depSmoke() === 'Conditional',
+                                    'css-smoke-fail': depSmoke() === 'Fail'}"></td>
+            <!--Version field-->
+            <td data-bind="text: depVersion,
+                            event: { click: $root.selectRecord},
+                            css: { 'css-smoke-pass': depSmoke() === 'Pass',
+                                    'css-smoke-conditional': depSmoke() === 'Conditional',
+                                    'css-smoke-fail': depSmoke() === 'Fail'}"></td>
+            <!--Environment field-->
+            <td data-bind="text: depEnvironment,
+                            event: { click: $root.selectRecord},
+                            css: { 'css-smoke-pass': depSmoke() === 'Pass',
+                                    'css-smoke-conditional': depSmoke() === 'Conditional',
+                                    'css-smoke-fail': depSmoke() === 'Fail'}"></td>
+            <!--Smoke field-->
+            <td data-bind="text: depSmoke,
+                            event: { click: $root.selectRecord},
+                            css: { 'css-smoke-pass': depSmoke() === 'Pass',
+                                    'css-smoke-conditional': depSmoke() === 'Conditional',
+                                    'css-smoke-fail': depSmoke() === 'Fail'}"></td>
+            <!--Button field-->
+            <td data-bind="css: { 'css-smoke-pass': depSmoke() === 'Pass',
+                                    'css-smoke-conditional': depSmoke() === 'Conditional',
+                                    'css-smoke-fail': depSmoke() === 'Fail'}">
+                <button class="btn btn-sm btn-primary" data-bind="click: $root.openModal">
                     <i class="fa fa-tasks"></i>
                     <span>Update Status</span>
                 </button>
@@ -208,14 +252,14 @@
             </div>
             <div id="mainContent" class="status-modal-body">
                 <p>
-                    <span>Change the status of </span>
+                    <span>Change the SMOKE status of </span>
                     <span id="spFeature" style="text-transform: uppercase; font-weight: bold"></span>
                     <span></span>
                     <span id="spVersion" style="text-transform: uppercase; font-weight: bold"></span>
                 </p>
                 <!--Status Drop-down-->
                 <select id="ctlmodalStatus"
-                        data-bind="options: $root.status, optionsText: 'tmpStatus', optionsValue: 'tmpStatus'"
+                        data-bind="options: $root.smoke, optionsText: 'tmpSmoke', optionsValue: 'tmpSmoke'"
                         onchange="checkStatus()"></select>
 
                 <!--depID Field-->
