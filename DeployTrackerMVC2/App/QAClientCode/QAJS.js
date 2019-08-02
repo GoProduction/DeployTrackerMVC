@@ -41,6 +41,14 @@ var DeployViewModel = function (deploySignalR) {
     self.timeArray = ko.observableArray([
         { text: 'Past 24 hours', val: '24' },
         { text: 'Past week', val: '168' }
+    ]); //Used for time filter
+    self.pageFilterArray = ko.observableArray([
+        { number: '25' },
+        { number: '20' },
+        { number: '15' },
+        { number: '10' },
+        { number: '5' }
+
     ]);
 
     //ObSERVABLES///////////////////////////////////////////////////////////
@@ -252,12 +260,13 @@ var DeployViewModel = function (deploySignalR) {
     }); // Queued Deploys table filter
     self.currentDeploys = ko.computed(function () {
         return ko.utils.arrayFilter(self.deploy(), function (rec) {
-            var date = rec.depStartTime();
-            var val = dateTimeDifference(date)
-            if (val <= self.searchTime()) {
-                return rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed'
-            }
+                var date = rec.depStartTime();
+                var val = dateTimeDifference(date)
             
+                if (val <= self.searchTime()) {
+                    return (rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed')
+                }
+
         });
     }); // Current Deploys table filter
     self.smokeDeploys = ko.computed(function () {
@@ -371,9 +380,9 @@ var DeployViewModel = function (deploySignalR) {
                             console.log("Ready state: ", msg.readyState);
                         }
                     });
-                    
+
                 }
-                
+
                 mainItem.depSmoke(ctl.value);
 
             }
@@ -423,11 +432,68 @@ var DeployViewModel = function (deploySignalR) {
         cancelComment();
     } //Submit new comment (in RECORD DETAILS modal)
 
+    //ANIMATIONS//////////////////////////////////////////////////////
+    self.showRow = function (elem) {
+        if (elem.nodeType === 1) $(elem).hide().slideDown()
+    };
+    self.hideRow = function (elem) {
+        if (elem.nodeType === 1) $(elem).slideUp(function () {
+            $(elem).remove();
+        });
+    };
+
+    //SORTING FUNCTIONS//////////////////////////////////////////////
+    self.sortByDate = function (deploy) {
+        deploy.sort(function (l, r) {
+            return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1)
+        });
+    };
+
+    //PAGINATE FUNCTIONS////////////////////////////////////////////
+    self.nbPerPage = ko.observable();
+    self.PagaData = ko.observableArray([]);
+    self.Paging = ko.observable(new PagingVM({
+        pageSize: self.nbPerPage(),
+        totalCount: self.currentDeploys().length,
+    }));
+    self.pageSizeSubscription = self.nbPerPage.subscribe(function (newPageSize) {
+        self.Paging().Update({ PageSize: newPageSize, TotalCount: self.currentDeploys().length, CurrentPage: self.Paging().CurrentPage() });
+        self.RenderAgain();
+    });
+    self.currentPageSubscription = self.Paging().CurrentPage.subscribe(function (newCurrentPage) {
+        self.RenderAgain();
+    });
+    self.RenderAgain = function () {
+        var result = [];
+        var startIndex = (self.Paging().CurrentPage() - 1) * self.Paging().PageSize();
+        var endIndex = self.Paging().CurrentPage() * self.Paging().PageSize();
+        //console.log("Start index: " + startIndex);
+        //console.log("End index: " + endIndex);
+        self.sortByDate(self.currentDeploys());
+        //self.currentDeploys().sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })
+        for (var i = startIndex; i < endIndex; i++) {
+            if (i < self.currentDeploys().length)
+                result.push(self.currentDeploys()[i]);
+        }
+        self.PagaData(result);
+        
+    }
+    self.dispose = function () {
+        self.currentPageSubscription.dispose();
+        self.pageSizeSubscription.dispose();
+    }
+
     //TEST FUNCTIONS////////
     self.testTimeFilter = function () {
         console.log(self.searchTime().toString());
     }
-}
+    self.testPaging = function () {
+        console.log("Filter is set to: " + self.nbPerPage().toString());
+        console.log("currentDeploys count is: " + self.currentDeploys().length);
+        console.log("PagaData is: " + self.PagaData().toString());
+    }
+    
+}; //Main viewmodel
 
 //SignalR Events
 $(function () {
@@ -456,13 +522,16 @@ $(function () {
         else if (viewModel.obsCheckEdit() == 0) {
             viewModel.updateViewModel();
             viewModel.updateViewModelComment();
+            viewModel.RenderAgain();
             notifyMe();
             console.log('Viewmodel updated');
         }
     } // Update all function, to be triggered when new batch of deploys are created
     deploySignalR.client.updateDeploy = function (id, key, value) {
         var deploy = findDeploy(id);
+        console.log("Deploy updated");
         deploy[key](value);
+        viewModel.RenderAgain();
 
     } // updateDeploy function, to be triggered through SignalR
     deploySignalR.client.updateComments = function () {
@@ -482,6 +551,7 @@ $(function () {
     //CONNECTION FUNCTIONS/////////////////////////////////////////
     $.connection.hub.start().done(function () {
         ko.applyBindings(viewModel, document.getElementById("BodyContent"));
+        viewModel.RenderAgain();
         console.log("Connected to SignalR hub");
         $(".loading-class").fadeOut("slow");
         if (smokeWindow.style.display == 'block') {

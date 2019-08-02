@@ -258,6 +258,7 @@
     <Content Include="App\NewDeployClientCode\NewDeployJS.js" />
     <Content Include="App\ModalStyles.css" />
     <Content Include="App\PageStyles.css" />
+    <Content Include="App\PagingMethod.js" />
     <Content Include="App\QAClientCode\QAJS.js" />
     <Content Include="App\TableStyles.css" />
     <Content Include="App\WeekViewStyles.css" />

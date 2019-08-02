@@ -177,7 +177,7 @@ var DeployViewModel = function (deploySignalR) {
         }
 
         else {
-
+            
             var payload = {};
             payload[key] = val;
             $.ajax({
@@ -186,6 +186,7 @@ var DeployViewModel = function (deploySignalR) {
                 data: JSON.stringify(payload),
                 contentType: 'application/json',
                 dataType: 'json'
+                
             });
         }
     }

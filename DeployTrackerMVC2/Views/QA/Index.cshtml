@@ -11,6 +11,7 @@
         <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
         <script src="~/signalr/hubs"></script>
         <script src="~/App/CustomBindings.js"></script>
+        <script src="~/App/PagingMethod.js"></script>
         <script src="~/App/QAClientCode/QAJS.js"></script>
         <link href="~/App/ButtonStyles.css" rel="stylesheet" />
         <link href="~/App/TableStyles.css" rel="stylesheet" />
@@ -34,22 +35,56 @@
                 <div class="main-header">
                     <h3>Current Deploys</h3>
                 </div>
+                <!------Filter--------------------------------->
                 <div class="filter-tab">
                     Filter:
-                    <select id="timeFilter" 
-                            data-bind="options: $root.timeArray, 
-                                        optionsText: 'text', 
+                    <select id="timeFilter"
+                            data-bind="options: $root.timeArray,
+                                        optionsText: 'text',
                                         optionsValue: 'val',
                                         value: $root.searchTime,
-                                        event: { change: $root.testTimeFilter }">
-                    </select>
-                    <button data-bind="click: $root.testTimeFilter">Check filter</button>
+                                        event: { change: $root.RenderAgain }"></select>
+                    <span>Total per page: </span>
+                    <select id="pageFilter" data-bind="options: $root.pageFilterArray,
+                                                        optionsText: 'number',
+                                                        optionsValue: 'number',
+                                                        value: $root.nbPerPage,
+                                                        event: { change: $root.RenderAgain }"></select>
+                    <button data-bind="event: {click: $root.testPaging}">Test Paging</button>
                 </div>
+                <!------Paginate------------------------------>
+                <div id="current-deploy-paginate" class="paginate-div">
+                    <!-- ko with:Paging()-->
+                    <ul data-bind="visible: NeedPaging" class="pagination pagination-sm">
+                        <li data-bind="css: { disabled: !FirstPageActive() }">
+                            <button class="btn btn-sm btn-light" data-bind="click: GoToFirst">First</button>
+                        </li>
+                        <li data-bind="css: { disabled: !PreviousPageActive() }">
+                            <button class="btn btn-sm btn-light" data-bind="click: GoToPrevious">Previous</button>
+                        </li>
+
+                        <!-- ko foreach: GetPages() -->
+                        <li data-bind="css: { active: $parent.CurrentPage() === $data }">
+                            <button class="btn btn-sm btn-toolbar btn-outline-info" style="font-weight:bold" data-bind="click: $parent.GoToPage, text: $data"></button>
+                        </li>
+                        <!-- /ko -->
+
+                        <li data-bind="css: { disabled: !NextPageActive() }">
+                            <button class="btn btn-sm btn-light" data-bind="click: GoToNext">Next</button>
+                        </li>
+                        <li data-bind="css: { disabled: !LastPageActive() }">
+                            <button class="btn btn-sm btn-light" data-bind="click: GoToLast">Last</button>
+                        </li>
+                    </ul>
+                    <!-- /ko -->
+                </div>
+                <!------Table--------------------------------->
                 <div id="TableCurrent" style="overflow-x: auto">
-                    <table class="table" id="CurrentDeploysTable" data-bind="visible: !loading()">
+                    <table class="table table-striped" id="CurrentDeploysTable">
                         <thead>
                             <tr>
                                 <th style="display:none">ID</th>
+                                <th>Date</th>
                                 <th>Feature</th>
                                 <th class="column3">Version</th>
                                 <th>Environment</th>
@@ -58,10 +93,58 @@
                                 <th class="column2">Status</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: currentDeploys().sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1 ) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })" class="table">
-                            <tr data-bind="template: {name: 'read-template-c-date', data: $data }" class="table"></tr>
-                            <tr data-bind="template: {name: 'read-template-c', data: $data }" class="table table-on-hover"></tr>
+
+                        <tbody data-bind="foreach: PagaData()" class="table">
+                            <tr class="table-on-hover">
+                                <!--ID field-->
+                                <td style="display:none" data-bind="text: depID"></td>
+                                <!--Date Field-->
+                                <td style="font-weight:bold" data-bind="text: formattedDate"></td>
+                                <!--Feature field-->
+                                <td data-bind="text: depFeature,
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-deploying': depStatus() === 'Deploying',
+                                                        'css-failed': depStatus() === 'Failed',
+                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                <!--Version field-->
+                                <td class="column3"
+                                    data-bind="text: depVersion,
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-deploying': depStatus() === 'Deploying',
+                                                        'css-failed': depStatus() === 'Failed',
+                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                <!--Environment field-->
+                                <td data-bind="text: depEnvironment,
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-deploying': depStatus() === 'Deploying',
+                                                        'css-failed': depStatus() === 'Failed',
+                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                <!--Start Time field-->
+                                <td class="column1"
+                                    data-bind="timeFormatted: depStartTime,
+                                                format: 'h:mm a',
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-deploying': depStatus() === 'Deploying',
+                                                        'css-failed': depStatus() === 'Failed',
+                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                <!--End Time field-->
+                                <td class="column1"
+                                    data-bind="timeFormatted: depEndTime,
+                                                format: 'h:mm a',
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-deploying': depStatus() === 'Deploying',
+                                                        'css-failed': depStatus() === 'Failed',
+                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                <!--Status field-->
+                                <td class="column2"
+                                    data-bind='text: depStatus,
+                                                event: { click: $root.selectRecord},
+                                                css: { "css-deploying": depStatus() === "Deploying",
+                                                        "css-failed": depStatus() === "Failed",
+                                                        "css-completed": depStatus() === "Completed"}'></td>
+                            </tr>
                         </tbody>
+
                     </table>
                 </div>
 
@@ -307,35 +390,35 @@
                                 <input id="ctlID" type="text" data-bind="value: selected().depID" disabled />
                             </div>
                             <div>
-                                <h5>Feature: </h5>
-                                <input id="ctlFeature" type="text" data-bind="value: selected().depFeature" disabled />
+                                <span class="record-label">Feature: </span>
+                                <span data-bind="text: selected().depFeature"></span>
                             </div>
                             <div>
-                                <h5>Version: </h5>
+                                <span class="record-label">Version: </span>
                                 <input id="ctlVersion" type="text" data-bind="value: selected().depVersion" disabled />
                             </div>
                             <div>
-                                <h5>Environment: </h5>
+                                <span class="record-label">Environment: </span>
                                 <input id="ctlEnvironment" type="text" data-bind="value: selected().depEnvironment" disabled />
                             </div>
                             <div>
-                                <h5>Planned Date: </h5>
+                                <span class="record-label">Planned Date: </span>
                                 <input id="ctlPlannedDate" type="text" data-bind="dateFormatted: selected().depPlannedDate, format: 'MMMM DD YYYY'" disabled />
                             </div>
                             <div>
-                                <h5>Planned Time: </h5>
+                                <span class="record-label">Planned Time: </span>
                                 <input id="ctlPlannedTime" type="text" data-bind="timeFormatted: selected().depPlannedTime, format: 'LT'" disabled />
                             </div>
                             <div>
-                                <h5>Start Time: </h5>
+                                <span class="record-label">Start Time: </span>
                                 <input id="ctlStartTime" type="text" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" disabled />
                             </div>
                             <div>
-                                <h5>End Time: </h5>
+                                <span class="record-label">End Time: </span>
                                 <input id="ctlEndTime" type="text" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" disabled />
                             </div>
                             <div>
-                                <h5>Status: </h5>
+                                <span class="record-label">Status: </span>
                                 <input id="ctlStatus" type="text" data-bind="value: selected().depStatus" disabled />
                             </div>
                         </div>

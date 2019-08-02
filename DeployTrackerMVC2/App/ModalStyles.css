@@ -104,6 +104,10 @@
 .record-modal-col{
     padding: 20px;
 }
+.record-label{
+    font-size: medium;
+    font-weight: bold;
+}
 
 /* Comments table styles*/
 .table-comments {

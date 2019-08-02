@@ -48,6 +48,19 @@ namespace DeployTrackerMVC2.Controllers
             return Ok(deploy);
             
         }
+
+        [HttpPatch]
+        [Route("{PatchDeploy}")]
+        public IHttpActionResult PatchDeploy ([FromBody] tblDeploy request)
+        {
+            var deploy = db.tblDeploys.FirstOrDefault(c => c.depID == request.depID);
+            if (deploy == null) return NotFound();
+            else
+            {
+                deploy.depEnvironment = request.depEnvironment;
+            }
+            return Ok();
+        }
         
         // PUT: api/DeployAPI/5
         [ResponseType(typeof(void))]

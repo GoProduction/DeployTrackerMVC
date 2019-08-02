@@ -20,6 +20,9 @@
     font-size: small;
     font-weight: 700;
 }
+.paginate-div{
+    padding-top: 6px;
+}
 .main-header{
     text-align: center;
     padding: 5px
