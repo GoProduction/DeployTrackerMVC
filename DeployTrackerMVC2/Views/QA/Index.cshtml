@@ -48,7 +48,7 @@
                     <select id="pageFilter" data-bind="options: $root.pageFilterArray,
                                                         optionsText: 'number',
                                                         optionsValue: 'number',
-                                                        value: $root.nbPerPage,
+                                                        value: $root.PageSize,
                                                         event: { change: $root.RenderAgain }"></select>
                     <button data-bind="event: {click: $root.testPaging}">Test Paging</button>
                 </div>
@@ -93,35 +93,35 @@
                                 <th class="column2">Status</th>
                             </tr>
                         </thead>
-
-                        <tbody data-bind="foreach: PagaData()" class="table">
+                        
+                        <tbody data-bind="foreach: $root.PagaData.sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })" class="table">
                             <tr class="table-on-hover">
                                 <!--ID field-->
-                                <td style="display:none" data-bind="text: depID"></td>
+                                <td style="display:none" data-bind="text: $data.depID"></td>
                                 <!--Date Field-->
-                                <td style="font-weight:bold" data-bind="text: formattedDate"></td>
+                                <td style="font-weight:bold" data-bind="text: $data.formattedDate"></td>
                                 <!--Feature field-->
-                                <td data-bind="text: depFeature,
+                                <td data-bind="text: $data.depFeature,
                                                 event: { click: $root.selectRecord},
                                                 css: { 'css-deploying': depStatus() === 'Deploying',
                                                         'css-failed': depStatus() === 'Failed',
                                                         'css-completed': depStatus() === 'Completed'}"></td>
                                 <!--Version field-->
                                 <td class="column3"
-                                    data-bind="text: depVersion,
+                                    data-bind="text: $data.depVersion,
                                                 event: { click: $root.selectRecord},
                                                 css: { 'css-deploying': depStatus() === 'Deploying',
                                                         'css-failed': depStatus() === 'Failed',
                                                         'css-completed': depStatus() === 'Completed'}"></td>
                                 <!--Environment field-->
-                                <td data-bind="text: depEnvironment,
+                                <td data-bind="text: $data.depEnvironment,
                                                 event: { click: $root.selectRecord},
                                                 css: { 'css-deploying': depStatus() === 'Deploying',
                                                         'css-failed': depStatus() === 'Failed',
                                                         'css-completed': depStatus() === 'Completed'}"></td>
                                 <!--Start Time field-->
                                 <td class="column1"
-                                    data-bind="timeFormatted: depStartTime,
+                                    data-bind="timeFormatted: $data.depStartTime,
                                                 format: 'h:mm a',
                                                 event: { click: $root.selectRecord},
                                                 css: { 'css-deploying': depStatus() === 'Deploying',
@@ -129,7 +129,7 @@
                                                         'css-completed': depStatus() === 'Completed'}"></td>
                                 <!--End Time field-->
                                 <td class="column1"
-                                    data-bind="timeFormatted: depEndTime,
+                                    data-bind="timeFormatted: $data.depEndTime,
                                                 format: 'h:mm a',
                                                 event: { click: $root.selectRecord},
                                                 css: { 'css-deploying': depStatus() === 'Deploying',
@@ -137,14 +137,14 @@
                                                         'css-completed': depStatus() === 'Completed'}"></td>
                                 <!--Status field-->
                                 <td class="column2"
-                                    data-bind='text: depStatus,
+                                    data-bind='text: $data.depStatus,
                                                 event: { click: $root.selectRecord},
                                                 css: { "css-deploying": depStatus() === "Deploying",
                                                         "css-failed": depStatus() === "Failed",
                                                         "css-completed": depStatus() === "Completed"}'></td>
                             </tr>
                         </tbody>
-
+                        
                     </table>
                 </div>
 
