@@ -33,6 +33,7 @@ namespace DeployTrackerMVC2.Models
         public Nullable<bool> depLocked { get; set; }
         public Nullable<int> noteID { get; set; }
         public string depSmoke { get; set; }
+        public Nullable<int> depTimeDiff { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<tblComment> tblComments { get; set; }

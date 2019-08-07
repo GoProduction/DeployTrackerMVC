@@ -36,13 +36,14 @@
                 </div>
                 <!------Filter--------------------------------->
                 <div data-bind="foreach: filter.filters">
-                    <div data-bind="if: Type == 'select'">
-                        <span style="font-weight:bold">Filter: </span>
+                    <p data-bind="if: Type == 'select'">
+                        <span style="font-weight:bold">Deploy Status: </span>
                         <select data-bind="options: Options, optionsText: 'Name', value: CurrentOption"></select>
-                    </div>
-                    <div data-bind="if: Type == 'select2'">
-                        <select data-bind="options: Options, optionsText: 'Name', value: CurrentTimeOption"></select>
-                    </div>
+                    </p>
+                    <p data-bind="if: Type == 'selectTime'">
+                        <span style="font-weight:bold">Time Since: </span>
+                        <select data-bind="options: Times, optionsText: 'Name', value: CurrentTimeOption"></select>
+                    </p>
                 </div>
                 <div style="display:none">
                     <span style="font-weight:bold">Sort By: </span>

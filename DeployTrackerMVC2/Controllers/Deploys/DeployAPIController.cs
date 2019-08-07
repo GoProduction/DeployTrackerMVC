@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -102,15 +103,15 @@ namespace DeployTrackerMVC2.Controllers
         public IHttpActionResult Post(tblDeploy deploy)
         {
 
-
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
+            
             db.tblDeploys.Add(deploy);
             deploy.depLocked = false;
-
+            
             db.SaveChanges();
 
             return CreatedAtRoute("DefaultApi", new { id = deploy.depID }, deploy);

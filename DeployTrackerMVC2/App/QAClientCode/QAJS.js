@@ -18,7 +18,7 @@ $(document).ready(function () {
 var DeployViewModel = function (deploySignalR) {
 
     var self = this;
-
+    ko.options.deferUpdates = true;
     //OBSERVABLE ARRAYS////////////////////////////////////////////////////////
     self.deploy = ko.observableArray(); // Deploy observable array that will be called through HTML
     self.feature = ko.observableArray(); // Feature observable array that will be used to populate feature drop-down
@@ -89,6 +89,7 @@ var DeployViewModel = function (deploySignalR) {
                         depStatus: ko.observable(deploy.depStatus),
                         depSmoke: ko.observable(deploy.depSmoke),
                         formattedDate: ko.observable(moment(new Date(deploy.depStartTime)).format('MMMM Do')),
+                        depTimeDiff: ko.observable(deploy.depTimeDiff),
                         Edit: ko.observable(false),
                         depLocked: ko.observable(deploy.depLocked)
 
@@ -208,14 +209,14 @@ var DeployViewModel = function (deploySignalR) {
                 depStatus: ko.observable(deploy.depStatus),
                 depSmoke: ko.observable(deploy.depSmoke),
                 formattedDate: ko.observable(moment(new Date(deploy.depStartTime)).format('MMMM Do')),
-                timeSpan: dateTimeDifference(deploy.depStartTime),
+                depTimeDiff: ko.observable(deploy.depTimeDiff),
                 Edit: ko.observable(false),
                 depLocked: ko.observable(deploy.depLocked)
 
             }
 
             self.watchModel(obsDeploy, self.modelChanged);
-            console.log(obsDeploy);
+            //console.log(obsDeploy);
             return obsDeploy;
         }));
         self.loading(false);
@@ -471,14 +472,14 @@ var DeployViewModel = function (deploySignalR) {
             RecordValue: function (record) { return record.depStatus(); }
         },
         {
-            Type: "select2",
-            Name: "timeSpan",
-            Options: [
-                GetOption("Last 24 hours", 24, 24),
-                GetOption("Last 7 days", 168, 168)
+            Type: "selectTime",
+            Name: "depTimeDiff",
+            Times: [
+                GetOption("Last 24 hours", "24", "24"),
+                GetOption("Last 7 days", "168", "168")
             ],
             CurrentTimeOption: ko.observable(),
-            RecordValue: function (record) { return record.timeSpan; }
+            RecordValue: function (record) { return record.depTimeDiff(); }
         }
     ];
     var sortOptions = [
@@ -631,6 +632,7 @@ function FilterModel(filters, records) {
         var activeFilters = [];
         for (var index = 0; index < filters.length; index++) {
             var filter = filters[index];
+            //For deploy status
             if (filter.CurrentOption) {
                 var filterOption = filter.CurrentOption();
                 var all = "All";
@@ -649,7 +651,7 @@ function FilterModel(filters, records) {
                     };
                     activeFilters.push(activeFilter);
                 }
-                else if (filterOption && filterOption.FilterValue != null) {
+                else if (filterOption && filterOption.FilterValue != all) {
                     console.log("Toggle option");
                     var activeFilter = {
                         Filter: filter,
@@ -667,6 +669,7 @@ function FilterModel(filters, records) {
                 }
 
             }
+            //For deploy time difference
             else if (filter.CurrentTimeOption) {
                 var filterOption = filter.CurrentTimeOption();
                 if (filterOption && filterOption.FilterValue != null) {
@@ -679,12 +682,13 @@ function FilterModel(filters, records) {
                                 return;
                             }
                             var recordValue = filter.RecordValue(record);
-                            return recordValue => filterOption.FilterValue;
+                            return recordValue >= filterOption.FilterValue;
                         }
                     }
                 };
                 activeFilters.push(activeFilter);
             }
+            //For entering string
             else if (filter.Value) {
                 var filterValue = filter.Value();
                 if (filterValue == "All") {
@@ -710,7 +714,7 @@ function FilterModel(filters, records) {
             }
 
         }
-
+        console.log(activeFilters);
         return activeFilters;
     });
     self.filteredRecords = ko.computed(function () {
@@ -739,7 +743,7 @@ function FilterModel(filters, records) {
         }
 
         return filteredRecords;
-    }).extend({ throttle: 200 });
+    });
 }
 
 //Fetches an observable array from the viewmodel
@@ -799,7 +803,6 @@ function SortArray(array, direction, comparison) {
 $(function () {
 
     var deploySignalR = $.connection.deploy;
-    ko.options.deferUpdates = true;
     var viewModel = new DeployViewModel(deploySignalR);
     var findDeploy = function (id) {
         return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
@@ -851,7 +854,7 @@ $(function () {
 
     //CONNECTION FUNCTIONS/////////////////////////////////////////
     $.connection.hub.start().done(function () {
-
+        ko.options.deferUpdates = true;
         ko.applyBindings(viewModel, document.getElementById("BodyContent"));
 
         console.log("Connected to SignalR hub");

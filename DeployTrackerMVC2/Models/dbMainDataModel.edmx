@@ -32,6 +32,7 @@
           <Property Name="depLocked" Type="bit" />
           <Property Name="noteID" Type="int" />
           <Property Name="depSmoke" Type="varchar" MaxLength="50" />
+          <Property Name="depTimeDiff" Type="int" StoreGeneratedPattern="Computed" />
         </EntityType>
         <EntityType Name="tblEnvironments">
           <Key>
@@ -130,6 +131,7 @@
           <Property Name="depSmoke" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="tblComments" Relationship="dbMainModel.comment_deploy_relationship" FromRole="tblDeploy" ToRole="tblComment" />
           <NavigationProperty Name="tblNote" Relationship="dbMainModel.note_deploy_relationship" FromRole="tblDeploy" ToRole="tblNote" />
+          <Property Name="depTimeDiff" Type="Int32" annotation:StoreGeneratedPattern="Computed" />
         </EntityType>
         <EntityType Name="tblEnvironment">
           <Key>
@@ -215,6 +217,7 @@
           <EntitySetMapping Name="tblDeploys">
             <EntityTypeMapping TypeName="dbMainModel.tblDeploy">
               <MappingFragment StoreEntitySet="tblDeploy">
+                <ScalarProperty Name="depTimeDiff" ColumnName="depTimeDiff" />
                 <ScalarProperty Name="depSmoke" ColumnName="depSmoke" />
                 <ScalarProperty Name="depID" ColumnName="depID" />
                 <ScalarProperty Name="depVID" ColumnName="depVID" />
