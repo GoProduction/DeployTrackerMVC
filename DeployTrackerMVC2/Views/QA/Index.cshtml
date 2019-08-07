@@ -35,21 +35,21 @@
                     <h3>Current Deploys</h3>
                 </div>
                 <!------Filter--------------------------------->
-                <div class="filter-tab">
-                    Filter:
-                    <select id="timeFilter"
-                            data-bind="options: $root.timeArray,
-                                        optionsText: 'text',
-                                        optionsValue: 'val',
-                                        value: $root.searchTime,
-                                        event: { change: $root.RenderAgain }"></select>
-                    <span>Total per page: </span>
-                    <select id="pageFilter" data-bind="options: $root.pageFilterArray,
-                                                        optionsText: 'number',
-                                                        optionsValue: 'number',
-                                                        value: $root.PageSize,
-                                                        event: { change: $root.RenderAgain }"></select>
-                    <button data-bind="event: {click: $root.testPaging}">Test Paging</button>
+                <div data-bind="foreach: filter.filters">
+                    <div data-bind="if: Type == 'select'">
+                        <span style="font-weight:bold">Filter: </span>
+                        <select data-bind="options: Options, optionsText: 'Name', value: CurrentOption"></select>
+                    </div>
+                    <div data-bind="if: Type == 'select2'">
+                        <select data-bind="options: Options, optionsText: 'Name', value: CurrentTimeOption"></select>
+                    </div>
+                </div>
+                <div style="display:none">
+                    <span style="font-weight:bold">Sort By: </span>
+                    <select data-bind="options: sorter.sortOptions, optionsText: 'Name', value: sorter.currentSortOption"></select>
+                    <span style="font-weight:bold">Direction: </span>
+                    <select data-bind="options: sorter.sortDirections, optionsText: 'Name', value: sorter.currentSortDirection"></select>
+
                 </div>
                 <!------Paginate------------------------------>
                 <div class="Pager" style="text-align:center"></div>
@@ -69,8 +69,8 @@
                                 <th class="column2">Status</th>
                             </tr>
                         </thead>
-                        
-                        <tbody data-bind="foreach: $root.PagaData.sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })" class="table">
+
+                        <tbody data-bind="foreach: pager.currentPageRecords" class="table">
                             <tr class="table-on-hover">
                                 <!--ID field-->
                                 <td style="display:none" data-bind="text: depID"></td>
@@ -248,7 +248,7 @@
         <script id="read-template-s" type="text/html">
             <td style="display:none" data-bind="text: depID"></td>
             <!--Feature field-->
-            <td data-bind="text: depFeature, 
+            <td data-bind="text: depFeature,
                             event: { click: $root.selectRecord},
                             css: { 'css-smoke-pass': depSmoke() === 'Pass',
                                     'css-smoke-conditional': depSmoke() === 'Conditional',

@@ -7,12 +7,12 @@ var selID = '';
 
 //Loading function
 $(window).on('load', function () {
-   
+
 });
 //Initialize the Bootstrap tooltip
 $(document).ready(function () {
     $('[data-toggle="tooltip"]').tooltip();
-    
+
 });
 
 var DeployViewModel = function (deploySignalR) {
@@ -40,7 +40,7 @@ var DeployViewModel = function (deploySignalR) {
     self.selected = ko.observableArray(self.deploy()[0]); //Determines if record is selected
     self.timeArray = ko.observableArray([
         { text: 'Past 24 hours', val: '24' },
-        { text: 'Past week', val: '168' }
+        { text: 'Past 7 days', val: '168' }
     ]); //Used for time filter
     self.pageFilterArray = ko.observableArray([
         { number: '25' },
@@ -262,12 +262,13 @@ var DeployViewModel = function (deploySignalR) {
     }); // Queued Deploys table filter
     self.currentDeploys = ko.computed(function () {
         return ko.utils.arrayFilter(self.deploy(), function (rec) {
-                var date = rec.depStartTime();
-                var val = dateTimeDifference(date)
-            
-                if (val <= self.searchTime()) {
-                    return (rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed')
-                }
+
+            var date = rec.depStartTime();
+            var val = dateTimeDifference(date)
+
+            if (val <= self.searchTime()) {
+                return (rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed')
+            };
 
         });
     }); // Current Deploys table filter
@@ -445,41 +446,53 @@ var DeployViewModel = function (deploySignalR) {
     };
 
     //SORTING FUNCTIONS//////////////////////////////////////////////
-    self.sortByDate = function (deploy) {
-        deploy.sort(function (l, r) {
-            return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1)
-        });
-    };
-
-    //PAGINATE FUNCTIONS////////////////////////////////////////////
-    self.nbPerPage = ko.observable();
-    self.PagaData = ko.observableArray([]);
-    self.Paging = ko.observable(new PagingVM({
-        pageSize: self.nbPerPage(),
-        totalCount: self.currentDeploys().length,
-    }));
-    self.pageSizeSubscription = self.nbPerPage.subscribe(function (newPageSize) {
-        self.Paging().Update({ PageSize: newPageSize, TotalCount: self.currentDeploys().length, CurrentPage: self.Paging().CurrentPage() });
-        self.RenderAgain();
-    });
-    self.currentPageSubscription = self.Paging().CurrentPage.subscribe(function (newCurrentPage) {
-        self.RenderAgain();
-    });
-    self.RenderAgain = function () {
-        var result = [];
-        var startIndex = (self.Paging().CurrentPage() - 1) * self.Paging().PageSize();
-        var endIndex = self.Paging().CurrentPage() * self.Paging().PageSize();
-        //console.log("Start index: " + startIndex);
-        //console.log("End index: " + endIndex);
-        self.sortByDate(self.currentDeploys());
-        //self.currentDeploys().sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })
-        for (var i = startIndex; i < endIndex; i++) {
-            if (i < self.currentDeploys().length)
-                result.push(self.currentDeploys()[i]);
+    self.sortByDate = function (...deploy) {
+        if (deploy != null) {
+            var value = deploy.sort(function (l, r) {
+                return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1)
+            });
+            return value;
         }
     };
 
-  
+    //PAGINATE AND SORTING FUNCTIONS FOR CURRENT DEPLOYS////////////////////////////////////////////
+
+    var filters = [
+        {
+            Type: "select",
+            Name: "depStatus",
+            Options: [
+                GetOption("All Current Deploys", "All", "All"),
+                GetOption("Deploying", "Deploying", "Deploying"),
+                GetOption("Completed", "Completed", "Completed"),
+                GetOption("Failed", "Failed", "Failed")
+            ],
+            CurrentOption: ko.observable(),
+            RecordValue: function (record) { return record.depStatus(); }
+        },
+        {
+            Type: "select2",
+            Name: "timeSpan",
+            Options: [
+                GetOption("Last 24 hours", 24, 24),
+                GetOption("Last 7 days", 168, 168)
+            ],
+            CurrentTimeOption: ko.observable(),
+            RecordValue: function (record) { return record.timeSpan; }
+        }
+    ];
+    var sortOptions = [
+        {
+            Name: "End Time",
+            Value: "depStartTime",
+            Sort: function (l, r) { return ((l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1)) }
+        }
+    ];
+
+    self.filter = new FilterModel(filters, self.deploy);
+    self.sorter = new SorterModel(sortOptions, self.filter.filteredRecords);
+    self.pager = new PagerModel(self.sorter.orderedRecords);
+
     //TEST FUNCTIONS////////
     self.testTimeFilter = function () {
         console.log(self.searchTime().toString());
@@ -489,7 +502,7 @@ var DeployViewModel = function (deploySignalR) {
         console.log("currentDeploys count is: " + self.currentDeploys().length);
         console.log("PagaData is: " + self.PagaData().toString());
     }
-    
+
 }; //Main viewmodel
 
 //Model for Pager
@@ -652,7 +665,7 @@ function FilterModel(filters, records) {
                     };
                     activeFilters.push(activeFilter);
                 }
-                
+
             }
             else if (filter.CurrentTimeOption) {
                 var filterOption = filter.CurrentTimeOption();
@@ -692,12 +705,12 @@ function FilterModel(filters, records) {
                     };
                     activeFilters.push(activeFilter);
                 }
-                
+
 
             }
-            
+
         }
-        
+
         return activeFilters;
     });
     self.filteredRecords = ko.computed(function () {
@@ -786,6 +799,7 @@ function SortArray(array, direction, comparison) {
 $(function () {
 
     var deploySignalR = $.connection.deploy;
+    ko.options.deferUpdates = true;
     var viewModel = new DeployViewModel(deploySignalR);
     var findDeploy = function (id) {
         return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
@@ -809,7 +823,7 @@ $(function () {
         else if (viewModel.obsCheckEdit() == 0) {
             viewModel.updateViewModel();
             viewModel.updateViewModelComment();
-            
+
             notifyMe();
             console.log('Viewmodel updated');
         }
@@ -818,7 +832,7 @@ $(function () {
         var deploy = findDeploy(id);
         console.log("Deploy updated");
         deploy[key](value);
-        viewModel.RenderAgain();
+
 
     } // updateDeploy function, to be triggered through SignalR
     deploySignalR.client.updateComments = function () {
@@ -837,8 +851,9 @@ $(function () {
 
     //CONNECTION FUNCTIONS/////////////////////////////////////////
     $.connection.hub.start().done(function () {
+
         ko.applyBindings(viewModel, document.getElementById("BodyContent"));
-        
+
         console.log("Connected to SignalR hub");
         $(".loading-class").fadeOut("slow");
         if (smokeWindow.style.display == 'block') {
@@ -1053,6 +1068,6 @@ String.prototype.trim = function () {
 function dateTimeDifference(date) {
     var now = new Date();
     var then = new Date(date);
-    var hours = Math.abs(now.valueOf() - then.valueOf())/3600000
+    var hours = Math.abs(now.valueOf() - then.valueOf()) / 3600000
     return hours;
 }
