@@ -456,7 +456,7 @@ $(function () {
         else if (viewModel.obsCheckEdit() == 0) {
             viewModel.updateViewModel();
             viewModel.updateViewModelComment();
-            notifyMe();
+            browserNotification();
             console.log('Viewmodel updated');
         }
     } // Update all function, to be triggered when new batch of deploys are created
@@ -582,7 +582,7 @@ function infoToast(msg, cont) {
     }
 }
 //Browser notification
-function notifyMe() {
+function browserNotification() {
     // Let's check if the browser supports notifications
     if (!("Notification" in window)) {
         alert("This browser does not support desktop notification");

@@ -386,6 +386,10 @@
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="Global.asax" />
     <Content Include="Images\loading.gif" />
+    <Content Include="Images\static_conditional.jpg" />
+    <Content Include="Images\static_fail.jpg" />
+    <Content Include="Images\static_loading.jpg" />
+    <Content Include="Images\static_pass.jpg" />
     <Content Include="Models\dbMainDataModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>dbMainDataModel.Context.cs</LastGenOutput>

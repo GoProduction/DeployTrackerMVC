@@ -276,7 +276,7 @@
             <td data-bind="css: { 'css-smoke-pass': depSmoke() === 'Pass',
                                     'css-smoke-conditional': depSmoke() === 'Conditional',
                                     'css-smoke-fail': depSmoke() === 'Fail'}">
-                <button class="btn btn-sm btn-primary" data-bind="click: $root.openModal">
+                <button class="btn btn-sm btn-primary" data-bind="click: $root.openStatusModal">
                     <i class="fa fa-tasks"></i>
                     <span>Update Status</span>
                 </button>
@@ -327,13 +327,6 @@
                 <!--ERROR status field-->
                 <span id="errorStatusModalChange" style="text-align: center; color: red; display: none;"></span>
 
-                <!--Smoke Drop-down-->
-                <div id="smoke-div" style="display:none" class="status-modal-body">
-                    <br />
-                    <span>Ready for smoke pass?</span>
-                    <br />
-                    <select id="ctlSmokeStatus" data-bind="options: $root.smoke, optionsText: 'tmpSmoke', optionsValue: 'tmpSmoke'"></select>
-                </div>
             </div>
             <!--Comment DIV(to become visible when status == 'Failed')-->
             <div id="commentBody" class="status-modal-comment" style="display: none">
@@ -350,12 +343,21 @@
     <div class="modal fade right" id="DetailsView" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h2 style="text-align: center">Deploy Details</h2>
-                    <!-- Button to close the overlay navigation -->
-                    <button type="button" class="close" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                <!--Main Header-->
+                <div class="record-modal-header" id="recordModalHeader">
+                    <div>
+                        <span data-bind="text: selected().depFeature"></span>
+                        <span data-bind="text: selected().depVersion"></span>
+                    </div>
+                    <div>
+                        <span>Deploy Status: </span>
+                        <span data-bind="text: selected().depStatus" class="status-text"></span>
+                    </div>
+                </div>
+                <!--Smoke Status Header-->
+                <div class="record-modal-header" id="smokeHeader">
+                    <span>Smoke Status: </span>
+                    <span data-bind="text: selected().depSmoke" class="status-text"></span>
                 </div>
                 <!-- Overlay content -->
                 <div class="modal-body">
@@ -363,8 +365,8 @@
                     <div class="row">
                         <div id="leftColumn" class="col record-modal-col">
                             <div>
-                                <h5>ID: </h5>
-                                <input id="ctlID" type="text" data-bind="value: selected().depID" disabled />
+                                <span class="record-label">ID: </span>
+                                <span id="ctlID" data-bind="text: selected().depID" />
                             </div>
                             <div>
                                 <span class="record-label">Feature: </span>
@@ -372,31 +374,31 @@
                             </div>
                             <div>
                                 <span class="record-label">Version: </span>
-                                <input id="ctlVersion" type="text" data-bind="value: selected().depVersion" disabled />
+                                <span id="ctlVersion" data-bind="text: selected().depVersion" />
                             </div>
                             <div>
                                 <span class="record-label">Environment: </span>
-                                <input id="ctlEnvironment" type="text" data-bind="value: selected().depEnvironment" disabled />
+                                <span id="ctlEnvironment" data-bind="text: selected().depEnvironment" />
                             </div>
                             <div>
                                 <span class="record-label">Planned Date: </span>
-                                <input id="ctlPlannedDate" type="text" data-bind="dateFormatted: selected().depPlannedDate, format: 'MMMM DD YYYY'" disabled />
+                                <span id="ctlPlannedDate" data-bind="dateFormatted: selected().depPlannedDate, format: 'MMMM DD YYYY'" />
                             </div>
                             <div>
                                 <span class="record-label">Planned Time: </span>
-                                <input id="ctlPlannedTime" type="text" data-bind="timeFormatted: selected().depPlannedTime, format: 'LT'" disabled />
+                                <span id="ctlPlannedTime" data-bind="timeFormatted: selected().depPlannedTime, format: 'LT'" />
                             </div>
                             <div>
                                 <span class="record-label">Start Time: </span>
-                                <input id="ctlStartTime" type="text" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" disabled />
+                                <span id="ctlStartTime" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" />
                             </div>
                             <div>
                                 <span class="record-label">End Time: </span>
-                                <input id="ctlEndTime" type="text" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" disabled />
+                                <span id="ctlEndTime" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" />
                             </div>
                             <div>
                                 <span class="record-label">Status: </span>
-                                <input id="ctlStatus" type="text" data-bind="value: selected().depStatus" disabled />
+                                <span id="ctlStatus" data-bind="text: selected().depStatus" />
                             </div>
                         </div>
                         <!--Comments column-->

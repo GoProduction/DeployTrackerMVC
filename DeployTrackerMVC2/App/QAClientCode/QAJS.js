@@ -71,6 +71,7 @@ var DeployViewModel = function (deploySignalR) {
         console.log("selID: ");
         console.log(selID);
         openNav();
+        checkModalStatus(data.depStatus(), data.depSmoke());
 
     }; // Run when record is selected, and open the record modal
     self.updateViewModel = function () {
@@ -285,13 +286,15 @@ var DeployViewModel = function (deploySignalR) {
     }); // Filters the comments section based on record selected
 
     ///MODAL FUNCTIONS/////////////////////////////////////////////////
-    self.openModal = function (deploy) {
+    self.openStatusModal = function (deploy) {
 
         var modal = document.getElementById("statusModal");
         var ctl = document.getElementById("ctlmodalStatus");
         var id = document.getElementById("ctlmodalID");
         var feature = document.getElementById("spFeature");
         var version = document.getElementById("spVersion");
+        var error = document.getElementById("errorStatusModalChange");
+        var comment = document.getElementById("commentBody");
 
         ctl.value = deploy.depSmoke();
         objstatus = deploy.depSmoke();
@@ -301,6 +304,7 @@ var DeployViewModel = function (deploySignalR) {
         version.innerText = deploy.depVersion();
 
         modal.style.display = "block";
+        toggleElementVisibility(error, comment);
         console.log('modal triggered');
 
         window.onclick = function (event) {
@@ -311,21 +315,19 @@ var DeployViewModel = function (deploySignalR) {
     } // Open Modal
     self.closeModal = function () {
         var error = document.getElementById("errorStatusModalChange");
-        var smokeDiv = document.getElementById("smoke-div");
+        var comment = document.getElementById("commentBody");
         $("#statusModal").fadeOut();
-        $("#commentBody").fadeOut();
-        error.style.display = "none";
-        smokeDiv.style.display = 'none';
+        toggleElementVisibility(error, comment);
 
     } // Close Modal
-    self.submitStatus = function () {
+    self.submitStatus = function (deploy) {
         var modal = document.getElementById("statusModal");
         var ctl = document.getElementById("ctlmodalStatus");
         var id = document.getElementById("ctlmodalID");
         var errorMsg = document.getElementById("errorStatusModalChange");
         var comment = document.getElementById("commentField");
-        var smokeField = document.getElementById("ctlSmokeStatus");
-        var selSmoke = smokeField.options[smokeField.selectedIndex].text;
+        var feature = document.getElementById("spFeature").innerText;
+        var icon = '';
 
         //Checks if status has NOT been changed
         if (objstatus == ctl.value) {
@@ -392,11 +394,37 @@ var DeployViewModel = function (deploySignalR) {
             }
 
         });
+        //Notification
+        //Icons
+        var pass = '/images/static_pass.jpg';
+        var fail = '/images/static_fail.jpg';
+        var conditional = '/images/static_conditional';
+        var ready = '/images/static_loading.jpg';
+        //Icon assignment
+        if (ctl.value == 'Pass') {
+            icon = pass;
+        }
+        else if (ctl.value == 'Conditional') {
+            icon = conditional;
+        }
+        else if (ctl.value == 'Fail') {
+            icon = fail;
+        }
+        else {
+            icon = ready;
+        }
+
+        var message = "User has updated " + feature + " to " + ctl.value;
+
+        deploySignalR.server.notification("Status", message, icon);
+
         $("#statusModal").fadeOut();
         errorMsg.style.display = "none";
         comment.style.display = "none";
         comment.value = "";
-        deploySignalR.server.updateAll();
+        //deploySignalR.server.updateAll();
+
+        
     } // Submit new status
     self.submitComment = function () {
         var commentField = document.getElementById("recordCommentField");
@@ -827,7 +855,7 @@ $(function () {
             viewModel.updateViewModel();
             viewModel.updateViewModelComment();
 
-            notifyMe();
+            browserNotification();
             console.log('Viewmodel updated');
         }
     } // Update all function, to be triggered when new batch of deploys are created
@@ -851,6 +879,35 @@ $(function () {
         deploy.depLocked(true);
 
     } // lockDeploy function, to be triggered when a user selects "edit"
+    deploySignalR.client.browserNotification = function (type, message, icon) {
+        // Let's check if the browser supports notifications
+        if (!("Notification" in window)) {
+            alert("This browser does not support desktop notification");
+        }
+
+        // Let's check whether notification permissions have already been granted
+        else if (Notification.permission === "granted") {
+            // If it's okay let's create a notification
+            var options = {
+                body: message,
+                icon: icon
+            };
+            var notification = new Notification(type, options);
+        }
+
+        // Otherwise, we need to ask the user for permission
+        else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(function (permission) {
+                // If the user accepts, let's create a notification
+                if (permission === "granted") {
+                    var notification = new Notification("Hi there!");
+                }
+            });
+        }
+
+    // At last, if the user has denied notifications, and you 
+    // want to be respectful there is no need to bother them any more.
+    }
 
     //CONNECTION FUNCTIONS/////////////////////////////////////////
     $.connection.hub.start().done(function () {
@@ -885,31 +942,43 @@ function openNav() {
 
     $("#DetailsView").modal("show");
 }
-//Updates the paginate function (work in progress)
-function updateCurrentPaginate() {
-
-    $('#CurrentDeploysTable').after('<div id="nav"></div>');
-    var rowsShown = 4;
-    var rowsTotal = $('#CurrentDeploysTable tbody tr').length;
-    var numPages = rowsTotal / rowsShown;
-    for (i = 0; i < numPages; i++) {
-        var pageNum = i + 1;
-        $('#nav').append('<a href="#" rel="' + i + '">' + pageNum + '</a> ');
+//Checks the status and adjusts the header color
+function checkModalStatus (status, smoke) {
+    var mainHeader = document.getElementById("recordModalHeader");
+    var smokeHeader = document.getElementById("smokeHeader");
+    //Status logic
+    if (status === 'Deploying') {
+        mainHeader.style.backgroundColor = "rgba(255, 255, 0, .5)";
     }
-    $('#CurrentDeploysTable tbody tr').hide();
-    $('#CurrentDeploysTable tbody tr').slice(0, rowsShown).show();
-    $('#nav a:first').addClass('active');
-    $('#nav a').bind('click', function () {
+    else if (status === 'Completed') {
+        mainHeader.style.backgroundColor = "rgba(0, 255, 33, .5)";
+    }
+    else if (status === 'Failed') {
+        mainHeader.style.backgroundColor = "rgba(255, 0, 0, .5)";
+    }
+    else if (status === 'Queued') {
+        mainHeader.style.backgroundColor = "white";
+    }
 
-        $('#nav a').removeClass('active');
-        $(this).addClass('active');
-        var currPage = $(this).attr('rel');
-        var startItem = currPage * rowsShown;
-        var endItem = startItem + rowsShown;
-        $('#CurrentDeploysTable tbody tr').css('opacity', '0.0').hide().slice(startItem, endItem).
-            css('display', 'table-row').animate({ opacity: 1 }, 300);
-    });
-};
+    //Smoke logic
+    if (smoke === "Pass") {
+        smokeHeader.style.backgroundColor = "rgba(0, 255, 33, .5)";
+    }
+    else if (smoke === "Conditional") {
+        smokeHeader.style.backgroundColor = "rgba(255, 255, 0, .5)";
+    }
+    else if (smoke === "Fail") {
+        smokeHeader.style.backgroundColor = "rgba(255, 0, 0, .5)"
+    }
+    else {
+        smokeHeader.style.backgroundColor = "white";
+    }
+}
+//Checks visibility of modal elements and makes them not visible
+function toggleElementVisibility(elm1, elm2) {
+    elm1.style.display = "none";
+    elm2.style.display = "none";
+}
 //Error toast
 function errorToast(err) {
     toastr.error(err, 'Error:');
@@ -961,32 +1030,7 @@ function infoToast(msg, cont) {
         "hideMethod": "fadeOut"
     }
 }
-//Browser notification
-function notifyMe() {
-    // Let's check if the browser supports notifications
-    if (!("Notification" in window)) {
-        alert("This browser does not support desktop notification");
-    }
 
-    // Let's check whether notification permissions have already been granted
-    else if (Notification.permission === "granted") {
-        // If it's okay let's create a notification
-        var notification = new Notification("Hi there!");
-    }
-
-    // Otherwise, we need to ask the user for permission
-    else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(function (permission) {
-            // If the user accepts, let's create a notification
-            if (permission === "granted") {
-                var notification = new Notification("Hi there!");
-            }
-        });
-    }
-
-    // At last, if the user has denied notifications, and you 
-    // want to be respectful there is no need to bother them any more.
-}
 //Returns today's date
 function dateNow() {
     var now = new Date();

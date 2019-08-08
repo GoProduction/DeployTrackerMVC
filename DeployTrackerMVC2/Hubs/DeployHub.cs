@@ -78,5 +78,14 @@ namespace DeployTrackerMVC2.Hubs
         {
             Clients.All.updateComments();
         }
+
+        public void Notification(string type, string message, string icon)
+        {
+            if(type == "Status")
+            {
+                Clients.Others.browserNotification("Status Update", message, icon);
+            }
+            
+        }
     }
 }

@@ -108,6 +108,17 @@
     font-size: medium;
     font-weight: bold;
 }
+.record-modal-header {
+    text-align: left;
+    font-size: larger;
+    font-weight: 500;
+    padding: 1rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+.record-modal-header .status-text{
+    
+    font-weight: bold;
+}
 
 /* Comments table styles*/
 .table-comments {
