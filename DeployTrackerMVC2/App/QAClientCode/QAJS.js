@@ -89,7 +89,6 @@ var DeployViewModel = function (deploySignalR) {
                         depEndTime: ko.observable(deploy.depEndTime),
                         depStatus: ko.observable(deploy.depStatus),
                         depSmoke: ko.observable(deploy.depSmoke),
-                        formattedDate: ko.observable(moment(new Date(deploy.depStartTime)).format('MMMM Do')),
                         depTimeDiff: ko.observable(deploy.depTimeDiff),
                         Edit: ko.observable(false),
                         depLocked: ko.observable(deploy.depLocked)
@@ -209,7 +208,7 @@ var DeployViewModel = function (deploySignalR) {
                 depEndTime: ko.observable(deploy.depEndTime),
                 depStatus: ko.observable(deploy.depStatus),
                 depSmoke: ko.observable(deploy.depSmoke),
-                formattedDate: ko.observable(moment(new Date(deploy.depStartTime)).format('MMMM Do')),
+                //formattedDate: ko.observable(moment(new Date(deploy.depStartTime)).format('MMMM Do')),
                 depTimeDiff: ko.observable(deploy.depTimeDiff),
                 Edit: ko.observable(false),
                 depLocked: ko.observable(deploy.depLocked)
@@ -416,7 +415,7 @@ var DeployViewModel = function (deploySignalR) {
 
         var message = "User has updated " + feature + " to " + ctl.value;
 
-        deploySignalR.server.notification("Status", message, icon);
+        deploySignalR.server.notification("Smoke", message, icon);
 
         $("#statusModal").fadeOut();
         errorMsg.style.display = "none";
@@ -605,20 +604,21 @@ function PagerModel(records) {
         self.currentPageIndex(0);
     };
     self.renderPagers = function () {
+        
         var pager = "<div><button class=\"btn btn-light btn-sm\" data-bind=\"click: pager.moveFirst, enable: pager.currentPageIndex() > 0\">&lt;&lt;</button>" +
             "<button class=\"btn btn-light btn-sm\" data-bind=\"click: pager.movePrevious, enable: pager.currentPageIndex() > 0\">&lt;</button>" +
             "Page <span data-bind=\"text: pager.currentPageIndex() + 1\"></span> of <span data-bind=\"text: pager.maxPageIndex() + 1\"></span> " +
             "[<span data-bind=\"text: pager.recordCount\"></span>" +
             "Record(s)]<select data-bind=\"options: pager.pageSizeOptions, value: pager.currentPageSize, event: { change: pager.onPageSizeChange }\"></select>" +
-            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: pager.moveNext, enable: pager.currentPageIndex() < pager.maxPageIndex()\">&gt;</a>" +
-            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: pager.moveLast, enable: pager.currentPageIndex() < pager.maxPageIndex()\">&gt;&gt;</a></div>";
-        $("div.Pager").html(pager);
+            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: pager.moveNext, enable: pager.currentPageIndex() < pager.maxPageIndex()\">&gt;</button>" +
+            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: pager.moveLast, enable: pager.currentPageIndex() < pager.maxPageIndex()\">&gt;&gt;</button></div>";
+        $('#currentPager').append(pager);
     };
     self.renderNoRecords = function () {
+        
         var message = "<span data-bind=\"visible: pager.recordCount() == 0\">No records found.</span>";
-        $("div.NoRecords").html(message);
+        $('#currentPager').append(message);
     };
-
     self.renderPagers();
     self.renderNoRecords();
 }
@@ -831,7 +831,7 @@ function SortArray(array, direction, comparison) {
 $(function () {
 
     var deploySignalR = $.connection.deploy;
-    var viewModel = new DeployViewModel(deploySignalR);
+    var viewModel;
     var findDeploy = function (id) {
         return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
             if (item.depID == id) {
@@ -890,7 +890,8 @@ $(function () {
             // If it's okay let's create a notification
             var options = {
                 body: message,
-                icon: icon
+                icon: icon,
+                color: "#000000"
             };
             var notification = new Notification(type, options);
         }
@@ -912,6 +913,7 @@ $(function () {
     //CONNECTION FUNCTIONS/////////////////////////////////////////
     $.connection.hub.start().done(function () {
         ko.options.deferUpdates = true;
+        viewModel = new DeployViewModel(deploySignalR);
         ko.applyBindings(viewModel, document.getElementById("BodyContent"));
 
         console.log("Connected to SignalR hub");

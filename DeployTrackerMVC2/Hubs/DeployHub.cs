@@ -83,7 +83,11 @@ namespace DeployTrackerMVC2.Hubs
         {
             if(type == "Status")
             {
-                Clients.Others.browserNotification("Status Update", message, icon);
+                Clients.Others.browserNotification(DateTime.Now.ToString("hh:mm tt") + " || " + "A DEPLOY status has been updated...", message, icon);
+            }
+            else if(type == "Smoke")
+            {
+                Clients.Others.browserNotification("A SMOKE status has been updated...", message, icon);
             }
             
         }

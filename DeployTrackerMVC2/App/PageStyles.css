@@ -14,7 +14,34 @@
     z-index: 9999;
     background: url('../Images/loading.gif') center no-repeat #fff;
 }
+/*Filter Tab properties*/
+.filter-container{
+    width: 100%;
+    background: rgba(183, 183, 183, 0.2);
+    box-shadow: 3px 3px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+    padding: .5em;
+    
+}
+.filter-first{
+    float: left;
+    padding-right: 10px;
+}
+.filter-second{
+    
+    float: left;
+    padding-right: 10px;
+}
+.filter-third{
+    float: left;
+}
+.pager-style{
+    padding-top: 10px;
+    text-align: center;
+}
 
+
+/*
 .filter-tab{
     text-align: left;
     font-size: small;
@@ -23,6 +50,7 @@
 .paginate-div{
     padding-top: 6px;
 }
+*/
 .main-header{
     text-align: center;
     padding: 5px
@@ -83,6 +111,7 @@
 
 /*QA page styles*/
 .qa-left-panel {
+    padding-right: 10px;
     float: left;
     width: 50%;
     flex: 50%;

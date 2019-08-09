@@ -35,26 +35,31 @@
                     <h3>Current Deploys</h3>
                 </div>
                 <!------Filter--------------------------------->
-                <div data-bind="foreach: filter.filters">
-                    <p data-bind="if: Type == 'select'">
-                        <span style="font-weight:bold">Deploy Status: </span>
-                        <select data-bind="options: Options, optionsText: 'Name', value: CurrentOption"></select>
-                    </p>
-                    <p data-bind="if: Type == 'selectTime'">
-                        <span style="font-weight:bold">Time Since: </span>
-                        <select data-bind="options: Times, optionsText: 'Name', value: CurrentTimeOption"></select>
-                    </p>
+                <div class="filter-container" style="text-align: left">
+                    <div class="filter-first" data-bind="foreach: filter.filters">
+                        <div data-bind="if: Type == 'select'" style="text-align:left">
+                            <span>Deploy Status: </span>
+                            <select data-bind="options: Options, optionsText: 'Name', value: CurrentOption"></select>
+                        </div>
+                    </div>
+                    <div class="filter-second" data-bind="foreach: filter.filters">
+                        <div data-bind="if: Type == 'selectTime'">
+                            <span>Timespan: </span>
+                            <select data-bind="options: Times, optionsText: 'Name', value: CurrentTimeOption"></select>
+                        </div>
+                    </div>
+                    <div style="display:none">
+                        <span style="font-weight:bold">Sort By: </span>
+                        <select data-bind="options: sorter.sortOptions, optionsText: 'Name', value: sorter.currentSortOption"></select>
+                        <span style="font-weight:bold">Direction: </span>
+                        <select data-bind="options: sorter.sortDirections, optionsText: 'Name', value: sorter.currentSortDirection"></select>
+                    </div>
+                    <div class="filter-third">
+                        <span>Contains: </span>
+                        <input style="height: 25px" />
+                    </div>
                 </div>
-                <div style="display:none">
-                    <span style="font-weight:bold">Sort By: </span>
-                    <select data-bind="options: sorter.sortOptions, optionsText: 'Name', value: sorter.currentSortOption"></select>
-                    <span style="font-weight:bold">Direction: </span>
-                    <select data-bind="options: sorter.sortDirections, optionsText: 'Name', value: sorter.currentSortDirection"></select>
-
-                </div>
-                <!------Paginate------------------------------>
-                <div class="Pager" style="text-align:center"></div>
-
+                <div class="pager-style" id="currentPager"></div>
                 <!------Table--------------------------------->
                 <div id="TableCurrent" style="overflow-x: auto">
                     <table class="table table-striped" id="CurrentDeploysTable">
@@ -76,7 +81,9 @@
                                 <!--ID field-->
                                 <td style="display:none" data-bind="text: depID"></td>
                                 <!--Date Field-->
-                                <td style="font-weight:bold" data-bind="text: formattedDate"></td>
+                                <td style="font-weight:bold"
+                                    data-bind="dateFormatted: depStartTime,
+                                               format: 'MMMM Do'"></td>
                                 <!--Feature field-->
                                 <td data-bind="text: depFeature,
                                                 event: { click: $root.selectRecord},
@@ -129,7 +136,6 @@
                 <div class="main-header">
                     <h3>Queued Deploys</h3>
                 </div>
-                <div class="filter-tab">Filter:</div>
                 <div id="TableQueue" style="overflow-x:auto">
                     <table class="table" id="DevTable" data-bind="visible: !loading()">
                         <thead>
@@ -180,6 +186,7 @@
                 </div>
             </div>
         </div>
+        
         <!-------CURRENT TABLE TEMPLATES-------->
         <!--Read Template----------------------->
         <script id="read-template-c" type="text/html">
@@ -228,11 +235,7 @@
                                 "css-failed": depStatus() === "Failed",
                                 "css-completed": depStatus() === "Completed"}'></td>
         </script>
-        <!--Date Group Template-->
-        <script id="read-template-c-date" type="text/html">
-            <td data-bind="text: formattedDate" style="font-size: large; font-weight: 700"></td>
-        </script>
-
+        
         <!-------QUEUED TABLE TEMPLATES--------->
         <!--Read Template----------------------->
         <script id="read-template-q" type="text/html">

@@ -313,6 +313,8 @@ var DeployViewModel = function (deploySignalR) {
         var comment = document.getElementById("commentField");
         var smokeField = document.getElementById("ctlSmokeStatus");
         var selSmoke = smokeField.options[smokeField.selectedIndex].text;
+        var feature = document.getElementById("spFeature").innerText;
+        var version = document.getElementById("spVersion").innerText;
 
         //Checks if status has NOT been changed
         if (objstatus == ctl.value) {
@@ -385,6 +387,26 @@ var DeployViewModel = function (deploySignalR) {
             }
 
         });
+        //Notification
+        //Icons
+        var complete = '/images/static_pass.jpg';
+        var fail = '/images/static_fail.jpg';
+        var ready = '/images/static_loading.jpg';
+        //Icon assignment
+        if (ctl.value == 'Completed') {
+            icon = complete;
+        }
+        else if (ctl.value == 'Failed') {
+            icon = fail;
+        }
+        else {
+            icon = ready;
+        }
+
+        var message = "User has updated " + feature + " " + version + " to " + ctl.value;
+
+        deploySignalR.server.notification("Status", message, icon);
+
         $("#statusModal").fadeOut();
         errorMsg.style.display = "none";
         comment.style.display = "none";
@@ -474,6 +496,36 @@ $(function () {
         deploy.depLocked(true);
 
     } // lockDeploy function, to be triggered when a user selects "edit"
+    deploySignalR.client.browserNotification = function (type, message, icon) {
+        // Let's check if the browser supports notifications
+        if (!("Notification" in window)) {
+            alert("This browser does not support desktop notification");
+        }
+
+        // Let's check whether notification permissions have already been granted
+        else if (Notification.permission === "granted") {
+            // If it's okay let's create a notification
+            var options = {
+                body: message,
+                icon: icon,
+                color: "#000000"
+            };
+            var notification = new Notification(type, options);
+        }
+
+        // Otherwise, we need to ask the user for permission
+        else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(function (permission) {
+                // If the user accepts, let's create a notification
+                if (permission === "granted") {
+                    var notification = new Notification("Hi there!");
+                }
+            });
+        }
+
+        // At last, if the user has denied notifications, and you 
+        // want to be respectful there is no need to bother them any more.
+    } //Fires when triggered from other client
 
     //CONNECTION FUNCTIONS/////////////////////////////////////////
     $.connection.hub.start().done(function () {
