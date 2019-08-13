@@ -87,7 +87,7 @@ namespace DeployTrackerMVC2.Hubs
             }
             else if(type == "Smoke")
             {
-                Clients.Others.browserNotification("A SMOKE status has been updated...", message, icon);
+                Clients.Others.browserNotification(DateTime.Now.ToString("hh:mm tt") + " || " + "A SMOKE status has been updated...", message, icon);
             }
             
         }

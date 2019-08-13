@@ -25,22 +25,25 @@
 }
 .filter-first{
     float: left;
-    padding-right: 10px;
+    padding: 7px;
 }
 .filter-second{
     
     float: left;
-    padding-right: 10px;
+    padding: 7px;
 }
 .filter-third{
     float: left;
+    padding: 7px;
 }
 .pager-style{
     padding-top: 10px;
     text-align: center;
 }
 
-
+.divider{
+    border-bottom: 2px solid black;
+}
 /*
 .filter-tab{
     text-align: left;

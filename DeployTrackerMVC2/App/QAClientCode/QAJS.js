@@ -5,20 +5,25 @@ var smokeButton = document.getElementById("smokeToggleButton");
 var objstatus = '';
 var selID = '';
 
+//Cache variables
+var curTypeCached = localStorage['curTypeCached'] || 'All';
+
+
+
 //Loading function
 $(window).on('load', function () {
-
+    
 });
 //Initialize the Bootstrap tooltip
 $(document).ready(function () {
+    
     $('[data-toggle="tooltip"]').tooltip();
 
 });
 
 var DeployViewModel = function (deploySignalR) {
-
     var self = this;
-    ko.options.deferUpdates = true;
+
     //OBSERVABLE ARRAYS////////////////////////////////////////////////////////
     self.deploy = ko.observableArray(); // Deploy observable array that will be called through HTML
     self.feature = ko.observableArray(); // Feature observable array that will be used to populate feature drop-down
@@ -482,20 +487,37 @@ var DeployViewModel = function (deploySignalR) {
             return value;
         }
     };
+    //CACHING FUNCTIONS
+    self.cacheCurrentType = function () {
+        var ctl = document.getElementById("ctlCurrentType");
+        var sel = ctl.options[ctl.selectedIndex];
+        if (ctl.selectedIndex == 0) {
+            localStorage['curTypeCached'] = 'All';
+        }
+        else {
+            localStorage['curTypeCached'] = sel.text;
+        }
 
-    //PAGINATE AND SORTING FUNCTIONS FOR CURRENT DEPLOYS////////////////////////////////////////////
-
-    var filters = [
+        curTypeCached = localStorage['curTypeCached'];
+        console.log(curTypeCached);
+    }
+    self.loadCurrentType = function (option, item) {
+        ko.applyBindingsToNode(option.parentElement, { Name: curTypeCached.toString(), Value: curTypeCached.toString(), FilterValue: curTypeCached.toString() }, item);
+        console.log("Current type loaded");
+    }
+    //FILTER ARRAYS FOR TABLES
+    var currentFilters = [
         {
             Type: "select",
             Name: "depStatus",
             Options: [
-                GetOption("All Current Deploys", "All", "All"),
-                GetOption("Deploying", "Deploying", "Deploying"),
-                GetOption("Completed", "Completed", "Completed"),
-                GetOption("Failed", "Failed", "Failed")
+                { Name: "All Current Deploys", Value: "All", FilterValue: "All"},
+                { Name: "Deploying", Value: "Deploying", FilterValue: "Deploying"},
+                { Name: "Completed", Value: "Completed", FilterValue: "Completed"},
+                { Name: "Failed", Value: "Failed", FilterValue: "Failed"}
             ],
-            CurrentOption: ko.observable(),
+            //CurrentOption: ko.observable(),
+            CurrentOption: curTypeCached,
             RecordValue: function (record) { return record.depStatus(); }
         },
         {
@@ -509,6 +531,34 @@ var DeployViewModel = function (deploySignalR) {
             RecordValue: function (record) { return record.depTimeDiff(); }
         }
     ];
+    var smokeFilters = [
+        {
+
+            Type: "selectSmoke",
+            Name: "depSmoke",
+            Options: [
+                GetOption("All Queued Smokes", "All", "All"),
+                GetOption("Ready", "Ready", "Ready"),
+                GetOption("Pass", "Pass", "Pass"),
+                GetOption("Conditional", "Conditional", "Conditional"),
+                GetOption("Fail", "Fail", "Fail")
+            ],
+            CurrentOption: ko.observable(),
+            RecordValue: function (record) { return record.depSmoke(); }
+        },
+        {
+
+            Type: "selectTime",
+            Name: "depTimeDiff",
+            Times: [
+                GetOption("Last 24 hours", "24", "24"),
+                GetOption("Last 7 days", "168", "168")
+            ],
+            CurrentTimeOption: ko.observable(),
+            RecordValue: function (record) { return record.depTimeDiff(); }
+
+        }
+    ]
     var sortOptions = [
         {
             Name: "End Time",
@@ -516,11 +566,26 @@ var DeployViewModel = function (deploySignalR) {
             Sort: function (l, r) { return ((l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1)) }
         }
     ];
+    //PAGER AND SORTER MODELS//////////////
+    
+    //PAGINATE AND SORTING FUNCTIONS FOR CURRENT DEPLOYS////////////////////////////////////////////
+    //Current Deploy observables for filtering, sorting, and paging
+    self.currentFilter = new FilterModelCurrent(currentFilters, self.deploy);
+    console.log("Current Filter has been created");
+    self.currentSorter = new SorterModelCurrent(sortOptions, self.currentFilter.filteredRecords);
+    console.log("Current Sorter has been created");
+    self.currentPager = new PagerModelCurrent(self.currentSorter.orderedRecords);
+    console.log("Current Pager has been created");
 
-    self.filter = new FilterModel(filters, self.deploy);
-    self.sorter = new SorterModel(sortOptions, self.filter.filteredRecords);
-    self.pager = new PagerModel(self.sorter.orderedRecords);
+    //Smoke Deploy observables for filtering, sorting, and paging
+    self.smokeFilter = new FilterModelSmoke(smokeFilters, self.deploy);
+    console.log("Smoke Filter has been created");
+    self.smokeSorter = new SorterModelSmoke(sortOptions, self.smokeFilter.filteredRecords);
+    console.log("Smoke Sorter has been created");
+    self.smokePager = new PagerModelSmoke(self.smokeSorter.orderedRecords);
+    console.log("Smoke Pager has been created");
 
+    
     //TEST FUNCTIONS////////
     self.testTimeFilter = function () {
         console.log(self.searchTime().toString());
@@ -531,10 +596,122 @@ var DeployViewModel = function (deploySignalR) {
         console.log("PagaData is: " + self.PagaData().toString());
     }
 
+    console.log("Current type is: " + curTypeCached);
 }; //Main viewmodel
 
-//Model for Pager
-function PagerModel(records) {
+
+//SignalR Events
+$(function () {
+    
+    var deploySignalR = $.connection.deploy;
+    var viewModel = new DeployViewModel(deploySignalR);
+    ko.applyBindings(viewModel, document.getElementById("BodyContent"));
+    
+    var findDeploy = function (id) {
+        return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
+            if (item.depID == id) {
+                return item;
+            }
+        });
+    } // Helper function that iterates over each record within the ViewModel, and finds and returns the ID that matches
+
+    //SIGNALR FUNCTIONS//////////////////////////////////////////////
+    deploySignalR.client.updateAll = function () {
+
+        console.log(viewModel.obsCheckEdit());
+
+        //Warning toast triggered if client is engaged in editing a row
+        if (viewModel.obsCheckEdit() >= 1) {
+            var msg = "You are currently editing a record. Changes have been made to other records. Please refresh your browser when you are finished.";
+            var cont = "Changes have been made...";
+            infoToast(msg, cont);
+        }
+        else if (viewModel.obsCheckEdit() == 0) {
+            viewModel.updateViewModel();
+            viewModel.updateViewModelComment();
+
+            browserNotification();
+            console.log('Viewmodel updated');
+        }
+    } // Update all function, to be triggered when new batch of deploys are created
+    deploySignalR.client.updateDeploy = function (id, key, value) {
+        var deploy = findDeploy(id);
+        console.log("Deploy updated");
+        deploy[key](value);
+
+
+    } // updateDeploy function, to be triggered through SignalR
+    deploySignalR.client.updateComments = function () {
+        viewModel.updateViewModelComment();
+        console.log("New comment submitted...");
+    }
+    deploySignalR.client.unlockDeploy = function (id) {
+        var deploy = findDeploy(id);
+        deploy.depLocked(false);
+    } // unlockDeploy function, to be triggered when user selects "done"
+    deploySignalR.client.lockDeploy = function (id) {
+        var deploy = findDeploy(id);
+        deploy.depLocked(true);
+
+    } // lockDeploy function, to be triggered when a user selects "edit"
+    deploySignalR.client.browserNotification = function (type, message, icon) {
+        // Let's check if the browser supports notifications
+        if (!("Notification" in window)) {
+            alert("This browser does not support desktop notification");
+        }
+
+        // Let's check whether notification permissions have already been granted
+        else if (Notification.permission === "granted") {
+            // If it's okay let's create a notification
+            var options = {
+                body: message,
+                icon: icon,
+                color: "#000000"
+            };
+            var notification = new Notification(type, options);
+        }
+
+        // Otherwise, we need to ask the user for permission
+        else if (Notification.permission !== "denied") {
+            Notification.requestPermission().then(function (permission) {
+                // If the user accepts, let's create a notification
+                if (permission === "granted") {
+                    var notification = new Notification("Hi there!");
+                }
+            });
+        }
+
+    // At last, if the user has denied notifications, and you 
+    // want to be respectful there is no need to bother them any more.
+    }
+
+    //CONNECTION FUNCTIONS/////////////////////////////////////////
+    $.connection.hub.start().done(function () {
+        
+        console.log("Connected to SignalR hub");
+        $(".loading-class").fadeOut("slow");
+        if (smokeWindow.style.display == 'block') {
+            smokeState = 1;
+        }
+        else {
+            smokeState = 0;
+        }
+        console.log("Smoke window visibility: " + smokeState);
+
+    }); // Connection (to SignalR hub) start function
+    $.connection.hub.disconnected = function (deploy) {
+        if (deploy != null) {
+
+            //This calls the server-side 'Unlock' method that unlocks the row
+            deploySignalR.server.unlock(deploy.depID);
+        }
+    } // Disconnecting from SignalR hub
+
+});
+
+
+//Model for Current Deploys Pager
+function PagerModelCurrent(records) {
     var self = this;
     self.pageSizeOptions = ko.observableArray([1, 5, 25, 50, 100, 250, 500]);
 
@@ -604,27 +781,26 @@ function PagerModel(records) {
         self.currentPageIndex(0);
     };
     self.renderPagers = function () {
-        
-        var pager = "<div><button class=\"btn btn-light btn-sm\" data-bind=\"click: pager.moveFirst, enable: pager.currentPageIndex() > 0\">&lt;&lt;</button>" +
-            "<button class=\"btn btn-light btn-sm\" data-bind=\"click: pager.movePrevious, enable: pager.currentPageIndex() > 0\">&lt;</button>" +
-            "Page <span data-bind=\"text: pager.currentPageIndex() + 1\"></span> of <span data-bind=\"text: pager.maxPageIndex() + 1\"></span> " +
-            "[<span data-bind=\"text: pager.recordCount\"></span>" +
-            "Record(s)]<select data-bind=\"options: pager.pageSizeOptions, value: pager.currentPageSize, event: { change: pager.onPageSizeChange }\"></select>" +
-            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: pager.moveNext, enable: pager.currentPageIndex() < pager.maxPageIndex()\">&gt;</button>" +
-            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: pager.moveLast, enable: pager.currentPageIndex() < pager.maxPageIndex()\">&gt;&gt;</button></div>";
+
+        var pager = "<div><button class=\"btn btn-light btn-sm\" data-bind=\"click: currentPager.moveFirst, enable: currentPager.currentPageIndex() > 0\">&lt;&lt;</button>" +
+            "<button class=\"btn btn-light btn-sm\" data-bind=\"click: currentPager.movePrevious, enable: currentPager.currentPageIndex() > 0\">&lt;</button>" +
+            "Page <span data-bind=\"text: currentPager.currentPageIndex() + 1\"></span> of <span data-bind=\"text: currentPager.maxPageIndex() + 1\"></span> " +
+            "[<span data-bind=\"text: currentPager.recordCount\"></span>" +
+            "Record(s)]<select data-bind=\"options: currentPager.pageSizeOptions, value: currentPager.currentPageSize, event: { change: currentPager.onPageSizeChange }\"></select>" +
+            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: currentPager.moveNext, enable: currentPager.currentPageIndex() < currentPager.maxPageIndex()\">&gt;</button>" +
+            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: currentPager.moveLast, enable: currentPager.currentPageIndex() < currentPager.maxPageIndex()\">&gt;&gt;</button></div>";
         $('#currentPager').append(pager);
     };
     self.renderNoRecords = function () {
-        
-        var message = "<span data-bind=\"visible: pager.recordCount() == 0\">No records found.</span>";
+
+        var message = "<span data-bind=\"visible: currentPager.recordCount() == 0\">No records found.</span>";
         $('#currentPager').append(message);
     };
     self.renderPagers();
     self.renderNoRecords();
 }
-
-//Model for Sorter
-function SorterModel(sortOptions, records) {
+//Model for Current Deploys Sorter
+function SorterModelCurrent(sortOptions, records) {
     var self = this;
     self.records = GetObservableArray(records);
     self.sortOptions = ko.observableArray(sortOptions);
@@ -649,9 +825,259 @@ function SorterModel(sortOptions, records) {
         return sortedRecords;
     }).extend({ throttle: 5 });
 }
+//Model for Current Deploys Filter
+function FilterModelCurrent(filters, records) {
+    var self = this;
+    
+    self.records = GetObservableArray(records);
+    self.filters = ko.observableArray(filters);
+    
+    self.activeFilters = ko.computed(function () {
+        var filters = self.filters();
+        var activeFilters = [];
+        for (var index = 0; index < filters.length; index++) {
+            var filter = filters[index];
+            //For deploy status
+            if (filter.CurrentOption) {
+                
+                //var filterOption = filter.CurrentOption();
+                var filterOption = filter.CurrentOption;
+                var all = "All";
+                
+                if (filterOption && filterOption.FilterValue == all) {
+                    console.log("All current deploys");
+                    
+                    var activeFilter = {
+                        Filter: filter,
+                        IsFiltered: function (filter, record) {
+                            //var filterOption = filter.CurrentOption();
+                            var filterOption = filter.CurrentOption;
+                            if (!filterOption) {
+                                return;
+                            }
+                            var recordValue = filter.RecordValue(record);
+                            return recordValue === "Queued";
+                        }
+                    };
+                    activeFilters.push(activeFilter);
+                }
+                else if (filterOption && filterOption.FilterValue != all) {
+                    console.log("Toggle option");
+                    
+                    var activeFilter = {
+                        Filter: filter,
+                        IsFiltered: function (filter, record) {
+                            //var filterOption = filter.CurrentOption();
+                            var filterOption = filter.CurrentOption;
+                            if (!filterOption) {
+                                return;
+                            }
 
-//Model for Filter
-function FilterModel(filters, records) {
+                            var recordValue = filter.RecordValue(record);
+                            
+                            return recordValue != filterOption.FilterValue; //NoMat
+                        }
+                    };
+                    activeFilters.push(activeFilter);
+                }
+
+            }
+            //For deploy time difference
+            else if (filter.CurrentTimeOption) {
+                var filterOption = filter.CurrentTimeOption();
+                if (filterOption && filterOption.FilterValue != null) {
+                    console.log("Toggled time");
+                    var activeFilter = {
+                        Filter: filter,
+                        IsFiltered: function (filter, record) {
+                            var filterOption = filter.CurrentTimeOption();
+                            
+                            if (!filterOption) {
+
+                                return;
+                            }
+                            var recordValue = filter.RecordValue(record);
+                            return recordValue >= filterOption.FilterValue;
+                        }
+                    }
+                };
+                activeFilters.push(activeFilter);
+            }
+            //For entering string
+            else if (filter.Value) {
+                var filterValue = filter.Value();
+                if (filterValue == "All") {
+                    console.log("all current deploys");
+                }
+                else if (filterValue && filterValue != "") {
+                    console.log("The filter is not blank");
+                    var activeFilter = {
+                        Filter: filter,
+                        IsFiltered: function (filter, record) {
+                            var filterValue = filter.Value();
+                            filterValue = filterValue.toUpperCase();
+
+                            var recordValue = filter.RecordValue(record);
+                            recordValue = recordValue.toUpperCase();
+                            return recordValue.indexOf(filterValue) == -1;
+                        }
+                    };
+                    activeFilters.push(activeFilter);
+                }
+
+
+            }
+
+        }
+        console.log(activeFilters);
+        return activeFilters;
+    });
+    self.filteredRecords = ko.computed(function () {
+        var records = self.records();
+        var filters = self.activeFilters();
+        if (filters.length == 0) {
+            return records;
+        }
+
+        var filteredRecords = [];
+        for (var rIndex = 0; rIndex < records.length; rIndex++) {
+            var isIncluded = true;
+            var record = records[rIndex];
+            for (var fIndex = 0; fIndex < filters.length; fIndex++) {
+                var filter = filters[fIndex];
+                var isFiltered = filter.IsFiltered(filter.Filter, record);
+                if (isFiltered) {
+                    isIncluded = false;
+                    break;
+                }
+            }
+
+            if (isIncluded) {
+                filteredRecords.push(record);
+            }
+        }
+
+        return filteredRecords;
+    });
+}
+
+//Model for Smoke Deploys Pager
+function PagerModelSmoke(records) {
+    var self = this;
+    self.pageSizeOptions = ko.observableArray([1, 5, 25, 50, 100, 250, 500]);
+
+    self.records = GetObservableArray(records);
+    self.currentPageIndex = ko.observable(self.records().length > 0 ? 0 : -1);
+    self.currentPageSize = ko.observable(25);
+    self.recordCount = ko.computed(function () {
+        return self.records().length;
+    });
+    self.maxPageIndex = ko.computed(function () {
+        return Math.ceil(self.records().length / self.currentPageSize()) - 1;
+    });
+    self.currentPageRecords = ko.computed(function () {
+        var newPageIndex = -1;
+        var pageIndex = self.currentPageIndex();
+        var maxPageIndex = self.maxPageIndex();
+        if (pageIndex > maxPageIndex) {
+            newPageIndex = maxPageIndex;
+        }
+        else if (pageIndex == -1) {
+            if (maxPageIndex > -1) {
+                newPageIndex = 0;
+            }
+            else {
+                newPageIndex = -2;
+            }
+        }
+        else {
+            newPageIndex = pageIndex;
+        }
+
+        if (newPageIndex != pageIndex) {
+            if (newPageIndex >= -1) {
+                self.currentPageIndex(newPageIndex);
+            }
+
+            return [];
+        }
+
+        var pageSize = self.currentPageSize();
+        var startIndex = pageIndex * pageSize;
+        var endIndex = startIndex + pageSize;
+        return self.records().slice(startIndex, endIndex);
+    }).extend({ throttle: 5 });
+    self.moveFirst = function () {
+        self.changePageIndex(0);
+    };
+    self.movePrevious = function () {
+        self.changePageIndex(self.currentPageIndex() - 1);
+    };
+    self.moveNext = function () {
+        self.changePageIndex(self.currentPageIndex() + 1);
+    };
+    self.moveLast = function () {
+        self.changePageIndex(self.maxPageIndex());
+    };
+    self.changePageIndex = function (newIndex) {
+        if (newIndex < 0
+            || newIndex == self.currentPageIndex()
+            || newIndex > self.maxPageIndex()) {
+            return;
+        }
+
+        self.currentPageIndex(newIndex);
+    };
+    self.onPageSizeChange = function () {
+        self.currentPageIndex(0);
+    };
+    self.renderPagers = function () {
+
+        var pager = "<div><button class=\"btn btn-light btn-sm\" data-bind=\"click: smokePager.moveFirst, enable: smokePager.currentPageIndex() > 0\">&lt;&lt;</button>" +
+            "<button class=\"btn btn-light btn-sm\" data-bind=\"click: smokePager.movePrevious, enable: smokePager.currentPageIndex() > 0\">&lt;</button>" +
+            "Page <span data-bind=\"text: smokePager.currentPageIndex() + 1\"></span> of <span data-bind=\"text: smokePager.maxPageIndex() + 1\"></span> " +
+            "[<span data-bind=\"text: smokePager.recordCount\"></span>" +
+            "Record(s)]<select data-bind=\"options: smokePager.pageSizeOptions, value: smokePager.currentPageSize, event: { change: smokePager.onPageSizeChange }\"></select>" +
+            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: smokePager.moveNext, enable: smokePager.currentPageIndex() < smokePager.maxPageIndex()\">&gt;</button>" +
+            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: smokePager.moveLast, enable: smokePager.currentPageIndex() < smokePager.maxPageIndex()\">&gt;&gt;</button></div>";
+        $('#smokePager').append(pager);
+    };
+    self.renderNoRecords = function () {
+
+        var message = "<span data-bind=\"visible: smokePager.recordCount() == 0\">No records found.</span>";
+        $('#smokePager').append(message);
+    };
+    self.renderPagers();
+    self.renderNoRecords();
+}
+//Model for Smoke Deploys Sorter
+function SorterModelSmoke(sortOptions, records) {
+    var self = this;
+    self.records = GetObservableArray(records);
+    self.sortOptions = ko.observableArray(sortOptions);
+    self.sortDirections = ko.observableArray([
+        {
+            Name: "Desc",
+            Value: "Desc",
+            Sort: true
+        }]);
+    self.currentSortOption = ko.observable(self.sortOptions()[0]);
+    self.currentSortDirection = ko.observable(self.sortDirections()[0]);
+    self.orderedRecords = ko.computed(function () {
+        var records = self.records();
+        var sortOption = self.currentSortOption();
+        var sortDirection = self.currentSortDirection();
+        if (sortOption == null || sortDirection == null) {
+            return records;
+        }
+
+        var sortedRecords = records.slice(0, records.length);
+        SortArray(sortedRecords, sortDirection.Sort, sortOption.Sort);
+        return sortedRecords;
+    }).extend({ throttle: 5 });
+}
+//Model for Smoke Deploys Filter
+function FilterModelSmoke(filters, records) {
     var self = this;
     self.records = GetObservableArray(records);
     self.filters = ko.observableArray(filters);
@@ -674,7 +1100,7 @@ function FilterModel(filters, records) {
                                 return;
                             }
                             var recordValue = filter.RecordValue(record);
-                            return recordValue === "Queued";
+                            return recordValue === "Not Ready";
                         }
                     };
                     activeFilters.push(activeFilter);
@@ -826,118 +1252,6 @@ function SortArray(array, direction, comparison) {
 
     return array;
 }
-
-//SignalR Events
-$(function () {
-
-    var deploySignalR = $.connection.deploy;
-    var viewModel;
-    var findDeploy = function (id) {
-        return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
-            if (item.depID == id) {
-                return item;
-            }
-        });
-    } // Helper function that iterates over each record within the ViewModel, and finds and returns the ID that matches
-
-    //SIGNALR FUNCTIONS//////////////////////////////////////////////
-    deploySignalR.client.updateAll = function () {
-
-        console.log(viewModel.obsCheckEdit());
-
-        //Warning toast triggered if client is engaged in editing a row
-        if (viewModel.obsCheckEdit() >= 1) {
-            var msg = "You are currently editing a record. Changes have been made to other records. Please refresh your browser when you are finished.";
-            var cont = "Changes have been made...";
-            infoToast(msg, cont);
-        }
-        else if (viewModel.obsCheckEdit() == 0) {
-            viewModel.updateViewModel();
-            viewModel.updateViewModelComment();
-
-            browserNotification();
-            console.log('Viewmodel updated');
-        }
-    } // Update all function, to be triggered when new batch of deploys are created
-    deploySignalR.client.updateDeploy = function (id, key, value) {
-        var deploy = findDeploy(id);
-        console.log("Deploy updated");
-        deploy[key](value);
-
-
-    } // updateDeploy function, to be triggered through SignalR
-    deploySignalR.client.updateComments = function () {
-        viewModel.updateViewModelComment();
-        console.log("New comment submitted...");
-    }
-    deploySignalR.client.unlockDeploy = function (id) {
-        var deploy = findDeploy(id);
-        deploy.depLocked(false);
-    } // unlockDeploy function, to be triggered when user selects "done"
-    deploySignalR.client.lockDeploy = function (id) {
-        var deploy = findDeploy(id);
-        deploy.depLocked(true);
-
-    } // lockDeploy function, to be triggered when a user selects "edit"
-    deploySignalR.client.browserNotification = function (type, message, icon) {
-        // Let's check if the browser supports notifications
-        if (!("Notification" in window)) {
-            alert("This browser does not support desktop notification");
-        }
-
-        // Let's check whether notification permissions have already been granted
-        else if (Notification.permission === "granted") {
-            // If it's okay let's create a notification
-            var options = {
-                body: message,
-                icon: icon,
-                color: "#000000"
-            };
-            var notification = new Notification(type, options);
-        }
-
-        // Otherwise, we need to ask the user for permission
-        else if (Notification.permission !== "denied") {
-            Notification.requestPermission().then(function (permission) {
-                // If the user accepts, let's create a notification
-                if (permission === "granted") {
-                    var notification = new Notification("Hi there!");
-                }
-            });
-        }
-
-    // At last, if the user has denied notifications, and you 
-    // want to be respectful there is no need to bother them any more.
-    }
-
-    //CONNECTION FUNCTIONS/////////////////////////////////////////
-    $.connection.hub.start().done(function () {
-        ko.options.deferUpdates = true;
-        viewModel = new DeployViewModel(deploySignalR);
-        ko.applyBindings(viewModel, document.getElementById("BodyContent"));
-
-        console.log("Connected to SignalR hub");
-        $(".loading-class").fadeOut("slow");
-        if (smokeWindow.style.display == 'block') {
-            smokeState = 1;
-        }
-        else {
-            smokeState = 0;
-        }
-        console.log("Smoke window visibility: " + smokeState);
-
-    }); // Connection (to SignalR hub) start function
-    $.connection.hub.disconnected = function (deploy) {
-        if (deploy != null) {
-
-            //This calls the server-side 'Unlock' method that unlocks the row
-            deploySignalR.server.unlock(deploy.depID);
-        }
-    } // Disconnecting from SignalR hub
-
-
-});
-
 
 /* Open when someone selects a record */
 function openNav() {
@@ -1120,3 +1434,4 @@ function dateTimeDifference(date) {
     var hours = Math.abs(now.valueOf() - then.valueOf()) / 3600000
     return hours;
 }
+

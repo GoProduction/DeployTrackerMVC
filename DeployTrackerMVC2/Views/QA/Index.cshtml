@@ -30,29 +30,34 @@
         <div class="row">
             <!--Current and Queued Tables column-->
             <div class="qa-left-panel">
-                <!------Current Deploys------------------------>
+                <!------CURRENT DEPLOYS-------------------------------------------------------------------------------------------------->
                 <div class="main-header">
                     <h3>Current Deploys</h3>
                 </div>
                 <!------Filter--------------------------------->
                 <div class="filter-container" style="text-align: left">
-                    <div class="filter-first" data-bind="foreach: filter.filters">
+                    <div class="filter-first" data-bind="foreach: currentFilter.filters">
                         <div data-bind="if: Type == 'select'" style="text-align:left">
                             <span>Deploy Status: </span>
-                            <select data-bind="options: Options, optionsText: 'Name', value: CurrentOption"></select>
+                            <select id="ctlCurrentType" data-bind="options: Options, 
+                                                                    optionsText: 'Name', 
+                                                                    value: CurrentOption,
+                                                                    optionsAfterRender: $root.loadCurrentType,
+                                                                    event: {change: $root.cacheCurrentType}"></select>
                         </div>
                     </div>
-                    <div class="filter-second" data-bind="foreach: filter.filters">
+                    <div class="filter-second" data-bind="foreach: currentFilter.filters">
                         <div data-bind="if: Type == 'selectTime'">
                             <span>Timespan: </span>
-                            <select data-bind="options: Times, optionsText: 'Name', value: CurrentTimeOption"></select>
+                            <select id="ctlCurrentTime" data-bind="options: Times, optionsText: 'Name', value: CurrentTimeOption"></select>
                         </div>
                     </div>
+                    <!--Sorter (Not displayed)-->
                     <div style="display:none">
                         <span style="font-weight:bold">Sort By: </span>
-                        <select data-bind="options: sorter.sortOptions, optionsText: 'Name', value: sorter.currentSortOption"></select>
+                        <select data-bind="options: currentSorter.sortOptions, optionsText: 'Name', value: currentSorter.currentSortOption"></select>
                         <span style="font-weight:bold">Direction: </span>
-                        <select data-bind="options: sorter.sortDirections, optionsText: 'Name', value: sorter.currentSortDirection"></select>
+                        <select data-bind="options: currentSorter.sortDirections, optionsText: 'Name', value: currentSorter.currentSortDirection"></select>
                     </div>
                     <div class="filter-third">
                         <span>Contains: </span>
@@ -76,7 +81,7 @@
                             </tr>
                         </thead>
 
-                        <tbody data-bind="foreach: pager.currentPageRecords" class="table">
+                        <tbody data-bind="foreach: currentPager.currentPageRecords" class="table">
                             <tr class="table-on-hover">
                                 <!--ID field-->
                                 <td style="display:none" data-bind="text: depID"></td>
@@ -131,8 +136,8 @@
 
                     </table>
                 </div>
-
-                <!------Queued Deploys------------------------->
+                <div class="divider"></div>
+                <!------QUEUED DEPLOYS--------------------------------------------------------------------------------------------------->
                 <div class="main-header">
                     <h3>Queued Deploys</h3>
                 </div>
@@ -167,6 +172,33 @@
                     <h3>Smoke Queue</h3>
                 </div>
                 <br />
+                <!------Filter--------------------------------->
+                <div class="filter-container" style="text-align: left">
+                    <div class="filter-first" data-bind="foreach: smokeFilter.filters">
+                        <div data-bind="if: Type == 'selectSmoke'" style="text-align:left">
+                            <span>Deploy Status: </span>
+                            <select data-bind="options: Options, optionsText: 'Name', value: CurrentOption"></select>
+                        </div>
+                    </div>
+                    <div class="filter-second" data-bind="foreach: smokeFilter.filters">
+                        <div data-bind="if: Type == 'selectTime'">
+                            <span>Timespan: </span>
+                            <select data-bind="options: Times, optionsText: 'Name', value: CurrentTimeOption"></select>
+                        </div>
+                    </div>
+                    <!--Sorter (Not displayed) -->
+                    <div style="display:none">
+                        <span style="font-weight:bold">Sort By: </span>
+                        <select data-bind="options: smokeSorter.sortOptions, optionsText: 'Name', value: smokeSorter.currentSortOption"></select>
+                        <span style="font-weight:bold">Direction: </span>
+                        <select data-bind="options: smokeSorter.sortDirections, optionsText: 'Name', value: smokeSorter.currentSortDirection"></select>
+                    </div>
+                    <div class="filter-third">
+                        <span>Contains: </span>
+                        <input style="height: 25px" />
+                    </div>
+                </div>
+                <div class="pager-style" id="smokePager"></div>
                 <div>
                     <table class="table">
                         <thead>
@@ -179,8 +211,43 @@
                                 <th>...</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: smokeDeploys()">
-                            <tr data-bind="template: { name: 'read-template-s', data: $data }" class="table table-on-hover"></tr>
+                        <tbody data-bind="foreach: smokePager.currentPageRecords">
+                            <tr class="table table-on-hover">
+                                <td style="display:none" data-bind="text: depID"></td>
+                                <!--Feature field-->
+                                <td data-bind="text: depFeature,
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-smoke-pass': depSmoke() === 'Pass',
+                                                        'css-smoke-conditional': depSmoke() === 'Conditional',
+                                                        'css-smoke-fail': depSmoke() === 'Fail'}"></td>
+                                <!--Version field-->
+                                <td data-bind="text: depVersion,
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-smoke-pass': depSmoke() === 'Pass',
+                                                        'css-smoke-conditional': depSmoke() === 'Conditional',
+                                                        'css-smoke-fail': depSmoke() === 'Fail'}"></td>
+                                <!--Environment field-->
+                                <td data-bind="text: depEnvironment,
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-smoke-pass': depSmoke() === 'Pass',
+                                                        'css-smoke-conditional': depSmoke() === 'Conditional',
+                                                        'css-smoke-fail': depSmoke() === 'Fail'}"></td>
+                                <!--Smoke field-->
+                                <td data-bind="text: depSmoke,
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-smoke-pass': depSmoke() === 'Pass',
+                                                        'css-smoke-conditional': depSmoke() === 'Conditional',
+                                                        'css-smoke-fail': depSmoke() === 'Fail'}"></td>
+                                <!--Button field-->
+                                <td data-bind="css: { 'css-smoke-pass': depSmoke() === 'Pass',
+                                                        'css-smoke-conditional': depSmoke() === 'Conditional',
+                                                        'css-smoke-fail': depSmoke() === 'Fail'}">
+                                    <button class="btn btn-sm btn-primary" data-bind="click: $root.openStatusModal">
+                                        <i class="fa fa-tasks"></i>
+                                        <span>Update Status</span>
+                                    </button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
