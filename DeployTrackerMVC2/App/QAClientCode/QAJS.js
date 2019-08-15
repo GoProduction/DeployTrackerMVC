@@ -5,24 +5,73 @@ var smokeButton = document.getElementById("smokeToggleButton");
 var objstatus = '';
 var selID = '';
 
-//Cache variables
-var curTypeCached = localStorage['curTypeCached'] || 'All';
+//Cache Variables
+////Current Deploys
+//////Type
+var ctStore = localStorage['curTypeCached'];
+if (ctStore) var curTypeCached = JSON.parse(ctStore);
+else curTypeCached = { val: 'All' };
+console.log("curTypeCached is");
+console.log(curTypeCached);
+//////Time
+var ctmStore = localStorage['curTimeCached'];
+if (ctmStore) var curTimeCached = JSON.parse(ctmStore);
+else curTimeCached = { val: '24' };
+console.log("curTimeCached is");
+console.log(curTimeCached);
 
+////Smoke Deploys
+//////Type
+var stStore = localStorage['smokeTypeCached'];
+if (stStore) var smokeTypeCached = JSON.parse(stStore);
+else smokeTypeCached = { val: 'All' };
+console.log("smokeTypeCached is ");
+console.log(smokeTypeCached);
+//////Time
+var stmStore = localStorage['smokeTimeCached'];
+if (stmStore) var smokeTimeCached = JSON.parse(stmStore);
+else smokeTimeCached = { val: '24' };
+console.log('smokeTimeCached is ');
+console.log(smokeTimeCached);
 
+//Knockout find function (used for filter)
+ko.observableArray.fn.find = function (prop, data) {
+    var valueToMatch = data[prop];
+    return ko.utils.arrayFirst(this(), function (item) {
+        return item[prop] === valueToMatch;
+    });
+};
 
-//Loading function
-$(window).on('load', function () {
-    
-});
-//Initialize the Bootstrap tooltip
-$(document).ready(function () {
-    
-    $('[data-toggle="tooltip"]').tooltip();
-
-});
-
-var DeployViewModel = function (deploySignalR) {
+var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached) {
     var self = this;
+   
+    //FILTER OBSERVABLES FOR TABLES
+    self.typeArray = ko.observableArray([
+        { text: 'All Current Deploys', val: 'All' },
+        { text: 'Deploying', val: 'Deploying' },
+        { text: 'Completed', val: 'Completed' },
+        { text: 'Failed', val: 'Failed' }
+    ]) //Used for type filter
+    self.timeArray = ko.observableArray([
+        { text: 'Past 24 hours', val: '24' },
+        { text: 'Past 7 days', val: '168' },
+        { text: 'Past month', val: '730' }
+    ]); //Used for time filter
+    self.smokeArray = ko.observableArray([
+        { text: 'All smoke statuses', val: 'All' },
+        { text: 'Ready', val: 'Ready' },
+        { text: 'Pass', val: 'Pass' },
+        { text: 'Conditional', val: 'Conditional' },
+        { text: 'Fail', val: 'Fail' }
+    ]);
+    self.currentSelectedType = ko.observable(self.typeArray.find("val", curTypeCached));
+    self.currentSelectedTime = ko.observable(self.timeArray.find("val", curTimeCached));
+    self.smokeSelectedType = ko.observable(self.smokeArray.find("val", smokeTypeCached));
+    self.smokeSelectedTime = ko.observable(self.timeArray.find("val", smokeTimeCached));
+    self.checkVMCurrent = function () {
+        console.log(self.currentSelectedType);
+        console.log(self.currentSelectedTime);
+    }
 
     //OBSERVABLE ARRAYS////////////////////////////////////////////////////////
     self.deploy = ko.observableArray(); // Deploy observable array that will be called through HTML
@@ -43,18 +92,6 @@ var DeployViewModel = function (deploySignalR) {
     ]);
     self.comment = ko.observableArray(); // Comment observable array
     self.selected = ko.observableArray(self.deploy()[0]); //Determines if record is selected
-    self.timeArray = ko.observableArray([
-        { text: 'Past 24 hours', val: '24' },
-        { text: 'Past 7 days', val: '168' }
-    ]); //Used for time filter
-    self.pageFilterArray = ko.observableArray([
-        { number: '25' },
-        { number: '20' },
-        { number: '15' },
-        { number: '10' },
-        { number: '5' }
-
-    ]); //Used for record count per page
 
     //ObSERVABLES///////////////////////////////////////////////////////////
     self.obsCheckEdit = ko.observable(0); // Observable that is used to check if any field is being edited
@@ -270,17 +307,34 @@ var DeployViewModel = function (deploySignalR) {
         return ko.utils.arrayFilter(self.deploy(), function (rec) {
 
             var date = rec.depStartTime();
-            var val = dateTimeDifference(date)
+            var val = dateTimeDifference(date);
 
-            if (val <= self.searchTime()) {
-                return (rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed')
+            if (val <= self.currentSelectedTime().val) {
+                if (self.currentSelectedType().val != 'All') {
+                    return (rec.depStatus() === self.currentSelectedType().val)
+                }
+                else {
+                    return (rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed')
+                }
+                
             };
 
         });
     }); // Current Deploys table filter
     self.smokeDeploys = ko.computed(function () {
         return ko.utils.arrayFilter(self.deploy(), function (rec) {
-            return rec.depSmoke() === 'Ready' || rec.depSmoke() === 'Fail' || rec.depSmoke() === 'Pass' || rec.depSmoke() === 'Conditional';
+
+            var date = rec.depStartTime();
+            var val = dateTimeDifference(date);
+            if (val <= self.smokeSelectedTime().val) {
+                if (self.smokeSelectedType().val != 'All') {
+                    return (rec.depSmoke() === self.smokeSelectedType().val)
+                }
+                else {
+                    return rec.depSmoke() === 'Ready' || rec.depSmoke() === 'Fail' || rec.depSmoke() === 'Pass' || rec.depSmoke() === 'Conditional';
+                }
+            }
+
         });
     }); // Current Deploys table filter
     self.commentsFiltered = ko.computed(function () {
@@ -479,7 +533,7 @@ var DeployViewModel = function (deploySignalR) {
     };
 
     //SORTING FUNCTIONS//////////////////////////////////////////////
-    self.sortByDate = function (...deploy) {
+    self.testSortByDate = function (...deploy) {
         if (deploy != null) {
             var value = deploy.sort(function (l, r) {
                 return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1)
@@ -487,116 +541,84 @@ var DeployViewModel = function (deploySignalR) {
             return value;
         }
     };
-    //CACHING FUNCTIONS
+    self.sortByDate = function (l, r) {
+        
+            return ((l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1)) 
+    }
+
+    //CACHING FUNCTIONS/////////////////////////////////////////////
     self.cacheCurrentType = function () {
         var ctl = document.getElementById("ctlCurrentType");
         var sel = ctl.options[ctl.selectedIndex];
         if (ctl.selectedIndex == 0) {
-            localStorage['curTypeCached'] = 'All';
+            curTypeCached = { val: "All" };
+            localStorage['curTypeCached'] = JSON.stringify(curTypeCached);
+            
         }
         else {
-            localStorage['curTypeCached'] = sel.text;
+            curTypeCached = { val: sel.text };
+            localStorage['curTypeCached'] = JSON.stringify(curTypeCached);
+            
         }
 
-        curTypeCached = localStorage['curTypeCached'];
+        console.log("Cached as ");
         console.log(curTypeCached);
     }
+    self.cacheCurrentTime = function () {
+        var ctl = document.getElementById("ctlCurrentTime");
+        if (ctl.selectedIndex == 0) {
+            curTimeCached = { val: '24' };
+            localStorage['curTimeCached'] = JSON.stringify(curTimeCached);
+        }
+        else if (ctl.selectedIndex == 1) {
+            curTimeCached = { val: '168' };
+            localStorage['curTimeCached'] = JSON.stringify(curTimeCached);
+        }
+        else if (ctl.selectedIndex == 2) {
+            curTimeCached = { val: '730' };
+            localStorage['curTimeCached'] = JSON.stringify(curTimeCached);
+        }
+    }
+    self.cacheSmokeType = function () {
+        var ctl = document.getElementById("ctlSmokeType");
+        var sel = ctl.options[ctl.selectedIndex];
+        if (ctl.selectedIndex == 0) {
+            smokeTypeCached = { val: "All" };
+            localStorage['smokeTypeCached'] = JSON.stringify(smokeTypeCached);
+
+        }
+        else {
+            smokeTypeCached = { val: sel.text };
+            localStorage['smokeTypeCached'] = JSON.stringify(smokeTypeCached);
+            
+        }
+
+        console.log("Cached as ");
+        console.log(smokeTypeCached);
+    }
+    self.cacheSmokeTime = function () {
+        var ctl = document.getElementById("ctlSmokeTime");
+        if (ctl.selectedIndex == 0) {
+            smokeTimeCached = { val: '24' };
+            localStorage['smokeTimeCached'] = JSON.stringify(smokeTimeCached);
+        }
+        else if (ctl.selectedIndex == 1) {
+            smokeTimeCached = { val: '168' };
+            localStorage['smokeTimeCached'] = JSON.stringify(smokeTimeCached);
+        }
+        else if (ctl.selectedIndex == 2) {
+            smokeTimeCached = { val: '730' };
+            localStorage['smokeTimeCached'] = JSON.stringify(smokeTimeCached);
+        }
+    }
     self.loadCurrentType = function (option, item) {
-        ko.applyBindingsToNode(option.parentElement, { Name: curTypeCached.toString(), Value: curTypeCached.toString(), FilterValue: curTypeCached.toString() }, item);
-        console.log("Current type loaded");
+
+        ko.applyBindingsToNode(option.parentElement, self.currentSelectedType, item);
+        console.log("CurrentOption is loaded as: ");
+        console.log(self.CurrentOption);
     }
-    //FILTER ARRAYS FOR TABLES
-    var currentFilters = [
-        {
-            Type: "select",
-            Name: "depStatus",
-            Options: [
-                { Name: "All Current Deploys", Value: "All", FilterValue: "All"},
-                { Name: "Deploying", Value: "Deploying", FilterValue: "Deploying"},
-                { Name: "Completed", Value: "Completed", FilterValue: "Completed"},
-                { Name: "Failed", Value: "Failed", FilterValue: "Failed"}
-            ],
-            //CurrentOption: ko.observable(),
-            CurrentOption: curTypeCached,
-            RecordValue: function (record) { return record.depStatus(); }
-        },
-        {
-            Type: "selectTime",
-            Name: "depTimeDiff",
-            Times: [
-                GetOption("Last 24 hours", "24", "24"),
-                GetOption("Last 7 days", "168", "168")
-            ],
-            CurrentTimeOption: ko.observable(),
-            RecordValue: function (record) { return record.depTimeDiff(); }
-        }
-    ];
-    var smokeFilters = [
-        {
+   
 
-            Type: "selectSmoke",
-            Name: "depSmoke",
-            Options: [
-                GetOption("All Queued Smokes", "All", "All"),
-                GetOption("Ready", "Ready", "Ready"),
-                GetOption("Pass", "Pass", "Pass"),
-                GetOption("Conditional", "Conditional", "Conditional"),
-                GetOption("Fail", "Fail", "Fail")
-            ],
-            CurrentOption: ko.observable(),
-            RecordValue: function (record) { return record.depSmoke(); }
-        },
-        {
-
-            Type: "selectTime",
-            Name: "depTimeDiff",
-            Times: [
-                GetOption("Last 24 hours", "24", "24"),
-                GetOption("Last 7 days", "168", "168")
-            ],
-            CurrentTimeOption: ko.observable(),
-            RecordValue: function (record) { return record.depTimeDiff(); }
-
-        }
-    ]
-    var sortOptions = [
-        {
-            Name: "End Time",
-            Value: "depStartTime",
-            Sort: function (l, r) { return ((l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1)) }
-        }
-    ];
-    //PAGER AND SORTER MODELS//////////////
-    
-    //PAGINATE AND SORTING FUNCTIONS FOR CURRENT DEPLOYS////////////////////////////////////////////
-    //Current Deploy observables for filtering, sorting, and paging
-    self.currentFilter = new FilterModelCurrent(currentFilters, self.deploy);
-    console.log("Current Filter has been created");
-    self.currentSorter = new SorterModelCurrent(sortOptions, self.currentFilter.filteredRecords);
-    console.log("Current Sorter has been created");
-    self.currentPager = new PagerModelCurrent(self.currentSorter.orderedRecords);
-    console.log("Current Pager has been created");
-
-    //Smoke Deploy observables for filtering, sorting, and paging
-    self.smokeFilter = new FilterModelSmoke(smokeFilters, self.deploy);
-    console.log("Smoke Filter has been created");
-    self.smokeSorter = new SorterModelSmoke(sortOptions, self.smokeFilter.filteredRecords);
-    console.log("Smoke Sorter has been created");
-    self.smokePager = new PagerModelSmoke(self.smokeSorter.orderedRecords);
-    console.log("Smoke Pager has been created");
-
-    
-    //TEST FUNCTIONS////////
-    self.testTimeFilter = function () {
-        console.log(self.searchTime().toString());
-    }
-    self.testPaging = function () {
-        console.log("Filter is set to: " + self.nbPerPage().toString());
-        console.log("currentDeploys count is: " + self.currentDeploys().length);
-        console.log("PagaData is: " + self.PagaData().toString());
-    }
-
-    console.log("Current type is: " + curTypeCached);
 }; //Main viewmodel
 
 
@@ -604,8 +626,8 @@ var DeployViewModel = function (deploySignalR) {
 $(function () {
     
     var deploySignalR = $.connection.deploy;
-    var viewModel = new DeployViewModel(deploySignalR);
-    ko.applyBindings(viewModel, document.getElementById("BodyContent"));
+    var viewModel = new DeployViewModel(deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached);
+    ko.applyBindings(viewModel);
     
     var findDeploy = function (id) {
         return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
@@ -709,550 +731,9 @@ $(function () {
 
 });
 
-
-//Model for Current Deploys Pager
-function PagerModelCurrent(records) {
-    var self = this;
-    self.pageSizeOptions = ko.observableArray([1, 5, 25, 50, 100, 250, 500]);
-
-    self.records = GetObservableArray(records);
-    self.currentPageIndex = ko.observable(self.records().length > 0 ? 0 : -1);
-    self.currentPageSize = ko.observable(25);
-    self.recordCount = ko.computed(function () {
-        return self.records().length;
-    });
-    self.maxPageIndex = ko.computed(function () {
-        return Math.ceil(self.records().length / self.currentPageSize()) - 1;
-    });
-    self.currentPageRecords = ko.computed(function () {
-        var newPageIndex = -1;
-        var pageIndex = self.currentPageIndex();
-        var maxPageIndex = self.maxPageIndex();
-        if (pageIndex > maxPageIndex) {
-            newPageIndex = maxPageIndex;
-        }
-        else if (pageIndex == -1) {
-            if (maxPageIndex > -1) {
-                newPageIndex = 0;
-            }
-            else {
-                newPageIndex = -2;
-            }
-        }
-        else {
-            newPageIndex = pageIndex;
-        }
-
-        if (newPageIndex != pageIndex) {
-            if (newPageIndex >= -1) {
-                self.currentPageIndex(newPageIndex);
-            }
-
-            return [];
-        }
-
-        var pageSize = self.currentPageSize();
-        var startIndex = pageIndex * pageSize;
-        var endIndex = startIndex + pageSize;
-        return self.records().slice(startIndex, endIndex);
-    }).extend({ throttle: 5 });
-    self.moveFirst = function () {
-        self.changePageIndex(0);
-    };
-    self.movePrevious = function () {
-        self.changePageIndex(self.currentPageIndex() - 1);
-    };
-    self.moveNext = function () {
-        self.changePageIndex(self.currentPageIndex() + 1);
-    };
-    self.moveLast = function () {
-        self.changePageIndex(self.maxPageIndex());
-    };
-    self.changePageIndex = function (newIndex) {
-        if (newIndex < 0
-            || newIndex == self.currentPageIndex()
-            || newIndex > self.maxPageIndex()) {
-            return;
-        }
-
-        self.currentPageIndex(newIndex);
-    };
-    self.onPageSizeChange = function () {
-        self.currentPageIndex(0);
-    };
-    self.renderPagers = function () {
-
-        var pager = "<div><button class=\"btn btn-light btn-sm\" data-bind=\"click: currentPager.moveFirst, enable: currentPager.currentPageIndex() > 0\">&lt;&lt;</button>" +
-            "<button class=\"btn btn-light btn-sm\" data-bind=\"click: currentPager.movePrevious, enable: currentPager.currentPageIndex() > 0\">&lt;</button>" +
-            "Page <span data-bind=\"text: currentPager.currentPageIndex() + 1\"></span> of <span data-bind=\"text: currentPager.maxPageIndex() + 1\"></span> " +
-            "[<span data-bind=\"text: currentPager.recordCount\"></span>" +
-            "Record(s)]<select data-bind=\"options: currentPager.pageSizeOptions, value: currentPager.currentPageSize, event: { change: currentPager.onPageSizeChange }\"></select>" +
-            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: currentPager.moveNext, enable: currentPager.currentPageIndex() < currentPager.maxPageIndex()\">&gt;</button>" +
-            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: currentPager.moveLast, enable: currentPager.currentPageIndex() < currentPager.maxPageIndex()\">&gt;&gt;</button></div>";
-        $('#currentPager').append(pager);
-    };
-    self.renderNoRecords = function () {
-
-        var message = "<span data-bind=\"visible: currentPager.recordCount() == 0\">No records found.</span>";
-        $('#currentPager').append(message);
-    };
-    self.renderPagers();
-    self.renderNoRecords();
-}
-//Model for Current Deploys Sorter
-function SorterModelCurrent(sortOptions, records) {
-    var self = this;
-    self.records = GetObservableArray(records);
-    self.sortOptions = ko.observableArray(sortOptions);
-    self.sortDirections = ko.observableArray([
-        {
-            Name: "Desc",
-            Value: "Desc",
-            Sort: true
-        }]);
-    self.currentSortOption = ko.observable(self.sortOptions()[0]);
-    self.currentSortDirection = ko.observable(self.sortDirections()[0]);
-    self.orderedRecords = ko.computed(function () {
-        var records = self.records();
-        var sortOption = self.currentSortOption();
-        var sortDirection = self.currentSortDirection();
-        if (sortOption == null || sortDirection == null) {
-            return records;
-        }
-
-        var sortedRecords = records.slice(0, records.length);
-        SortArray(sortedRecords, sortDirection.Sort, sortOption.Sort);
-        return sortedRecords;
-    }).extend({ throttle: 5 });
-}
-//Model for Current Deploys Filter
-function FilterModelCurrent(filters, records) {
-    var self = this;
-    
-    self.records = GetObservableArray(records);
-    self.filters = ko.observableArray(filters);
-    
-    self.activeFilters = ko.computed(function () {
-        var filters = self.filters();
-        var activeFilters = [];
-        for (var index = 0; index < filters.length; index++) {
-            var filter = filters[index];
-            //For deploy status
-            if (filter.CurrentOption) {
-                
-                //var filterOption = filter.CurrentOption();
-                var filterOption = filter.CurrentOption;
-                var all = "All";
-                
-                if (filterOption && filterOption.FilterValue == all) {
-                    console.log("All current deploys");
-                    
-                    var activeFilter = {
-                        Filter: filter,
-                        IsFiltered: function (filter, record) {
-                            //var filterOption = filter.CurrentOption();
-                            var filterOption = filter.CurrentOption;
-                            if (!filterOption) {
-                                return;
-                            }
-                            var recordValue = filter.RecordValue(record);
-                            return recordValue === "Queued";
-                        }
-                    };
-                    activeFilters.push(activeFilter);
-                }
-                else if (filterOption && filterOption.FilterValue != all) {
-                    console.log("Toggle option");
-                    
-                    var activeFilter = {
-                        Filter: filter,
-                        IsFiltered: function (filter, record) {
-                            //var filterOption = filter.CurrentOption();
-                            var filterOption = filter.CurrentOption;
-                            if (!filterOption) {
-                                return;
-                            }
-
-                            var recordValue = filter.RecordValue(record);
-                            
-                            return recordValue != filterOption.FilterValue; //NoMat
-                        }
-                    };
-                    activeFilters.push(activeFilter);
-                }
-
-            }
-            //For deploy time difference
-            else if (filter.CurrentTimeOption) {
-                var filterOption = filter.CurrentTimeOption();
-                if (filterOption && filterOption.FilterValue != null) {
-                    console.log("Toggled time");
-                    var activeFilter = {
-                        Filter: filter,
-                        IsFiltered: function (filter, record) {
-                            var filterOption = filter.CurrentTimeOption();
-                            
-                            if (!filterOption) {
-
-                                return;
-                            }
-                            var recordValue = filter.RecordValue(record);
-                            return recordValue >= filterOption.FilterValue;
-                        }
-                    }
-                };
-                activeFilters.push(activeFilter);
-            }
-            //For entering string
-            else if (filter.Value) {
-                var filterValue = filter.Value();
-                if (filterValue == "All") {
-                    console.log("all current deploys");
-                }
-                else if (filterValue && filterValue != "") {
-                    console.log("The filter is not blank");
-                    var activeFilter = {
-                        Filter: filter,
-                        IsFiltered: function (filter, record) {
-                            var filterValue = filter.Value();
-                            filterValue = filterValue.toUpperCase();
-
-                            var recordValue = filter.RecordValue(record);
-                            recordValue = recordValue.toUpperCase();
-                            return recordValue.indexOf(filterValue) == -1;
-                        }
-                    };
-                    activeFilters.push(activeFilter);
-                }
-
-
-            }
-
-        }
-        console.log(activeFilters);
-        return activeFilters;
-    });
-    self.filteredRecords = ko.computed(function () {
-        var records = self.records();
-        var filters = self.activeFilters();
-        if (filters.length == 0) {
-            return records;
-        }
-
-        var filteredRecords = [];
-        for (var rIndex = 0; rIndex < records.length; rIndex++) {
-            var isIncluded = true;
-            var record = records[rIndex];
-            for (var fIndex = 0; fIndex < filters.length; fIndex++) {
-                var filter = filters[fIndex];
-                var isFiltered = filter.IsFiltered(filter.Filter, record);
-                if (isFiltered) {
-                    isIncluded = false;
-                    break;
-                }
-            }
-
-            if (isIncluded) {
-                filteredRecords.push(record);
-            }
-        }
-
-        return filteredRecords;
-    });
-}
-
-//Model for Smoke Deploys Pager
-function PagerModelSmoke(records) {
-    var self = this;
-    self.pageSizeOptions = ko.observableArray([1, 5, 25, 50, 100, 250, 500]);
-
-    self.records = GetObservableArray(records);
-    self.currentPageIndex = ko.observable(self.records().length > 0 ? 0 : -1);
-    self.currentPageSize = ko.observable(25);
-    self.recordCount = ko.computed(function () {
-        return self.records().length;
-    });
-    self.maxPageIndex = ko.computed(function () {
-        return Math.ceil(self.records().length / self.currentPageSize()) - 1;
-    });
-    self.currentPageRecords = ko.computed(function () {
-        var newPageIndex = -1;
-        var pageIndex = self.currentPageIndex();
-        var maxPageIndex = self.maxPageIndex();
-        if (pageIndex > maxPageIndex) {
-            newPageIndex = maxPageIndex;
-        }
-        else if (pageIndex == -1) {
-            if (maxPageIndex > -1) {
-                newPageIndex = 0;
-            }
-            else {
-                newPageIndex = -2;
-            }
-        }
-        else {
-            newPageIndex = pageIndex;
-        }
-
-        if (newPageIndex != pageIndex) {
-            if (newPageIndex >= -1) {
-                self.currentPageIndex(newPageIndex);
-            }
-
-            return [];
-        }
-
-        var pageSize = self.currentPageSize();
-        var startIndex = pageIndex * pageSize;
-        var endIndex = startIndex + pageSize;
-        return self.records().slice(startIndex, endIndex);
-    }).extend({ throttle: 5 });
-    self.moveFirst = function () {
-        self.changePageIndex(0);
-    };
-    self.movePrevious = function () {
-        self.changePageIndex(self.currentPageIndex() - 1);
-    };
-    self.moveNext = function () {
-        self.changePageIndex(self.currentPageIndex() + 1);
-    };
-    self.moveLast = function () {
-        self.changePageIndex(self.maxPageIndex());
-    };
-    self.changePageIndex = function (newIndex) {
-        if (newIndex < 0
-            || newIndex == self.currentPageIndex()
-            || newIndex > self.maxPageIndex()) {
-            return;
-        }
-
-        self.currentPageIndex(newIndex);
-    };
-    self.onPageSizeChange = function () {
-        self.currentPageIndex(0);
-    };
-    self.renderPagers = function () {
-
-        var pager = "<div><button class=\"btn btn-light btn-sm\" data-bind=\"click: smokePager.moveFirst, enable: smokePager.currentPageIndex() > 0\">&lt;&lt;</button>" +
-            "<button class=\"btn btn-light btn-sm\" data-bind=\"click: smokePager.movePrevious, enable: smokePager.currentPageIndex() > 0\">&lt;</button>" +
-            "Page <span data-bind=\"text: smokePager.currentPageIndex() + 1\"></span> of <span data-bind=\"text: smokePager.maxPageIndex() + 1\"></span> " +
-            "[<span data-bind=\"text: smokePager.recordCount\"></span>" +
-            "Record(s)]<select data-bind=\"options: smokePager.pageSizeOptions, value: smokePager.currentPageSize, event: { change: smokePager.onPageSizeChange }\"></select>" +
-            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: smokePager.moveNext, enable: smokePager.currentPageIndex() < smokePager.maxPageIndex()\">&gt;</button>" +
-            "<button class=\"btn btn-sm btn-light\" data-bind=\"click: smokePager.moveLast, enable: smokePager.currentPageIndex() < smokePager.maxPageIndex()\">&gt;&gt;</button></div>";
-        $('#smokePager').append(pager);
-    };
-    self.renderNoRecords = function () {
-
-        var message = "<span data-bind=\"visible: smokePager.recordCount() == 0\">No records found.</span>";
-        $('#smokePager').append(message);
-    };
-    self.renderPagers();
-    self.renderNoRecords();
-}
-//Model for Smoke Deploys Sorter
-function SorterModelSmoke(sortOptions, records) {
-    var self = this;
-    self.records = GetObservableArray(records);
-    self.sortOptions = ko.observableArray(sortOptions);
-    self.sortDirections = ko.observableArray([
-        {
-            Name: "Desc",
-            Value: "Desc",
-            Sort: true
-        }]);
-    self.currentSortOption = ko.observable(self.sortOptions()[0]);
-    self.currentSortDirection = ko.observable(self.sortDirections()[0]);
-    self.orderedRecords = ko.computed(function () {
-        var records = self.records();
-        var sortOption = self.currentSortOption();
-        var sortDirection = self.currentSortDirection();
-        if (sortOption == null || sortDirection == null) {
-            return records;
-        }
-
-        var sortedRecords = records.slice(0, records.length);
-        SortArray(sortedRecords, sortDirection.Sort, sortOption.Sort);
-        return sortedRecords;
-    }).extend({ throttle: 5 });
-}
-//Model for Smoke Deploys Filter
-function FilterModelSmoke(filters, records) {
-    var self = this;
-    self.records = GetObservableArray(records);
-    self.filters = ko.observableArray(filters);
-    self.activeFilters = ko.computed(function () {
-        var filters = self.filters();
-        var activeFilters = [];
-        for (var index = 0; index < filters.length; index++) {
-            var filter = filters[index];
-            //For deploy status
-            if (filter.CurrentOption) {
-                var filterOption = filter.CurrentOption();
-                var all = "All";
-                if (filterOption && filterOption.FilterValue == all) {
-                    console.log("All current deploys");
-                    var activeFilter = {
-                        Filter: filter,
-                        IsFiltered: function (filter, record) {
-                            var filterOption = filter.CurrentOption();
-                            if (!filterOption) {
-                                return;
-                            }
-                            var recordValue = filter.RecordValue(record);
-                            return recordValue === "Not Ready";
-                        }
-                    };
-                    activeFilters.push(activeFilter);
-                }
-                else if (filterOption && filterOption.FilterValue != all) {
-                    console.log("Toggle option");
-                    var activeFilter = {
-                        Filter: filter,
-                        IsFiltered: function (filter, record) {
-                            var filterOption = filter.CurrentOption();
-                            if (!filterOption) {
-                                return;
-                            }
-
-                            var recordValue = filter.RecordValue(record);
-                            return recordValue != filterOption.FilterValue; //NoMat
-                        }
-                    };
-                    activeFilters.push(activeFilter);
-                }
-
-            }
-            //For deploy time difference
-            else if (filter.CurrentTimeOption) {
-                var filterOption = filter.CurrentTimeOption();
-                if (filterOption && filterOption.FilterValue != null) {
-                    console.log("Toggled time");
-                    var activeFilter = {
-                        Filter: filter,
-                        IsFiltered: function (filter, record) {
-                            var filterOption = filter.CurrentTimeOption();
-                            if (!filterOption) {
-                                return;
-                            }
-                            var recordValue = filter.RecordValue(record);
-                            return recordValue >= filterOption.FilterValue;
-                        }
-                    }
-                };
-                activeFilters.push(activeFilter);
-            }
-            //For entering string
-            else if (filter.Value) {
-                var filterValue = filter.Value();
-                if (filterValue == "All") {
-                    console.log("all current deploys");
-                }
-                else if (filterValue && filterValue != "") {
-                    console.log("The filter is not blank");
-                    var activeFilter = {
-                        Filter: filter,
-                        IsFiltered: function (filter, record) {
-                            var filterValue = filter.Value();
-                            filterValue = filterValue.toUpperCase();
-
-                            var recordValue = filter.RecordValue(record);
-                            recordValue = recordValue.toUpperCase();
-                            return recordValue.indexOf(filterValue) == -1;
-                        }
-                    };
-                    activeFilters.push(activeFilter);
-                }
-
-
-            }
-
-        }
-        console.log(activeFilters);
-        return activeFilters;
-    });
-    self.filteredRecords = ko.computed(function () {
-        var records = self.records();
-        var filters = self.activeFilters();
-        if (filters.length == 0) {
-            return records;
-        }
-
-        var filteredRecords = [];
-        for (var rIndex = 0; rIndex < records.length; rIndex++) {
-            var isIncluded = true;
-            var record = records[rIndex];
-            for (var fIndex = 0; fIndex < filters.length; fIndex++) {
-                var filter = filters[fIndex];
-                var isFiltered = filter.IsFiltered(filter.Filter, record);
-                if (isFiltered) {
-                    isIncluded = false;
-                    break;
-                }
-            }
-
-            if (isIncluded) {
-                filteredRecords.push(record);
-            }
-        }
-
-        return filteredRecords;
-    });
-}
-
-//Fetches an observable array from the viewmodel
-function GetObservableArray(array) {
-    if (typeof (array) == 'function') {
-        return array;
-    }
-
-    return ko.observableArray(array);
-}
-
-//Compares string to case insensitive
-function CompareCaseInsensitive(left, right) {
-    if (left == null) {
-        return right == null;
-    }
-    else if (right == null) {
-        return false;
-    }
-
-    return left.toUpperCase() <= right.toUpperCase();
-}
-
-//Gets options from array
-function GetOption(name, value, filterValue) {
-    var option = {
-        Name: name,
-        Value: value,
-        FilterValue: filterValue
-    };
-    return option;
-}
-
-//Sorts the array
-function SortArray(array, direction, comparison) {
-    if (array == null) {
-        return [];
-    }
-
-    for (var oIndex = 0; oIndex < array.length; oIndex++) {
-        var oItem = array[oIndex];
-        for (var iIndex = oIndex + 1; iIndex < array.length; iIndex++) {
-            var iItem = array[iIndex];
-            var isOrdered = comparison(oItem, iItem);
-            if (isOrdered == direction) {
-                array[iIndex] = oItem;
-                array[oIndex] = iItem;
-                oItem = iItem;
-            }
-        }
-    }
-
-    return array;
-}
-
+$(document).ready(function () {
+   
+});
 /* Open when someone selects a record */
 function openNav() {
 

@@ -32,6 +32,31 @@
             <div class="dev-left-panel">
                 <!------Current Deploys------------------------>
                 <h3 style="text-align:center; width:100%">Current Deploys</h3>
+                <!------Filter--------------------------------->
+                <div class="filter-container" style="text-align: left">
+                    <div class="filter-first">
+                        <div style="text-align:left">
+                            <span>Deploy Status: </span>
+                            <select id="ctlCurrentType" data-bind="options: $root.typeArray,
+                                                                    optionsText: 'text',
+                                                                    value: $root.currentSelectedType,
+                                                                    event: {change: $root.cacheCurrentType}"></select>
+                        </div>
+                    </div>
+                    <div class="filter-second">
+                        <div>
+                            <span>Timespan: </span>
+                            <select id="ctlCurrentTime" data-bind="options: $root.timeArray,
+                                                                    optionsText: 'text',
+                                                                    value: $root.currentSelectedTime,
+                                                                    event: {change: $root.cacheCurrentTime}"></select>
+                        </div>
+                    </div>
+                    <div class="filter-third">
+                        <span>Contains: </span>
+                        <input style="height: 25px" />
+                    </div>
+                </div>
                 <br />
                 <div id="TableCurrent" style="overflow-x: auto">
                     <table class="table" id="CurrentDeploysTable" data-bind="visible: !loading()">
@@ -47,7 +72,7 @@
                                 <th>...</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: currentDeploys().sort(function (l, r) { return (l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1 ) : (l.depStartTime() < r.depStartTime() ? 1 : -1) })" class="table">
+                        <tbody data-bind="foreach: currentDeploys().sort($root.sortByDate)" class="table">
                             <tr data-bind="template: {name: $root.displayModeC, data: $data }" class="table table-on-hover"></tr>
                         </tbody>
                     </table>
@@ -87,6 +112,31 @@
                 <div class="smoke-panel-header">
                     <h3>Smoke Queue</h3>
                 </div>
+                <!------Filter--------------------------------->
+                <div class="filter-container" style="text-align: left">
+                    <div class="filter-first">
+                        <div style="text-align:left">
+                            <span>Deploy Status: </span>
+                            <select id="ctlSmokeType" data-bind="options: $root.smokeArray,
+                                                                    optionsText: 'text',
+                                                                    value: $root.smokeSelectedType,
+                                                                    event: {change: $root.cacheSmokeType}"></select>
+                        </div>
+                    </div>
+                    <div class="filter-second">
+                        <div>
+                            <span>Timespan: </span>
+                            <select id="ctlSmokeTime" data-bind="options: $root.timeArray,
+                                                                    optionsText: 'text',
+                                                                    value: $root.smokeSelectedTime,
+                                                                    event: {change: $root.cacheSmokeTime}"></select>
+                        </div>
+                    </div>
+                    <div class="filter-third">
+                        <span>Contains: </span>
+                        <input style="height: 25px" />
+                    </div>
+                </div>
                 <br />
                 <div>
                     <table class="table">
@@ -99,7 +149,7 @@
                                 <th>Smoke Status</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: smokeDeploys()">
+                        <tbody data-bind="foreach: smokeDeploys">
                             <tr data-bind="template: { name: 'read-template-s', data: $data }" class="table table-on-hover"></tr>
                         </tbody>
                     </table>

@@ -46,6 +46,7 @@ namespace DeployTrackerMVC2.Controllers
             patch.TryGetPropertyValue(changedProperty, out changedPropertyValue);
 
             Hub.Clients.All.updateDeploy(deployToPatch.depID, changedProperty, changedPropertyValue);
+            System.Diagnostics.Debug.WriteLine("Deploy has been patched: " + deployToPatch.depID + ", " + changedProperty + ", " + changedPropertyValue);
             return deployToPatch;
         }
 

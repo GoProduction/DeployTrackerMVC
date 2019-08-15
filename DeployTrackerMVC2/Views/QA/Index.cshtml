@@ -30,41 +30,36 @@
         <div class="row">
             <!--Current and Queued Tables column-->
             <div class="qa-left-panel">
+                
                 <!------CURRENT DEPLOYS-------------------------------------------------------------------------------------------------->
                 <div class="main-header">
                     <h3>Current Deploys</h3>
                 </div>
                 <!------Filter--------------------------------->
                 <div class="filter-container" style="text-align: left">
-                    <div class="filter-first" data-bind="foreach: currentFilter.filters">
-                        <div data-bind="if: Type == 'select'" style="text-align:left">
+                    <div class="filter-first">
+                        <div style="text-align:left">
                             <span>Deploy Status: </span>
-                            <select id="ctlCurrentType" data-bind="options: Options, 
-                                                                    optionsText: 'Name', 
-                                                                    value: CurrentOption,
-                                                                    optionsAfterRender: $root.loadCurrentType,
+                            <select id="ctlCurrentType" data-bind="options: $root.typeArray,
+                                                                    optionsText: 'text',
+                                                                    value: $root.currentSelectedType,
                                                                     event: {change: $root.cacheCurrentType}"></select>
                         </div>
                     </div>
-                    <div class="filter-second" data-bind="foreach: currentFilter.filters">
-                        <div data-bind="if: Type == 'selectTime'">
+                    <div class="filter-second">
+                        <div>
                             <span>Timespan: </span>
-                            <select id="ctlCurrentTime" data-bind="options: Times, optionsText: 'Name', value: CurrentTimeOption"></select>
+                            <select id="ctlCurrentTime" data-bind="options: $root.timeArray, 
+                                                                    optionsText: 'text',
+                                                                    value: $root.currentSelectedTime,
+                                                                    event: {change: $root.cacheCurrentTime}"></select>
                         </div>
-                    </div>
-                    <!--Sorter (Not displayed)-->
-                    <div style="display:none">
-                        <span style="font-weight:bold">Sort By: </span>
-                        <select data-bind="options: currentSorter.sortOptions, optionsText: 'Name', value: currentSorter.currentSortOption"></select>
-                        <span style="font-weight:bold">Direction: </span>
-                        <select data-bind="options: currentSorter.sortDirections, optionsText: 'Name', value: currentSorter.currentSortDirection"></select>
                     </div>
                     <div class="filter-third">
                         <span>Contains: </span>
                         <input style="height: 25px" />
                     </div>
                 </div>
-                <div class="pager-style" id="currentPager"></div>
                 <!------Table--------------------------------->
                 <div id="TableCurrent" style="overflow-x: auto">
                     <table class="table table-striped" id="CurrentDeploysTable">
@@ -80,8 +75,7 @@
                                 <th class="column2">Status</th>
                             </tr>
                         </thead>
-
-                        <tbody data-bind="foreach: currentPager.currentPageRecords" class="table">
+                        <tbody id="TableCurrentBody" data-bind="foreach: currentDeploys().sort($root.sortByDate)" class="table">
                             <tr class="table-on-hover">
                                 <!--ID field-->
                                 <td style="display:none" data-bind="text: depID"></td>
@@ -174,31 +168,29 @@
                 <br />
                 <!------Filter--------------------------------->
                 <div class="filter-container" style="text-align: left">
-                    <div class="filter-first" data-bind="foreach: smokeFilter.filters">
-                        <div data-bind="if: Type == 'selectSmoke'" style="text-align:left">
+                    <div class="filter-first">
+                        <div style="text-align:left">
                             <span>Deploy Status: </span>
-                            <select data-bind="options: Options, optionsText: 'Name', value: CurrentOption"></select>
+                            <select id="ctlSmokeType" data-bind="options: $root.smokeArray,
+                                                                    optionsText: 'text',
+                                                                    value: $root.smokeSelectedType,
+                                                                    event: {change: $root.cacheSmokeType}"></select>
                         </div>
                     </div>
-                    <div class="filter-second" data-bind="foreach: smokeFilter.filters">
-                        <div data-bind="if: Type == 'selectTime'">
+                    <div class="filter-second">
+                        <div>
                             <span>Timespan: </span>
-                            <select data-bind="options: Times, optionsText: 'Name', value: CurrentTimeOption"></select>
+                            <select id="ctlSmokeTime" data-bind="options: $root.timeArray,
+                                                                    optionsText: 'text',
+                                                                    value: $root.smokeSelectedTime,
+                                                                    event: {change: $root.cacheSmokeTime}"></select>
                         </div>
-                    </div>
-                    <!--Sorter (Not displayed) -->
-                    <div style="display:none">
-                        <span style="font-weight:bold">Sort By: </span>
-                        <select data-bind="options: smokeSorter.sortOptions, optionsText: 'Name', value: smokeSorter.currentSortOption"></select>
-                        <span style="font-weight:bold">Direction: </span>
-                        <select data-bind="options: smokeSorter.sortDirections, optionsText: 'Name', value: smokeSorter.currentSortDirection"></select>
                     </div>
                     <div class="filter-third">
                         <span>Contains: </span>
                         <input style="height: 25px" />
                     </div>
                 </div>
-                <div class="pager-style" id="smokePager"></div>
                 <div>
                     <table class="table">
                         <thead>
@@ -211,7 +203,7 @@
                                 <th>...</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: smokePager.currentPageRecords">
+                        <tbody data-bind="foreach: smokeDeploys().sort($root.sortByDate)">
                             <tr class="table table-on-hover">
                                 <td style="display:none" data-bind="text: depID"></td>
                                 <!--Feature field-->

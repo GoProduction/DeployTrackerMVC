@@ -5,14 +5,77 @@ var smokeButton = document.getElementById("smokeToggleButton");
 var objstatus = '';
 var selID = '';
 
+//Cache Variables
+////Current Deploys
+//////Type
+var ctStore = localStorage['curTypeCached'];
+if (ctStore) var curTypeCached = JSON.parse(ctStore);
+else curTypeCached = { val: 'All' };
+console.log("curTypeCached is");
+console.log(curTypeCached);
+//////Time
+var ctmStore = localStorage['curTimeCached'];
+if (ctmStore) var curTimeCached = JSON.parse(ctmStore);
+else curTimeCached = { val: '24' };
+console.log("curTimeCached is");
+console.log(curTimeCached);
+
+////Smoke Deploys
+//////Type
+var stStore = localStorage['smokeTypeCached'];
+if (stStore) var smokeTypeCached = JSON.parse(stStore);
+else smokeTypeCached = { val: 'All' };
+console.log("smokeTypeCached is ");
+console.log(smokeTypeCached);
+//////Time
+var stmStore = localStorage['smokeTimeCached'];
+if (stmStore) var smokeTimeCached = JSON.parse(stmStore);
+else smokeTimeCached = { val: '24' };
+console.log('smokeTimeCached is ');
+console.log(smokeTimeCached);
 //Loading function
 $(window).on('load', function () {
     $(".loading-class").fadeOut("slow");
 });
 
-var DeployViewModel = function (deploySignalR) {
+//Knockout find function (used for filter)
+ko.observableArray.fn.find = function (prop, data) {
+    var valueToMatch = data[prop];
+    return ko.utils.arrayFirst(this(), function (item) {
+        return item[prop] === valueToMatch;
+    });
+};
+
+var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached) {
 
     var self = this;
+    //FILTER OBSERVABLES FOR TABLES
+    self.typeArray = ko.observableArray([
+        { text: 'All Current Deploys', val: 'All' },
+        { text: 'Deploying', val: 'Deploying' },
+        { text: 'Completed', val: 'Completed' },
+        { text: 'Failed', val: 'Failed' }
+    ]) //Used for type filter
+    self.timeArray = ko.observableArray([
+        { text: 'Past 24 hours', val: '24' },
+        { text: 'Past 7 days', val: '168' },
+        { text: 'Past month', val: '730' }
+    ]); //Used for time filter
+    self.smokeArray = ko.observableArray([
+        { text: 'All smoke statuses', val: 'All' },
+        { text: 'Ready', val: 'Ready' },
+        { text: 'Pass', val: 'Pass' },
+        { text: 'Conditional', val: 'Conditional' },
+        { text: 'Fail', val: 'Fail' }
+    ]);
+    self.currentSelectedType = ko.observable(self.typeArray.find("val", curTypeCached));
+    self.currentSelectedTime = ko.observable(self.timeArray.find("val", curTimeCached));
+    self.smokeSelectedType = ko.observable(self.smokeArray.find("val", smokeTypeCached));
+    self.smokeSelectedTime = ko.observable(self.timeArray.find("val", smokeTimeCached));
+    self.checkVMCurrent = function () {
+        console.log(self.currentSelectedType);
+        console.log(self.currentSelectedTime);
+    }
 
     //OBSERVABLE ARRAYS////////////////////////////////////////////////////////
     self.deploy = ko.observableArray(); // Deploy observable array that will be called through HTML
@@ -257,12 +320,36 @@ var DeployViewModel = function (deploySignalR) {
     }); // Queued Deploys table filter
     self.currentDeploys = ko.computed(function () {
         return ko.utils.arrayFilter(self.deploy(), function (rec) {
-            return rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed';
+
+            var date = rec.depStartTime();
+            var val = dateTimeDifference(date);
+
+            if (val <= self.currentSelectedTime().val) {
+                if (self.currentSelectedType().val != 'All') {
+                    return (rec.depStatus() === self.currentSelectedType().val)
+                }
+                else {
+                    return (rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed')
+                }
+
+            };
+
         });
     }); // Current Deploys table filter
     self.smokeDeploys = ko.computed(function () {
         return ko.utils.arrayFilter(self.deploy(), function (rec) {
-            return rec.depSmoke() === 'Ready' || rec.depSmoke() === 'Fail' || rec.depSmoke() === 'Pass' || rec.depSmoke() === 'Conditional';
+
+            var date = rec.depStartTime();
+            var val = dateTimeDifference(date);
+            if (val <= self.smokeSelectedTime().val) {
+                if (self.smokeSelectedType().val != 'All') {
+                    return (rec.depSmoke() === self.smokeSelectedType().val)
+                }
+                else {
+                    return rec.depSmoke() === 'Ready' || rec.depSmoke() === 'Fail' || rec.depSmoke() === 'Pass' || rec.depSmoke() === 'Conditional';
+                }
+            }
+
         });
     }); // Current Deploys table filter
     self.commentsFiltered = ko.computed(function () {
@@ -449,13 +536,91 @@ var DeployViewModel = function (deploySignalR) {
         self.updateViewModelComment();
         cancelComment();
     } //Submit new comment (in RECORD DETAILS modal)
+
+    //SORTING FUNCTION
+    self.sortByDate = function (l, r) {
+
+        return ((l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1))
+    }
+
+    //CACHING FUNCTIONS/////////////////////////////////////////////
+    self.cacheCurrentType = function () {
+        var ctl = document.getElementById("ctlCurrentType");
+        var sel = ctl.options[ctl.selectedIndex];
+        if (ctl.selectedIndex == 0) {
+            curTypeCached = { val: "All" };
+            localStorage['curTypeCached'] = JSON.stringify(curTypeCached);
+
+        }
+        else {
+            curTypeCached = { val: sel.text };
+            localStorage['curTypeCached'] = JSON.stringify(curTypeCached);
+
+        }
+
+        console.log("Cached as ");
+        console.log(curTypeCached);
+    }
+    self.cacheCurrentTime = function () {
+        var ctl = document.getElementById("ctlCurrentTime");
+        if (ctl.selectedIndex == 0) {
+            curTimeCached = { val: '24' };
+            localStorage['curTimeCached'] = JSON.stringify(curTimeCached);
+        }
+        else if (ctl.selectedIndex == 1) {
+            curTimeCached = { val: '168' };
+            localStorage['curTimeCached'] = JSON.stringify(curTimeCached);
+        }
+        else if (ctl.selectedIndex == 2) {
+            curTimeCached = { val: '730' };
+            localStorage['curTimeCached'] = JSON.stringify(curTimeCached);
+        }
+    }
+    self.cacheSmokeType = function () {
+        var ctl = document.getElementById("ctlSmokeType");
+        var sel = ctl.options[ctl.selectedIndex];
+        if (ctl.selectedIndex == 0) {
+            smokeTypeCached = { val: "All" };
+            localStorage['smokeTypeCached'] = JSON.stringify(smokeTypeCached);
+
+        }
+        else {
+            smokeTypeCached = { val: sel.text };
+            localStorage['smokeTypeCached'] = JSON.stringify(smokeTypeCached);
+
+        }
+
+        console.log("Cached as ");
+        console.log(smokeTypeCached);
+    }
+    self.cacheSmokeTime = function () {
+        var ctl = document.getElementById("ctlSmokeTime");
+        if (ctl.selectedIndex == 0) {
+            smokeTimeCached = { val: '24' };
+            localStorage['smokeTimeCached'] = JSON.stringify(smokeTimeCached);
+        }
+        else if (ctl.selectedIndex == 1) {
+            smokeTimeCached = { val: '168' };
+            localStorage['smokeTimeCached'] = JSON.stringify(smokeTimeCached);
+        }
+        else if (ctl.selectedIndex == 2) {
+            smokeTimeCached = { val: '730' };
+            localStorage['smokeTimeCached'] = JSON.stringify(smokeTimeCached);
+        }
+    }
+    self.loadCurrentType = function (option, item) {
+
+        ko.applyBindingsToNode(option.parentElement, self.currentSelectedType, item);
+        console.log("CurrentOption is loaded as: ");
+        console.log(self.CurrentOption);
+    }
 }
 
 //SignalR Events
 $(function () {
 
     var deploySignalR = $.connection.deploy;
-    var viewModel = new DeployViewModel(deploySignalR);
+    var viewModel = new DeployViewModel(deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached);
     var findDeploy = function (id) {
         return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
             if (item.depID == id) {
@@ -737,4 +902,12 @@ $("#DetailsView").on("hidden.bs.modal", function () {
 
 String.prototype.trim = function () {
     return this.replace(/^\s+|\s+$/g, "");
+}
+
+//Calculates the difference in hours between two dates
+function dateTimeDifference(date) {
+    var now = new Date();
+    var then = new Date(date);
+    var hours = Math.abs(now.valueOf() - then.valueOf()) / 3600000
+    return hours;
 }
