@@ -46,6 +46,22 @@ ko.observableArray.fn.find = function (prop, data) {
     });
 };
 
+//Model for Deploy
+var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDate, depPlannedTime, depStartTime, depEndTime, depStatus, depSmoke) {
+    var self = this;
+    self.depID = depID;
+    self.depFeature = ko.observable(ko.utils.unwrapObservable(depFeature));
+    self.depVersion = ko.observable(ko.utils.unwrapObservable(depVersion));
+    self.depEnvironment = ko.observable(ko.utils.unwrapObservable(depEnvironment));
+    self.depPlannedDate = ko.observable(ko.utils.unwrapObservable(depPlannedDate));
+    self.depPlannedTime = ko.observable(depPlannedTime);
+    self.depStartTime = ko.observable(ko.utils.unwrapObservable(depStartTime));
+    self.depEndTime = ko.observable(ko.utils.unwrapObservable(depEndTime));
+    self.depStatus = ko.observable(ko.utils.unwrapObservable(depStatus));
+    self.depSmoke = ko.observable(ko.utils.unwrapObservable(depSmoke));
+}
+
+//MAIN VIEW MODEL
 var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached) {
 
     var self = this;
@@ -99,6 +115,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.obsCheckEdit = ko.observable(0); // Observable that is used to check if any field is being edited
     self.loading = ko.observable(true); // Loading function that triggers the loading animation
     self.obsID = ko.observable(''); // Observable that is used to filter any results by ID
+    self.deployBeingEdited = ko.observable(0);
+    self.originalDeploy = ko.observable(0);
+    self.tempTime = ko.observable(new Date());
 
     //FUNCTIONS///////////////////////////////////////////////////////////
     self.dateAndUser = function (date, user) {
@@ -189,16 +208,52 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         }
     } // Updates the viewmodel when new COMMENT has been submitted
     self.edit = function (deploy) {
-        self.obsCheckEdit(self.obsCheckEdit() + 1);
-        deploy.Edit(true);
+        self.originalDeploy(deploy);
+        self.deployBeingEdited(new Deploy(
+            deploy.depID,
+            deploy.depFeature,
+            deploy.depVersion,
+            deploy.depEnvironment,
+            deploy.depPlannedDate,
+            deploy.depPlannedTime,
+            deploy.depStartTime,
+            deploy.depEndTime,
+            deploy.depStatus,
+            deploy.depSmoke));
         console.log('Edit triggered...');
-        deploySignalR.server.lock(deploy.depID);
+        console.log("Deploy being edited is: ");
+        console.log(self.deployBeingEdited);
+        
 
     } // Function to enable the edit-template, AND trigger the signalr LOCK event for all other clients
-    self.done = function (deploy) {
-        self.obsCheckEdit(self.obsCheckEdit() - 1);
-        deploy.Edit(false);
-        deploySignalR.server.unlock(deploy.depID);
+    self.done = function () {
+        var updatedDeploy = ko.utils.unwrapObservable(self.deployBeingEdited());
+
+        var depID = updatedDeploy.depID;
+        var depFeature = ko.utils.unwrapObservable(updatedDeploy.depFeature);
+        var depVersion = ko.utils.unwrapObservable(updatedDeploy.depVersion);
+        var depEnvironment = ko.utils.unwrapObservable(updatedDeploy.depEnvironment);
+        var depPlannedDate = ko.utils.unwrapObservable(updatedDeploy.depPlannedDate);
+        var depPlannedTime = ko.utils.unwrapObservable(updatedDeploy.depPlannedTime);
+        var depStartTime = ko.utils.unwrapObservable(updatedDeploy.depStartTime);
+        var depEndTime = ko.utils.unwrapObservable(updatedDeploy.depEndTime);
+        var depStatus = ko.utils.unwrapObservable(updatedDeploy.depStatus);
+        var depSmoke = ko.utils.unwrapObservable(updatedDeploy.depSmoke);
+
+        self.originalDeploy().depID = depID;
+        self.originalDeploy().depFeature(depFeature);
+        self.originalDeploy().depVersion(depVersion);
+        self.originalDeploy().depEnvironment(depEnvironment);
+        self.originalDeploy().depPlannedDate(depPlannedDate);
+        self.originalDeploy().depPlannedTime(depPlannedTime);
+        self.originalDeploy().depStartTime(depStartTime);
+        self.originalDeploy().depEndTime(depEndTime);
+        self.originalDeploy().depStatus(depStatus);
+        self.originalDeploy().depSmoke(depSmoke);
+
+        self.deployBeingEdited(0);
+        self.originalDeploy(0);
+        
     } // Function to disable the 'LOCKED' status of the row
     self.watchModel = function (model, callback) {
         for (var key in model) {
@@ -214,6 +269,12 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             callback(key, val);
         });
     } // Subscribes to observable objects, and listens for changes
+    self.checkObservables = function () {
+        console.log("originalDeploy:");
+        console.log(self.originalDeploy);
+        console.log("deployBeingEdited:");
+        console.log(self.deployBeingEdited);
+    }
 
     //modelChanged function, to trigger when a row value changes (with jQuery PATCH request)
     //PATCH request will only send the changed property to the database, minimizing network traffic
@@ -716,7 +777,51 @@ $(function () {
 
 });
 
+//Enables the input fields in the record modal
+function enableEditModal(obsCheckEdit) {
+    var feature = document.getElementById("ctlFeature");
+    var version = document.getElementById("ctlVersion");
+    var environment = document.getElementById("ctlEnvironment");
+    var plannedDate = document.getElementById("ctlPlannedDate");
+    var plannedTime = document.getElementById("ctlPlannedTime");
+    var status = document.getElementById("ctlStatus");
+    var edit = document.getElementById("btnEdit");
+    var save = document.getElementById("btnSave");
 
+    if (obsCheckEdit >= 0) {
+        feature.disabled = false;
+        version.disabled = false;
+        environment.disabled = false;
+        plannedDate.disabled = false;
+        plannedTime.disabled = false;
+        status.disabled = false;
+        edit.style.display = 'none';
+        save.style.display = 'block';
+    }
+
+}
+function disableEditModal(obsCheckEdit) {
+    var feature = document.getElementById("ctlFeature");
+    var version = document.getElementById("ctlVersion");
+    var environment = document.getElementById("ctlEnvironment");
+    var plannedDate = document.getElementById("ctlPlannedDate");
+    var plannedTime = document.getElementById("ctlPlannedTime");
+    var status = document.getElementById("ctlStatus");
+    var edit = document.getElementById("btnEdit");
+    var save = document.getElementById("btnSave");
+
+    if (obsCheckEdit <= 0) {
+        feature.disabled = true;
+        version.disabled = true;
+        environment.disabled = true;
+        plannedDate.disabled = true;
+        plannedTime.disabled = true;
+        status.disabled = true;
+        edit.style.display = 'block';
+        save.style.display = 'none';
+    }
+
+}
 /* Open when someone selects a record */
 function openNav() {
     

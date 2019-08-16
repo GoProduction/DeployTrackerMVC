@@ -1,4 +1,27 @@
-﻿ko.bindingHandlers.dateFormatted = {
+﻿ko.bindingHandlers['modal'] = {
+    init: function (element, valueAccessor, allBindingsAccessor) {
+        var allBindings = allBindingsAccessor();
+        var $element = $(element);
+        $element.addClass('hide modal');
+
+        if (allBindings.modalOptions && allBindings.modalOptions.beforeClose) {
+            $element.on('hide', function () {
+                var value = ko.utils.unwrapObservable(valueAccessor());
+                return allBindings.modalOptions.beforeClose(value);
+            });
+        }
+    },
+    update: function (element, valueAccessor) {
+        var value = ko.utils.unwrapObservable(valueAccessor());
+        if (value) {
+            $(element).removeClass('hide').modal('show');
+        } else {
+            $(element).modal('hide');
+        }
+    }
+};
+
+ko.bindingHandlers.dateFormatted = {
     init: function (element, valueAccessor, allBindingsAccessor, viewModel) {
         ko.utils.registerEventHandler(element, 'change', function () {
             var value = valueAccessor();
@@ -104,9 +127,10 @@ ko.bindingHandlers.timepickerInput = {
         // Get the value of the value binding
         var value = valueAccessor();
 
-        console.log('The value of the element should be here – ', value());
+        console.log('The value of the element should be here – ');
+        console.log(value);
         // If the value is not a valid moment in time,
-        console.log(!moment(value()).isValid());
+        //console.log(!moment(value()).isValid());
         //handle the field changing
         ko.utils.registerEventHandler(element, "change", function () {
             var observable = valueAccessor();

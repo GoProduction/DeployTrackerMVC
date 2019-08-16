@@ -22,10 +22,6 @@
     <div class="loading-class"></div>
     <!--Tables View-->
     <div id="TablesView">
-        <div style="display:none">
-            <span>Edit-Mode?:</span>
-            <input id="ctlEditMode" type="text" data-bind="value: obsCheckEdit" />
-        </div>
         <div class="loadingIndicator" data-bind="visible: loading()" id="TableDiv"></div>
         <div class="row">
             <!--Current and Queued Tables column-->
@@ -73,7 +69,67 @@
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: currentDeploys().sort($root.sortByDate)" class="table">
-                            <tr data-bind="template: {name: $root.displayModeC, data: $data }" class="table table-on-hover"></tr>
+                            <tr class="table table-on-hover">
+                                <!--ID field-->
+                                <td style="display:none" data-bind="text: depID"></td>
+                                <!--Feature field-->
+                                <td data-bind="text: depFeature,
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-deploying': depStatus() === 'Deploying',
+                                                        'css-failed': depStatus() === 'Failed',
+                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                <!--Version field-->
+                                <td class="column3"
+                                    data-bind="text: depVersion,
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-deploying': depStatus() === 'Deploying',
+                                                'css-failed': depStatus() === 'Failed',
+                                                'css-completed': depStatus() === 'Completed'}"></td>
+                                <!--Environment field-->
+                                <td data-bind="text: depEnvironment,
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-deploying': depStatus() === 'Deploying',
+                                                        'css-failed': depStatus() === 'Failed',
+                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                <!--Start Time field-->
+                                <td class="column1"
+                                    data-bind="timeFormatted: depStartTime,
+                                                format: 'h:mm a',
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-deploying': depStatus() === 'Deploying',
+                                                        'css-failed': depStatus() === 'Failed',
+                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                <!--End Time field-->
+                                <td class="column1"
+                                    data-bind="timeFormatted: depEndTime,
+                                                format: 'h:mm a',
+                                                event: { click: $root.selectRecord},
+                                                css: { 'css-deploying': depStatus() === 'Deploying',
+                                                        'css-failed': depStatus() === 'Failed',
+                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                <!--Status field-->
+                                <td class="column2"
+                                    data-bind='text: depStatus,
+                                                event: { click: $root.selectRecord},
+                                                css: { "css-deploying": depStatus() === "Deploying",
+                                                        "css-failed": depStatus() === "Failed",
+                                                        "css-completed": depStatus() === "Completed"}'></td>
+                                <!--Button control field-->
+                                <td data-bind="css: { 'css-deploying': depStatus() === 'Deploying',
+                                                        'css-failed': depStatus() === 'Failed',
+                                                        'css-completed': depStatus() === 'Completed'}">
+                                    <!--STATUS BUTTON-->
+                                    <button id="btnStatusCurrent" class="btn btn-sm btn-primary" type="button" data-toggle="modal" data-bind="click: $root.openModal">
+                                        <i class="fa fa-tasks"></i>
+                                        <span class="button-text">Update Status</span>
+                                    </button>
+                                    <!--EDIT BUTTON-->
+                                    <button class="btn btn-sm btn-light" data-bind="event: {click: $root.edit}">
+                                        <i class="fa fa-edit"></i>
+                                        <span class="button-text">Edit</span>
+                                    </button>
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -150,7 +206,13 @@
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: smokeDeploys">
-                            <tr data-bind="template: { name: 'read-template-s', data: $data }" class="table table-on-hover"></tr>
+                            <tr class="table table-on-hover">
+                                <td style="display:none" data-bind="text: depID"></td>
+                                <td data-bind="text: depFeature, event: { click: $root.selectRecord}"></td>
+                                <td data-bind="text: depVersion, event: { click: $root.selectRecord}"></td>
+                                <td data-bind="text: depEnvironment, event: { click: $root.selectRecord}"></td>
+                                <td data-bind="text: depSmoke, event: { click: $root.selectRecord}"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -213,7 +275,7 @@
                     <span class="button-text">Update Status</span>
                 </button>
                 <!--EDIT BUTTON-->
-                <button class="btn btn-sm btn-light" data-bind="click: $root.edit">
+                <button class="btn btn-sm btn-light" data-bind="click: $parent.edit">
                     <i class="fa fa-edit"></i>
                     <span class="button-text">Edit</span>
                 </button>
@@ -381,12 +443,21 @@
     <div class="modal fade right" id="DetailsView" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h2 style="text-align: center">Deploy Details</h2>
-                    <!-- Button to close the overlay navigation -->
-                    <button type="button" class="close" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                <!--Main Header-->
+                <div class="record-modal-header" id="recordModalHeader">
+                    <div>
+                        <span data-bind="text: selected().depFeature"></span>
+                        <span data-bind="text: selected().depVersion"></span>
+                    </div>
+                    <div>
+                        <span>Deploy Status: </span>
+                        <span data-bind="text: selected().depStatus" class="status-text"></span>
+                    </div>
+                </div>
+                <!--Smoke Status Header-->
+                <div class="record-modal-header" id="smokeHeader">
+                    <span>Smoke Status: </span>
+                    <span data-bind="text: selected().depSmoke" class="status-text"></span>
                 </div>
                 <!-- Overlay content -->
                 <div class="modal-body">
@@ -394,40 +465,40 @@
                     <div class="row">
                         <div id="leftColumn" class="col record-modal-col">
                             <div>
-                                <h5>ID: </h5>
-                                <input id="ctlID" type="text" data-bind="value: selected().depID" disabled />
+                                <span class="record-label">ID: </span>
+                                <span id="ctlID" data-bind="text: selected().depID" />
                             </div>
                             <div>
-                                <h5>Feature: </h5>
-                                <input id="ctlFeature" type="text" data-bind="value: selected().depFeature" disabled />
+                                <span class="record-label">Feature: </span>
+                                <span id="ctlFeature" data-bind="text: selected().depFeature"/>
                             </div>
                             <div>
-                                <h5>Version: </h5>
-                                <input id="ctlVersion" type="text" data-bind="value: selected().depVersion" disabled />
+                                <span class="record-label">Version: </span>
+                                <span id="ctlVersion" data-bind="text: selected().depVersion"/>
                             </div>
                             <div>
-                                <h5>Environment: </h5>
-                                <input id="ctlEnvironment" type="text" data-bind="value: selected().depEnvironment" disabled />
+                                <span class="record-label">Environment: </span>
+                                <span id="ctlEnvironment" data-bind="text: selected().depEnvironment" />
                             </div>
                             <div>
-                                <h5>Planned Date: </h5>
-                                <input id="ctlPlannedDate" type="text" data-bind="dateFormatted: selected().depPlannedDate, format: 'MMMM DD YYYY'" disabled />
+                                <span class="record-label">Planned Date: </span>
+                                <span id="ctlPlannedDate" data-bind="dateFormatted: selected().depPlannedDate, format: 'MMMM DD YYYY'" />
                             </div>
                             <div>
-                                <h5>Planned Time: </h5>
-                                <input id="ctlPlannedTime" type="text" data-bind="timeFormatted: selected().depPlannedTime, format: 'LT'" disabled />
+                                <span class="record-label">Planned Time: </span>
+                                <span id="ctlPlannedTime" data-bind="timeFormatted: selected().depPlannedTime, format: 'LT'" />
                             </div>
                             <div>
-                                <h5>Start Time: </h5>
-                                <input id="ctlStartTime" type="text" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" disabled />
+                                <span class="record-label">Start Time: </span>
+                                <span id="ctlStartTime" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" />
                             </div>
                             <div>
-                                <h5>End Time: </h5>
-                                <input id="ctlEndTime" type="text" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" disabled />
+                                <span class="record-label">End Time: </span>
+                                <span id="ctlEndTime" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" />
                             </div>
                             <div>
-                                <h5>Status: </h5>
-                                <input id="ctlStatus" type="text" data-bind="value: selected().depStatus" disabled />
+                                <span class="record-label">Status: </span>
+                                <span id="ctlStatus" data-bind="text: selected().depStatus" />
                             </div>
                         </div>
                         <!--Comments column-->
@@ -469,6 +540,54 @@
                 <div class="modal-footer">
                     <button type="button" class="btnNew btn-secondary" data-dismiss="modal">Close</button>
                 </div>
+            </div>
+        </div>
+    </div>
+    <!--Edit Modal-->
+    <div data-bind="modal: deployBeingEdited" class="modal fade right" role="dialog" tabindex="-1">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <form data-bind="submit: $root.done">
+                    <div class="modal-header">
+                        <h3>Edit</h3>
+                        <button data-bind="click: $root.checkObservables">Check Observables</button>
+                    </div>
+                    <div class="modal-body">
+                        <span>ID</span>
+                        <input type="text" class="form-control" data-bind="value: deployBeingEdited().depID" disabled />
+                        <span>Feature</span>
+                        <select data-bind="options: $root.feature,
+                                    optionsText: 'feaName',
+                                    optionsValue: 'feaName',
+                                    value: deployBeingEdited().depFeature"></select>
+                        <span>Version</span>
+                        <input type="text" class="form-control" data-bind="value: deployBeingEdited().depVersion, valueUpdate: 'afterkeydown'" />
+                        <span>Environment</span>
+                        <select data-bind="options: $root.environment,
+                                    optionsText: 'envName',
+                                    optionsValue: 'envName',
+                                    value: deployBeingEdited().depEnvironment"></select>
+                        <span>Planned Date</span>
+                        <input type="date" class="form-control" data-bind="dateFormatted: deployBeingEdited().depPlannedDate, format: 'YYYY-MM-DD'" />
+                        <span>Planned Time</span>
+                        <input type="time" class="form-control" data-bind="timepickerInput: deployBeingEdited().depPlannedTime" />
+                        <span>Start Time</span>
+                        <input type="time" class="form-control" data-bind="timeFormatted: deployBeingEdited().depStartTime, format: 'HH:mm'" disabled />
+                        <span>End Time</span>
+                        <input type="time" class="form-control" data-bind="timeFormatted: deployBeingEdited().depEndTime, format: 'HH:mm'" disabled />
+                        <span>Deploy Status</span>
+                        <select data-bind="options: $root.status,
+                                    optionsText: 'tmpStatus',
+                                    optionsValue: 'tmpStatus',
+                                    value: deployBeingEdited().depStatus"></select>
+                        <span>Smoke Status</span>
+                        <input type="text" class="form-control" data-bind="value: deployBeingEdited().depSmoke" disabled/>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" data-dismiss="modal" class="btn btn-danger">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

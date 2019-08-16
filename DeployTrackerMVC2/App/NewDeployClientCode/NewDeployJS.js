@@ -27,7 +27,7 @@ var TempDeployViewModel = function (signalR) {
     self.featureList = ko.observableArray();
     self.environmentList = ko.observableArray();
     self.tempTime = ko.observable(new Date());
-    console.log(self.tempTime);
+    console.log("The temp time is: ", self.tempTime);
 
     //Function to determine the display mode of the table
     self.displayMode = function (deploys) {
