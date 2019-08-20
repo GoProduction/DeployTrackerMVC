@@ -141,3 +141,17 @@ rightRibbon {
     background-color: #808080;
     float: right;
 }
+
+/* Modal Header Colors (Based on Statuses) */
+.css-green {
+    background: rgba(0, 255, 33, .5);
+}
+.css-yellow {
+    background: rgba(255, 255, 0, .5);
+}
+.css-red {
+    background: rgba(255, 0, 0, .5);
+}
+.css-white{
+    background: white;
+}

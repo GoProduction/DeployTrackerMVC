@@ -46,6 +46,7 @@ ko.observableArray.fn.find = function (prop, data) {
     });
 };
 
+
 //Model for Deploy
 var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDate, depPlannedTime, depStartTime, depEndTime, depStatus, depSmoke) {
     var self = this;
@@ -54,17 +55,21 @@ var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlanned
     self.depVersion = ko.observable(ko.utils.unwrapObservable(depVersion));
     self.depEnvironment = ko.observable(ko.utils.unwrapObservable(depEnvironment));
     self.depPlannedDate = ko.observable(ko.utils.unwrapObservable(depPlannedDate));
-    self.depPlannedTime = ko.observable(depPlannedTime);
+    self.depPlannedTime = ko.observable(new Date(ko.unwrap(depPlannedTime)));
     self.depStartTime = ko.observable(ko.utils.unwrapObservable(depStartTime));
     self.depEndTime = ko.observable(ko.utils.unwrapObservable(depEndTime));
     self.depStatus = ko.observable(ko.utils.unwrapObservable(depStatus));
     self.depSmoke = ko.observable(ko.utils.unwrapObservable(depSmoke));
+    console.log("Planned time is: ", self.depPlannedTime);
 }
 
 //MAIN VIEW MODEL
 var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached) {
 
     var self = this;
+    self.loadingVar = ko.observable(0);
+    
+
     //FILTER OBSERVABLES FOR TABLES
     self.typeArray = ko.observableArray([
         { text: 'All Current Deploys', val: 'All' },
@@ -163,7 +168,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                         depVersion: ko.observable(deploy.depVersion),
                         depEnvironment: ko.observable(deploy.depEnvironment),
                         depPlannedDate: ko.observable(deploy.depPlannedDate),
-                        depPlannedTime: ko.observable(new Date(deploy.depPlannedTime)),
+                        depPlannedTime: ko.observable(deploy.depPlannedTime),
                         depStartTime: ko.observable(deploy.depStartTime),
                         depEndTime: ko.observable(deploy.depEndTime),
                         depStatus: ko.observable(deploy.depStatus),
@@ -220,8 +225,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             deploy.depEndTime,
             deploy.depStatus,
             deploy.depSmoke));
-        console.log('Edit triggered...');
-        console.log("Deploy being edited is: ");
+
+        self.disableEdit();
+        console.log("Deploy being viewed is: ");
         console.log(self.deployBeingEdited);
         
 
@@ -253,6 +259,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
         self.deployBeingEdited(0);
         self.originalDeploy(0);
+        self.disableEdit();
         
     } // Function to disable the 'LOCKED' status of the row
     self.watchModel = function (model, callback) {
@@ -274,6 +281,30 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         console.log(self.originalDeploy);
         console.log("deployBeingEdited:");
         console.log(self.deployBeingEdited);
+    }
+    self.enableEdit = function () {
+        //Input fields
+        document.getElementById("editFeature").disabled = false;
+        document.getElementById("editVersion").disabled = false;
+        document.getElementById("editEnvironment").disabled = false;
+        document.getElementById("editPlannedDate").disabled = false;
+        document.getElementById("editPlannedTime").disabled = false;
+        //Footer divs
+        document.getElementById('footerEditDisabled').style.display = 'none';
+        document.getElementById('footerEditEnabled').style.display = 'block';
+        console.log("Edit enabled");
+    }
+    self.disableEdit = function () {
+        //Input fields
+        document.getElementById("editFeature").disabled = true;
+        document.getElementById("editVersion").disabled = true;
+        document.getElementById("editEnvironment").disabled = true;
+        document.getElementById("editPlannedDate").disabled = true;
+        document.getElementById("editPlannedTime").disabled = true;
+        //Footer divs
+        document.getElementById('footerEditDisabled').style.display = 'block';
+        document.getElementById('footerEditEnabled').style.display = 'none';
+        console.log("Edit disabled");
     }
 
     //modelChanged function, to trigger when a row value changes (with jQuery PATCH request)
@@ -335,7 +366,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             }
 
             self.watchModel(obsDeploy, self.modelChanged);
+            
             return obsDeploy;
+           
         }));
         self.loading(false);
     }); // Fetches data from Deploys table
@@ -345,7 +378,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 feaID: feature.feaID,
                 feaName: ko.observable(feature.feaName)
             }
-
+            
             return obsFeature;
         }));
     }); // Fetches data from Features table
@@ -355,7 +388,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 envID: environment.envID,
                 envName: ko.observable(environment.envName)
             }
-
+            
             return obsEnvironment;
         }));
     }); // Featches data from Environments table
@@ -368,10 +401,11 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 comUser: ko.observable(comment.comUser),
                 depID: ko.observable(comment.depID)
             }
-
+            
             return obsComment;
         }));
     }); // Featches data from Comments table
+    
 
     ///TABLE FILTERS////////////////////////////////////////////////////
     self.queuedDeploys = ko.computed(function () {
@@ -415,7 +449,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     }); // Current Deploys table filter
     self.commentsFiltered = ko.computed(function () {
         return ko.utils.arrayFilter(self.comment(), function (rec) {
-            return rec.depID() == self.obsID();
+            return rec.depID() == self.deployBeingEdited().depID;
         });
     }); // Filters the comments section based on record selected
 
@@ -570,7 +604,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var json = {};
         json["comBody"] = commentField.value;
         json["comDateTime"] = dateNow();
-        json["depID"] = self.obsID();
+        json["depID"] = self.deployBeingEdited().depID;
         console.log(JSON.stringify(json));
 
         $.ajax({
@@ -682,6 +716,8 @@ $(function () {
 
     var deploySignalR = $.connection.deploy;
     var viewModel = new DeployViewModel(deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached);
+    //Initialize editPlannedTime field
+    
     var findDeploy = function (id) {
         return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
             if (item.depID == id) {
@@ -777,51 +813,6 @@ $(function () {
 
 });
 
-//Enables the input fields in the record modal
-function enableEditModal(obsCheckEdit) {
-    var feature = document.getElementById("ctlFeature");
-    var version = document.getElementById("ctlVersion");
-    var environment = document.getElementById("ctlEnvironment");
-    var plannedDate = document.getElementById("ctlPlannedDate");
-    var plannedTime = document.getElementById("ctlPlannedTime");
-    var status = document.getElementById("ctlStatus");
-    var edit = document.getElementById("btnEdit");
-    var save = document.getElementById("btnSave");
-
-    if (obsCheckEdit >= 0) {
-        feature.disabled = false;
-        version.disabled = false;
-        environment.disabled = false;
-        plannedDate.disabled = false;
-        plannedTime.disabled = false;
-        status.disabled = false;
-        edit.style.display = 'none';
-        save.style.display = 'block';
-    }
-
-}
-function disableEditModal(obsCheckEdit) {
-    var feature = document.getElementById("ctlFeature");
-    var version = document.getElementById("ctlVersion");
-    var environment = document.getElementById("ctlEnvironment");
-    var plannedDate = document.getElementById("ctlPlannedDate");
-    var plannedTime = document.getElementById("ctlPlannedTime");
-    var status = document.getElementById("ctlStatus");
-    var edit = document.getElementById("btnEdit");
-    var save = document.getElementById("btnSave");
-
-    if (obsCheckEdit <= 0) {
-        feature.disabled = true;
-        version.disabled = true;
-        environment.disabled = true;
-        plannedDate.disabled = true;
-        plannedTime.disabled = true;
-        status.disabled = true;
-        edit.style.display = 'block';
-        save.style.display = 'none';
-    }
-
-}
 /* Open when someone selects a record */
 function openNav() {
     

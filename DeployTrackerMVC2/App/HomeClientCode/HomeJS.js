@@ -154,7 +154,7 @@ var previousDate = function () {
     dp.update();
 
     var monthTitle = document.getElementById("monthLabel");
-    monthTitle.textContent = moment(dp.startDate.toString()).format('MMMM');
+    monthTitle.textContent = moment(dp.startDate.toString()).format('MMMM YYYY');
 
 };
 
@@ -166,11 +166,11 @@ var nextDate = function () {
     dp.update();
 
     var monthTitle = document.getElementById("monthLabel");
-    monthTitle.textContent = moment(dp.startDate.toString()).format('MMMM');
+    monthTitle.textContent = moment(dp.startDate.toString()).format('MMMM YYYY');
 
 }
 
 $(document).ready(function () {
     var monthTitle = document.getElementById("monthLabel");
-    monthTitle.innerText = moment(dp.startDate).format('MMMM');
+    monthTitle.innerText = moment(dp.startDate).format('MMMM YYYY');
 });
