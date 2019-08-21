@@ -94,7 +94,7 @@ namespace DeployTrackerMVC2.Controllers.Comments
 
             db.tblComments.Add(tblComment);
             db.SaveChanges();
-
+            System.Diagnostics.Debug.WriteLine("Comment posted: " + tblComment.comBody);
             return CreatedAtRoute("DefaultApi", new { id = tblComment.comID }, tblComment);
         }
 

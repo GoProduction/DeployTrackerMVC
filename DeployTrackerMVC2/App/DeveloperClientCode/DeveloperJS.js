@@ -35,7 +35,7 @@ console.log('smokeTimeCached is ');
 console.log(smokeTimeCached);
 //Loading function
 $(window).on('load', function () {
-    $(".loading-class").fadeOut("slow");
+    //$(".loading-class").fadeOut("slow");
 });
 
 //Knockout find function (used for filter)
@@ -118,7 +118,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
     //ObSERVABLES///////////////////////////////////////////////////////////
     self.obsCheckEdit = ko.observable(0); // Observable that is used to check if any field is being edited
-    self.loading = ko.observable(true); // Loading function that triggers the loading animation
     self.obsID = ko.observable(''); // Observable that is used to filter any results by ID
     self.deployBeingEdited = ko.observable(0);
     self.originalDeploy = ko.observable(0);
@@ -232,6 +231,21 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         
 
     } // Function to enable the edit-template, AND trigger the signalr LOCK event for all other clients
+    self.cancelEdit = function () {
+        self.deployBeingEdited(new Deploy(
+            self.originalDeploy().depID,
+            self.originalDeploy().depFeature,
+            self.originalDeploy().depVersion,
+            self.originalDeploy().depEnvironment,
+            self.originalDeploy().depPlannedDate,
+            self.originalDeploy().depPlannedTime,
+            self.originalDeploy().depStartTime,
+            self.originalDeploy().depEndTime,
+            self.originalDeploy().depStatus,
+            self.originalDeploy().depSmoke
+        ));
+        self.disableEdit();
+    }
     self.done = function () {
         var updatedDeploy = ko.utils.unwrapObservable(self.deployBeingEdited());
 
@@ -314,25 +328,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         //Wrote this function to deal with the PATCH request firing after moving through the time field. The HTML
         //time field will prematurely fire when moving through hh->mm parts of the field, causing the datetime
         //value to become invalid. This function tells the patch request to fire after the field has lost focus.
-        if ($("#ctlPlannedTime").is(":focus")) {
-            console.log('Time field has the focus')
-            $("#ctlPlannedTime").blur(function () {
-                var payload = {};
-                payload[key] = val;
-
-                $.ajax({
-                    url: '/odata/Deploys(' + model.depID + ')',
-                    type: 'PATCH',
-                    data: JSON.stringify(payload),
-                    contentType: 'application/json',
-                    dataType: 'json'
-                });
-                return;
-            })
-        }
-
-        else {
-            
+        
             var payload = {};
             payload[key] = val;
             $.ajax({
@@ -343,7 +339,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 dataType: 'json'
                 
             });
-        }
     }
 
     //GET REQUESTS///////////////////////////////////////////////////////
@@ -370,7 +365,13 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             return obsDeploy;
            
         }));
-        self.loading(false);
+        self.loadingVar(self.loadingVar() + 1);
+        if (self.loadingVar() == 4) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
     }); // Fetches data from Deploys table
     $.getJSON('/odata/Features', function (data) {
         self.feature(ko.utils.arrayMap(data.value, function (feature) {
@@ -381,6 +382,13 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             
             return obsFeature;
         }));
+        self.loadingVar(self.loadingVar() + 1);
+        if (self.loadingVar() == 4) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
     }); // Fetches data from Features table
     $.getJSON('/odata/Environments', function (data) {
         self.environment(ko.utils.arrayMap(data.value, function (environment) {
@@ -391,6 +399,13 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             
             return obsEnvironment;
         }));
+        self.loadingVar(self.loadingVar() + 1);
+        if (self.loadingVar() == 4) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
     }); // Featches data from Environments table
     $.getJSON('/odata/Comments', function (data) {
         self.comment(ko.utils.arrayMap(data.value, function (comment) {
@@ -404,6 +419,13 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             
             return obsComment;
         }));
+        self.loadingVar(self.loadingVar() + 1);
+        if (self.loadingVar() == 4) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
     }); // Featches data from Comments table
     
 
@@ -474,7 +496,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
         window.onclick = function (event) {
             if (event.target == modal) {
-                $("#statusModal").fadeOut();
+                self.closeModal();
             }
         }
     } // Open Modal
@@ -589,10 +611,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
         deploySignalR.server.notification("Status", message, icon);
 
-        $("#statusModal").fadeOut();
-        errorMsg.style.display = "none";
-        comment.style.display = "none";
         comment.value = "";
+        self.closeModal();
     } // Submit new status
     self.submitComment = function () {
         var commentField = document.getElementById("recordCommentField");
@@ -709,6 +729,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         console.log("CurrentOption is loaded as: ");
         console.log(self.CurrentOption);
     }
+
 }
 
 //SignalR Events
@@ -740,7 +761,6 @@ $(function () {
         else if (viewModel.obsCheckEdit() == 0) {
             viewModel.updateViewModel();
             viewModel.updateViewModelComment();
-            browserNotification();
             console.log('Viewmodel updated');
         }
     } // Update all function, to be triggered when new batch of deploys are created

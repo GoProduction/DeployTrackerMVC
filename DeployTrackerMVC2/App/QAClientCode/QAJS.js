@@ -113,7 +113,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         console.log("selID: ");
         console.log(selID);
         openNav();
-        checkModalStatus(data.depStatus(), data.depSmoke());
+        var statusHeader = document.getElementById("statusHeader");
+        var smokeHeader = document.getElementById("smokeHeader");
+        checkModalStatus(data.depStatus(), data.depSmoke(), statusHeader, smokeHeader)
 
     }; // Run when record is selected, and open the record modal
     self.updateViewModel = function () {
@@ -651,8 +653,6 @@ $(function () {
         else if (viewModel.obsCheckEdit() == 0) {
             viewModel.updateViewModel();
             viewModel.updateViewModelComment();
-
-            browserNotification();
             console.log('Viewmodel updated');
         }
     } // Update all function, to be triggered when new batch of deploys are created
@@ -740,21 +740,20 @@ function openNav() {
     $("#DetailsView").modal("show");
 }
 //Checks the status and adjusts the header color
-function checkModalStatus (status, smoke) {
-    var mainHeader = document.getElementById("recordModalHeader");
-    var smokeHeader = document.getElementById("smokeHeader");
+function checkModalStatus (status, smoke, statusHeader, smokeHeader) {
+    
     //Status logic
     if (status === 'Deploying') {
-        mainHeader.style.backgroundColor = "rgba(255, 255, 0, .5)";
+        statusHeader.style.backgroundColor = "rgba(255, 255, 0, .5)";
     }
     else if (status === 'Completed') {
-        mainHeader.style.backgroundColor = "rgba(0, 255, 33, .5)";
+        statusHeader.style.backgroundColor = "rgba(0, 255, 33, .5)";
     }
     else if (status === 'Failed') {
-        mainHeader.style.backgroundColor = "rgba(255, 0, 0, .5)";
+        statusHeader.style.backgroundColor = "rgba(255, 0, 0, .5)";
     }
     else if (status === 'Queued') {
-        mainHeader.style.backgroundColor = "white";
+        statusHeader.style.backgroundColor = "white";
     }
 
     //Smoke logic

@@ -18,17 +18,13 @@
         <link href="~/App/TableStyles.css" rel="stylesheet" />
         <link href="~/App/ModalStyles.css" rel="stylesheet" />
         <link href="~/App/PageStyles.css" rel="stylesheet" />
+
     }
 </head>
 <body id="BodyContent">
     <div class="loading-class"></div>
     <!--Tables View-->
     <div id="TablesView">
-        <div class="loadingIndicator" data-bind="visible: loading()" id="TableDiv"></div>
-        <div>
-            <span>Loading Variable: </span>
-            <span data-bind="text: $root.loadingVar"></span>
-        </div>
         <div class="row">
             <!--Current and Queued Tables column-->
             <div class="dev-left-panel">
@@ -62,10 +58,11 @@
                 <br />
                 <!--Current Deploys Table-->
                 <div id="TableCurrent" style="overflow-x: auto">
-                    <table class="table" id="CurrentDeploysTable" data-bind="visible: !loading()">
+                    <table class="table table-striped" id="CurrentDeploysTable">
                         <thead>
                             <tr>
                                 <th style="display:none">ID</th>
+                                <th>Date</th>
                                 <th>Feature</th>
                                 <th class="column3">Version</th>
                                 <th>Environment</th>
@@ -76,9 +73,13 @@
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: currentDeploys().sort($root.sortByDate)" class="table">
-                            <tr class="table table-on-hover">
+                            <tr class="table-on-hover">
                                 <!--ID field-->
                                 <td style="display:none" data-bind="text: depID"></td>
+                                <!--Date Field-->
+                                <td style="font-weight:bold"
+                                    data-bind="dateFormatted: depStartTime,
+                                               format: 'MMMM Do'"></td>
                                 <!--Feature field-->
                                 <td data-bind="text: depFeature,
                                                 event: { click: $root.edit},
@@ -140,7 +141,7 @@
                 <h3 class="text-center">Queued Deploys</h3>
                 <br />
                 <div id="TableQueue" style="overflow-x:auto">
-                    <table class="table" id="DevTable" data-bind="visible: !loading()">
+                    <table class="table" id="DevTable">
                         <thead>
                             <tr>
                                 <th style="display:none">ID</th>
@@ -495,67 +496,58 @@
                     <div class="modal-body">
                         <div class="row">
                             <div class="col record-modal-col">
-                                <!--ID Field (Always disabled)-->
-                                <div>
-                                    <label class="record-label">ID</label>
-                                    <input id="editID" type="text" data-bind="value: deployBeingEdited().depID" disabled />
-                                </div>
-                                <!--Feature Field-->
-                                <div>
-                                    <label class="record-label">Feature</label>
-                                    <select id="editFeature" data-bind="options: $root.feature,
-                                    optionsText: 'feaName',
-                                    optionsValue: 'feaName',
-                                    value: deployBeingEdited().depFeature"></select>
-                                </div>
-                                <!--Version Field-->
-                                <div>
-                                    <label class="record-label">Version</label>
-                                    <input id="editVersion" type="text" data-bind="value: deployBeingEdited().depVersion, valueUpdate: 'afterkeydown'" />
-                                </div>
-                                <!--Environment Field-->
-                                <div>
-                                    <label class="record-label">Environment</label>
-                                    <select id="editEnvironment" data-bind="options: $root.environment,
+                                <table>
+                                    <tr>
+                                        <td style="padding-right: 3px"><label class="record-label">ID</label></td>
+                                        <td><input id="editID" type="text" data-bind="value: deployBeingEdited().depID" disabled /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-right: 3px"><label class="record-label">Feature</label></td>
+                                        <td><select id="editFeature" data-bind="options: $root.feature,
+                                                                                optionsText: 'feaName',
+                                                                                optionsValue: 'feaName',
+                                                                                value: deployBeingEdited().depFeature"></select></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-right: 3px"><label class="record-label">Version</label></td>
+                                        <td><input id="editVersion" type="text" data-bind="value: deployBeingEdited().depVersion, valueUpdate: 'afterkeydown'" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-right: 3px"><label class="record-label">Environment</label></td>
+                                        <td><select id="editEnvironment" data-bind="options: $root.environment,
                                     optionsText: 'envName',
                                     optionsValue: 'envName',
-                                    value: deployBeingEdited().depEnvironment"></select>
-                                </div>
-                                <!--Planned Date Field-->
-                                <div>
-                                    <label class="record-label">Planned Date</label>
-                                    <input id="editPlannedDate" type="date" data-bind="dateFormatted: deployBeingEdited().depPlannedDate, format: 'YYYY-MM-DD'" />
-                                </div>
-                                <!--Planned Time Field-->
-                                <div>
-                                    <label class="record-label">Planned Time</label>
-                                    <input id="editPlannedTime" type="time" data-bind="timepickerInput: deployBeingEdited().depPlannedTime" />
-                                </div>
-                                <!--EXAMPLE DATE-->
-                                <div><span data-bind="text: deployBeingEdited().depPlannedTime"></span></div>
-                                <!--Start Time Field (Always disabled)-->
-                                <div>
-                                    <label class="record-label">Start Time</label>
-                                    <input type="time" data-bind="timeFormatted: deployBeingEdited().depStartTime, format: 'HH:mm'" disabled />
-                                </div>
-                                <!--End Time Field (Always disabled)-->
-                                <div>
-                                    <label class="record-label">End Time</label>
-                                    <input type="time" data-bind="timeFormatted: deployBeingEdited().depEndTime, format: 'HH:mm'" disabled />
-                                </div>
-                                <!--Deploy Status Field (Always Disabled)-->
-                                <div>
-                                    <label class="record-label">Deploy Status</label>
-                                    <select data-bind="options: $root.status,
+                                    value: deployBeingEdited().depEnvironment"></select></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-right: 3px"><label class="record-label">Planned Date</label></td>
+                                        <td><input id="editPlannedDate" type="date" data-bind="dateFormatted: deployBeingEdited().depPlannedDate, format: 'YYYY-MM-DD'" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-right: 20px"><label class="record-label">Planned Time</label></td>
+                                        <td><input id="editPlannedTime" type="time" data-bind="timepickerInput: deployBeingEdited().depPlannedTime" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-right: 3px"><label class="record-label">Start Time</label></td>
+                                        <td><input type="time" data-bind="timeFormatted: deployBeingEdited().depStartTime, format: 'HH:mm'" disabled /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-right: 3px"><label class="record-label">End Time</label></td>
+                                        <td><input type="time" data-bind="timeFormatted: deployBeingEdited().depEndTime, format: 'HH:mm'" disabled /></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-right: 3px"><label class="record-label">Deploy Status</label></td>
+                                        <td><select data-bind="options: $root.status,
                                     optionsText: 'tmpStatus',
                                     optionsValue: 'tmpStatus',
-                                    value: deployBeingEdited().depStatus" disabled></select>
-                                </div>
-                                <!--Smoke Status Field (Always disabled)-->
-                                <div>
-                                    <label class="record-label">Smoke Status</label>
-                                    <input type="text" data-bind="value: deployBeingEdited().depSmoke" disabled />
-                                </div>
+                                    value: deployBeingEdited().depStatus" disabled></select></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-right: 3px"><label class="record-label">Smoke Status</label></td>
+                                        <td><input type="text" data-bind="value: deployBeingEdited().depSmoke" disabled /></td>
+                                    </tr>
+                                </table>
+                                
                             </div>
                             <div class="col record-modal-col">
                                 <h4 style="text-align: center">Comments:</h4>
@@ -598,7 +590,7 @@
                             <button class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
                         </div>
                         <div id="footerEditEnabled">
-                            <button type="button" data-dismiss="modal" class="btn btn-danger btn-sm">Cancel</button>
+                            <button type="button" data-bind="click: $root.cancelEdit" class="btn btn-danger btn-sm">Cancel</button>
                             <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
                         </div>
                     </div>

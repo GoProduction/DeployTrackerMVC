@@ -407,17 +407,15 @@
             <div class="modal-content">
                 <!--Main Header-->
                 <div class="record-modal-header" id="recordModalHeader">
-                    <div>
-                        <span data-bind="text: selected().depFeature"></span>
-                        <span data-bind="text: selected().depVersion"></span>
-                    </div>
-                    <div>
-                        <span>Deploy Status: </span>
-                        <span data-bind="text: selected().depStatus" class="status-text"></span>
-                    </div>
+                    <span data-bind="text: selected().depFeature"></span>
+                    <span data-bind="text: selected().depVersion"></span>
+                </div> 
+                <div id="statusHeader" class="record-modal-header">
+                    <span>Deploy Status: </span>
+                    <span data-bind="text: selected().depStatus" class="status-text"></span>
                 </div>
                 <!--Smoke Status Header-->
-                <div class="record-modal-header" id="smokeHeader">
+                <div id="smokeHeader" class="record-modal-header">
                     <span>Smoke Status: </span>
                     <span data-bind="text: selected().depSmoke" class="status-text"></span>
                 </div>
@@ -426,42 +424,48 @@
                     <!--Details column-->
                     <div class="row">
                         <div id="leftColumn" class="col record-modal-col">
-                            <div>
-                                <span class="record-label">ID: </span>
-                                <span id="ctlID" data-bind="text: selected().depID" />
-                            </div>
-                            <div>
-                                <span class="record-label">Feature: </span>
-                                <span data-bind="text: selected().depFeature"></span>
-                            </div>
-                            <div>
-                                <span class="record-label">Version: </span>
-                                <span id="ctlVersion" data-bind="text: selected().depVersion" />
-                            </div>
-                            <div>
-                                <span class="record-label">Environment: </span>
-                                <span id="ctlEnvironment" data-bind="text: selected().depEnvironment" />
-                            </div>
-                            <div>
-                                <span class="record-label">Planned Date: </span>
-                                <span id="ctlPlannedDate" data-bind="dateFormatted: selected().depPlannedDate, format: 'MMMM DD YYYY'" />
-                            </div>
-                            <div>
-                                <span class="record-label">Planned Time: </span>
-                                <span id="ctlPlannedTime" data-bind="timeFormatted: selected().depPlannedTime, format: 'LT'" />
-                            </div>
-                            <div>
-                                <span class="record-label">Start Time: </span>
-                                <span id="ctlStartTime" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" />
-                            </div>
-                            <div>
-                                <span class="record-label">End Time: </span>
-                                <span id="ctlEndTime" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" />
-                            </div>
-                            <div>
-                                <span class="record-label">Status: </span>
-                                <span id="ctlStatus" data-bind="text: selected().depStatus" />
-                            </div>
+                            <table>
+                                <tr>
+                                    <td><span class="record-label">ID: </span></td>
+                                    <td><span id="ctlID" data-bind="text: selected().depID" /></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="record-label">Feature: </span></td>
+                                    <td><span data-bind="text: selected().depFeature"></span></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="record-label">Version: </span></td>
+                                    <td><span id="ctlVersion" data-bind="text: selected().depVersion" /></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="record-label">Environment: </span></td>
+                                    <td><span id="ctlEnvironment" data-bind="text: selected().depEnvironment" /></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="record-label">Planned Date: </span></td>
+                                    <td><span id="ctlPlannedDate" data-bind="dateFormatted: selected().depPlannedDate, format: 'MMMM DD YYYY'" /></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="record-label">Planned Time: </span></td>
+                                    <td><span id="ctlPlannedTime" data-bind="timeFormatted: selected().depPlannedTime, format: 'LT'" /></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="record-label">Start Time: </span></td>
+                                    <td><span id="ctlStartTime" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" /></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="record-label">End Time: </span></td>
+                                    <td><span id="ctlEndTime" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" /></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="record-label" style="padding-right: 20px">Deploy Status: </span></td>
+                                    <td><span id="ctlStatus" data-bind="text: selected().depStatus" /></td>
+                                </tr>
+                                <tr>
+                                    <td><span class="record-label">Smoke Status: </span></td>
+                                    <td><span data-bind="text: selected().depSmoke"></span></td>
+                                </tr>
+                            </table>
                         </div>
                         <!--Comments column-->
                         <div id="rightColumn" class="col record-modal-col">

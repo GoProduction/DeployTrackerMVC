@@ -1,4 +1,5 @@
-﻿.no-js #loader{display: none;}
+﻿/*First loading class (with gif)*/
+.no-js #loader{display: none;}
 .js #loader {
     display: block;
     position: absolute;
@@ -14,6 +15,7 @@
     z-index: 9999;
     background: url('../Images/loading.gif') center no-repeat #fff;
 }
+
 /*Filter Tab properties*/
 .filter-container{
     width: 100%;
@@ -90,6 +92,7 @@
     width: 65%;
     flex: 65%;
     padding-top: 10px;
+    padding-right: 10px;
 }
 
 .dev-smoke-panel {
