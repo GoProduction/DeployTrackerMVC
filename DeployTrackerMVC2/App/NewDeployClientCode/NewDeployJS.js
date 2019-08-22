@@ -50,7 +50,7 @@ var TempDeployViewModel = function (signalR) {
             depFeature: document.getElementById("txtFeature").value,
             depVersion: document.getElementById("txtVersion").value,
             depPlannedDate: document.getElementById("txtPlannedDate").value,
-            depPlannedTime: datetime,
+            depPlannedTime: moment(datetime).format(),
             depStatus: 'Queued',
             depSmoke: "Not Ready",
             depEnvironment: document.getElementById("txtEnvironment").value,
@@ -128,11 +128,14 @@ var TempDeployViewModel = function (signalR) {
 
     self.edit = function (deploys) {
         deploys.Edit(true);
+        deploys.depPlannedTime(new Date(deploys.depPlannedTime()));
     };
 
     self.done = function (deploys) {
         deploys.Edit(false);
+        deploys.depPlannedTime(moment(deploys.depPlannedTime()).format());
         console.log('done');
+        console.log("Updated deploy: ", self.deploys);
     }
 
     //Checks to make sure properties are observable

@@ -254,7 +254,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var depVersion = ko.utils.unwrapObservable(updatedDeploy.depVersion);
         var depEnvironment = ko.utils.unwrapObservable(updatedDeploy.depEnvironment);
         var depPlannedDate = ko.utils.unwrapObservable(updatedDeploy.depPlannedDate);
-        var depPlannedTime = ko.utils.unwrapObservable(updatedDeploy.depPlannedTime);
+        var depPlannedTime = moment(ko.utils.unwrapObservable(updatedDeploy.depPlannedTime)).format();
         var depStartTime = ko.utils.unwrapObservable(updatedDeploy.depStartTime);
         var depEndTime = ko.utils.unwrapObservable(updatedDeploy.depEndTime);
         var depStatus = ko.utils.unwrapObservable(updatedDeploy.depStatus);
@@ -271,8 +271,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.originalDeploy().depStatus(depStatus);
         self.originalDeploy().depSmoke(depSmoke);
 
-        self.deployBeingEdited(0);
-        self.originalDeploy(0);
+        //self.deployBeingEdited(0);
+        //self.originalDeploy(0);
         self.disableEdit();
         
     } // Function to disable the 'LOCKED' status of the row

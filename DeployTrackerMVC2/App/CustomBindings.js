@@ -128,7 +128,7 @@ ko.bindingHandlers.timepickerInput = {
         var value = valueAccessor();
 
         console.log('The value of the element should be here – ');
-        console.log(value);
+        console.log(value());
         // If the value is not a valid moment in time,
         //console.log(!moment(value()).isValid());
         //handle the field changing
