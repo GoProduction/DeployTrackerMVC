@@ -48,19 +48,18 @@ ko.observableArray.fn.find = function (prop, data) {
 
 
 //Model for Deploy
-var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDate, depPlannedTime, depStartTime, depEndTime, depStatus, depSmoke) {
+var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
     var self = this;
     self.depID = depID;
     self.depFeature = ko.observable(ko.utils.unwrapObservable(depFeature));
     self.depVersion = ko.observable(ko.utils.unwrapObservable(depVersion));
     self.depEnvironment = ko.observable(ko.utils.unwrapObservable(depEnvironment));
-    self.depPlannedDate = ko.observable(ko.utils.unwrapObservable(depPlannedDate));
-    self.depPlannedTime = ko.observable(new Date(ko.unwrap(depPlannedTime)));
+    self.depPlannedDateTime = ko.observable(new Date(ko.unwrap(depPlannedDateTime)));
     self.depStartTime = ko.observable(ko.utils.unwrapObservable(depStartTime));
     self.depEndTime = ko.observable(ko.utils.unwrapObservable(depEndTime));
     self.depStatus = ko.observable(ko.utils.unwrapObservable(depStatus));
     self.depSmoke = ko.observable(ko.utils.unwrapObservable(depSmoke));
-    console.log("Planned time is: ", self.depPlannedTime);
+    console.log("Planned time is: ", self.depPlannedDateTime);
 }
 
 //MAIN VIEW MODEL
@@ -166,8 +165,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                         depFeature: ko.observable(deploy.depFeature),
                         depVersion: ko.observable(deploy.depVersion),
                         depEnvironment: ko.observable(deploy.depEnvironment),
-                        depPlannedDate: ko.observable(deploy.depPlannedDate),
-                        depPlannedTime: ko.observable(deploy.depPlannedTime),
+                        depPlannedDateTime: ko.observable(deploy.depPlannedDateTime),
                         depStartTime: ko.observable(deploy.depStartTime),
                         depEndTime: ko.observable(deploy.depEndTime),
                         depStatus: ko.observable(deploy.depStatus),
@@ -218,8 +216,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             deploy.depFeature,
             deploy.depVersion,
             deploy.depEnvironment,
-            deploy.depPlannedDate,
-            deploy.depPlannedTime,
+            deploy.depPlannedDateTime,
             deploy.depStartTime,
             deploy.depEndTime,
             deploy.depStatus,
@@ -237,8 +234,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             self.originalDeploy().depFeature,
             self.originalDeploy().depVersion,
             self.originalDeploy().depEnvironment,
-            self.originalDeploy().depPlannedDate,
-            self.originalDeploy().depPlannedTime,
+            self.originalDeploy().depPlannedDateTime,
             self.originalDeploy().depStartTime,
             self.originalDeploy().depEndTime,
             self.originalDeploy().depStatus,
@@ -253,8 +249,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var depFeature = ko.utils.unwrapObservable(updatedDeploy.depFeature);
         var depVersion = ko.utils.unwrapObservable(updatedDeploy.depVersion);
         var depEnvironment = ko.utils.unwrapObservable(updatedDeploy.depEnvironment);
-        var depPlannedDate = ko.utils.unwrapObservable(updatedDeploy.depPlannedDate);
-        var depPlannedTime = moment(ko.utils.unwrapObservable(updatedDeploy.depPlannedTime)).format();
+        var depPlannedDateTime = moment(ko.utils.unwrapObservable(updatedDeploy.depPlannedDateTime)).format();
         var depStartTime = ko.utils.unwrapObservable(updatedDeploy.depStartTime);
         var depEndTime = ko.utils.unwrapObservable(updatedDeploy.depEndTime);
         var depStatus = ko.utils.unwrapObservable(updatedDeploy.depStatus);
@@ -264,8 +259,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.originalDeploy().depFeature(depFeature);
         self.originalDeploy().depVersion(depVersion);
         self.originalDeploy().depEnvironment(depEnvironment);
-        self.originalDeploy().depPlannedDate(depPlannedDate);
-        self.originalDeploy().depPlannedTime(depPlannedTime);
+        self.originalDeploy().depPlannedDateTime(depPlannedDateTime);
         self.originalDeploy().depStartTime(depStartTime);
         self.originalDeploy().depEndTime(depEndTime);
         self.originalDeploy().depStatus(depStatus);
@@ -349,8 +343,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 depFeature: ko.observable(deploy.depFeature),
                 depVersion: ko.observable(deploy.depVersion),
                 depEnvironment: ko.observable(deploy.depEnvironment),
-                depPlannedDate: ko.observable(deploy.depPlannedDate),
-                depPlannedTime: ko.observable(deploy.depPlannedTime),
+                depPlannedDateTime: ko.observable(deploy.depPlannedDateTime),
                 depStartTime: ko.observable(deploy.depStartTime),
                 depEndTime: ko.observable(deploy.depEndTime),
                 depStatus: ko.observable(deploy.depStatus),
@@ -735,6 +728,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 //SignalR Events
 $(function () {
 
+    $("editPlannedDate").datepicker();
     var deploySignalR = $.connection.deploy;
     var viewModel = new DeployViewModel(deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached);
     //Initialize editPlannedTime field

@@ -10,6 +10,8 @@
         <script src="~/Scripts/moment.min.js"></script>
         <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
         <script src="~/signalr/hubs"></script>
+        <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+        <link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
         <script src="~/Scripts/jquery.timepicker.min.js"></script>
         <link href="~/Content/jquery.timepicker.css" rel="stylesheet" />
         <script src="~/App/CustomBindings.js"></script>
@@ -154,14 +156,14 @@
                                 <th>...</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: queuedDeploys().sort(function (l, r) { return (l.depPlannedTime() == r.depPlannedTime()) ? (l.depPlannedDate() < r.depPlannedDate() ? 1 : -1) : (l.depPlannedTime() < r.depPlannedTime() ? 1 : -1) })" class="table">
+                        <tbody data-bind="foreach: queuedDeploys().sort(function (l, r) { return (l.depPlannedDateTime() < r.depPlannedDateTime() ? 1 : -1) })" class="table">
                             <tr class="table table-on-hover">
                                 <td style="display:none" data-bind="text: depID"></td>
                                 <td data-bind="text: depFeature, event: { click: $root.edit}"></td>
                                 <td class="column3" data-bind="text: depVersion, event: { click: $root.edit}"></td>
                                 <td data-bind="text: depEnvironment, event: { click: $root.edit}"></td>
-                                <td class="column1" data-bind="dateFormatted: depPlannedDate, format: 'MMMM DD YYYY', event: { click: $root.edit}"></td>
-                                <td class="column1" data-bind="timeFormatted: depPlannedTime, format: 'LT', event: { click: $root.edit}"></td>
+                                <td class="column1" data-bind="dateFormatted: depPlannedDateTime, format: 'MMMM DD YYYY', event: { click: $root.edit}"></td>
+                                <td class="column1" data-bind="timeFormatted: depPlannedDateTime, format: 'hh:mm a', event: { click: $root.edit}"></td>
                                 <td class="column2" data-bind="text: depStatus, event: { click: $root.edit}"></td>
                                 <td>
                                     <button id="btnStatusCurrent" class="btn btn-sm btn-primary" type="button" data-toggle="modal" data-bind="click: $root.openModal">
@@ -346,8 +348,8 @@
             <td data-bind="text: depFeature, event: { click: $root.edit}"></td>
             <td class="column3" data-bind="text: depVersion, event: { click: $root.edit}"></td>
             <td data-bind="text: depEnvironment, event: { click: $root.edit}"></td>
-            <td class="column1" data-bind="dateFormatted: depPlannedDate, format: 'MMMM DD YYYY', event: { click: $root.edit}"></td>
-            <td class="column1" data-bind="timeFormatted: depPlannedTime, format: 'LT', event: { click: $root.edit}"></td>
+            <td class="column1" data-bind="dateFormatted: depPlannedDateTime, format: 'MMMM DD YYYY', event: { click: $root.edit}"></td>
+            <td class="column1" data-bind="timeFormatted: depPlannedDateTime, format: 'LT', event: { click: $root.edit}"></td>
             <td class="column2" data-bind="text: depStatus, event: { click: $root.edit}"></td>
             <td>
                 <button id="btnStatusCurrent" class="btn btn-sm btn-primary" type="button" data-toggle="modal" data-bind="click: $root.openModal">
@@ -371,12 +373,12 @@
                         name="ctlEnvironment"
                         data-bind="options: $root.environment, optionsText: 'envName', optionsValue: 'envName', value: depEnvironment"></select>
             </td>
-            <td><input type="date" data-bind="dateFormatted: depPlannedDate, format: 'YYYY-MM-DD'" /></td>
+            <td><input type="date" data-bind="dateFormatted: depPlannedDateTime, format: 'YYYY-MM-DD'" /></td>
             <!--Planned Time-->
             <td>
                 <input id="ctlPlannedTime"
                        name="ctlPlannedTime"
-                       data-bind="timepickerInput: depPlannedTime, format: 'HH:mm'"
+                       data-bind="timepickerInput: depPlannedDateTime, format: 'HH:mm'"
                        type="time" />
             </td>
             <td><select type="text" data-bind="options: $root.status, optionsText: 'tmpStatus', optionsValue: 'tmpStatus', value: depStatus"> </select></td>
@@ -389,8 +391,8 @@
             <td data-bind="text: depFeature"></td>
             <td class="column3" data-bind="text: depVersion"></td>
             <td data-bind="text: depEnvironment"></td>
-            <td class="column1" data-bind="dateFormatted: depPlannedDate, format: 'MMMM DD YYYY'"></td>
-            <td class="column1" data-bind="timeFormatted: depPlannedTime, format: 'LT'"></td>
+            <td class="column1" data-bind="dateFormatted: depPlannedDateTime, format: 'MMMM DD YYYY'"></td>
+            <td class="column1" data-bind="timeFormatted: depPlannedDateTime, format: 'LT'"></td>
             <td class="column2" data-bind="text: depStatus"></td>
             <td class="btn btn-sm btn-danger"><i class="fa fa-times"></i>Locked</td>
         </script>
@@ -521,11 +523,11 @@
                                     </tr>
                                     <tr>
                                         <td style="padding-right: 3px"><label class="record-label">Planned Date</label></td>
-                                        <td><input id="editPlannedDate" type="date" data-bind="dateFormatted: deployBeingEdited().depPlannedDate, format: 'YYYY-MM-DD'" /></td>
+                                        <td><input id="editPlannedDate" type="text" data-bind="datepicker: deployBeingEdited().depPlannedDateTime" /></td>
                                     </tr>
                                     <tr>
                                         <td style="padding-right: 20px"><label class="record-label">Planned Time</label></td>
-                                        <td><input id="editPlannedTime" type="time" data-bind="timepickerInput: deployBeingEdited().depPlannedTime" /></td>
+                                        <td><input id="editPlannedTime" type="time" data-bind="timepickerInput: deployBeingEdited().depPlannedDateTime" /></td>
                                     </tr>
                                     <tr>
                                         <td style="padding-right: 3px"><label class="record-label">Start Time</label></td>

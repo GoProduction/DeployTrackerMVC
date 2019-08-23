@@ -25,10 +25,10 @@ namespace DeployTrackerMVC2.Models
             throw new UnintentionalCodeFirstException();
         }
     
-        public virtual DbSet<tblComment> tblComments { get; set; }
-        public virtual DbSet<tblDeploy> tblDeploys { get; set; }
         public virtual DbSet<tblEnvironment> tblEnvironments { get; set; }
         public virtual DbSet<tblFeature> tblFeatures { get; set; }
+        public virtual DbSet<tblComment> tblComments { get; set; }
+        public virtual DbSet<tblDeploy> tblDeploys { get; set; }
         public virtual DbSet<tblNote> tblNotes { get; set; }
     }
 }

@@ -5,11 +5,11 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="905dbdd9eaaa4910bf2055078614b076" Name="Diagram1">
-        <EntityTypeShape EntityType="dbMainModel.tblComment" Width="1.5" PointX="9.25" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="dbMainModel.tblDeploy" Width="1.5" PointX="7.125" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="dbMainModel.tblEnvironment" Width="1.5" PointX="3.375" PointY="2.375" IsExpanded="true" />
         <EntityTypeShape EntityType="dbMainModel.tblFeature" Width="1.5" PointX="3.375" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="dbMainModel.tblNote" Width="1.5" PointX="9.25" PointY="3" IsExpanded="true" />
+        <EntityTypeShape EntityType="dbMainModel.tblComment" Width="1.5" PointX="9.875" PointY="2.875" />
+        <EntityTypeShape EntityType="dbMainModel.tblDeploy" Width="1.5" PointX="7.625" PointY="2.125" />
+        <EntityTypeShape EntityType="dbMainModel.tblNote" Width="1.5" PointX="5.375" PointY="3.125" />
         <AssociationConnector Association="dbMainModel.comment_deploy_relationship" />
         <AssociationConnector Association="dbMainModel.note_deploy_relationship" />
       </Diagram>

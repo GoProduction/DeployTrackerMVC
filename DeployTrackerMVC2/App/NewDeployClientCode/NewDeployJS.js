@@ -6,11 +6,10 @@ var plannedDate = document.getElementById("txtPlannedDate");
 var plannedTime = document.getElementById("txtPlannedTime");
 
 //Deploy template
-var Deploy = function (depFeature, depVersion, depEnvironment, depPlannedDate, depPlannedTime, depStatus, depSmoke, Edit) {
+var Deploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTime, depStatus, depSmoke, Edit) {
     this.depFeature = ko.observable(depFeature);
     this.depVersion = ko.observable(depVersion);
-    this.depPlannedDate = ko.observable(depPlannedDate);
-    this.depPlannedTime = ko.observable(depPlannedTime);
+    this.depPlannedDateTime = ko.observable(depPlannedDateTime);
     this.depStatus = ko.observable(depStatus);
     this.depSmoke = ko.observable(depSmoke);
     this.depEnvironment = ko.observable(depEnvironment);
@@ -29,6 +28,31 @@ var TempDeployViewModel = function (signalR) {
     self.tempTime = ko.observable(new Date());
     console.log("The temp time is: ", self.tempTime);
 
+    //Observables for the NEW deploy fields
+    self.feature = ko.observable();
+    self.version = ko.observable();
+    self.environment = ko.observable();
+    self.plannedDateTime = ko.observable(new Date());
+
+    //Computed observables(to split up datetime field)
+    self.computedDate = ko.computed({
+        write: function (val) {
+            self.plannedDateTime(moment(val, 'YYYY-MM-DD').format('YYYY-MM-DDTHH:mm'))
+        },
+        read: function () {
+            return moment(self.plannedDateTime()).format('YYYY-MM-DD');
+        }
+    });
+    self.computedTime = ko.computed({
+        write: function (val) {
+            self.plannedDateTime(moment(val, 'HH:mm').format('YYYY-MM-DDTHH:mm'))
+        },
+        read: function () {
+            return moment(self.plannedDateTime()).format('HH:mm');
+        }
+    });
+
+
     //Function to determine the display mode of the table
     self.displayMode = function (deploys) {
         if (deploys.Edit()) {
@@ -43,21 +67,17 @@ var TempDeployViewModel = function (signalR) {
     //Add new record to temp table function
     self.add = function () {
 
-        var datetime = new Date(document.getElementById("timeVal").innerText);
-
         var newRecord = [{
 
-            depFeature: document.getElementById("txtFeature").value,
-            depVersion: document.getElementById("txtVersion").value,
-            depPlannedDate: document.getElementById("txtPlannedDate").value,
-            depPlannedTime: moment(datetime).format(),
+            depFeature: self.feature(),
+            depVersion: self.version(),
+            depPlannedDateTime: moment(self.plannedDateTime()).format(),
             depStatus: 'Queued',
             depSmoke: "Not Ready",
-            depEnvironment: document.getElementById("txtEnvironment").value,
+            depEnvironment: self.environment(),
             Edit: false
 
         }];
-
 
         if (feature.value.length == 0 || version.value.length == 0 || environment.value.length == 0 || plannedDate.value.length == 0 || plannedTime.value.length == 0) {
             alert('You must enter ALL fields');
@@ -65,17 +85,21 @@ var TempDeployViewModel = function (signalR) {
         }
         else {
             var newDeploy = ko.utils.arrayMap(newRecord, function (data) {
-                return new Deploy(data.depFeature, data.depVersion, data.depEnvironment, data.depPlannedDate, data.depPlannedTime, data.depStatus, data.depSmoke, data.Edit)
+                return new Deploy(data.depFeature, data.depVersion, data.depEnvironment, data.depPlannedDateTime, data.depStatus, data.depSmoke, data.Edit)
             });
 
             //Push the new record to the temp table
             self.deploys.push.apply(self.deploys, newDeploy);
-            //Reset the fields
-            document.getElementById("FieldsForm").reset();
-
+            
             console.log(ko.toJSON(self.deploys));
 
         }
+        
+        //Empty the observables
+        self.feature('');
+        self.version('');
+        self.environment('');
+        
 
     };
 
@@ -128,12 +152,12 @@ var TempDeployViewModel = function (signalR) {
 
     self.edit = function (deploys) {
         deploys.Edit(true);
-        deploys.depPlannedTime(new Date(deploys.depPlannedTime()));
+        deploys.depPlannedDateTime(new Date(deploys.depPlannedDateTime()));
     };
 
     self.done = function (deploys) {
         deploys.Edit(false);
-        deploys.depPlannedTime(moment(deploys.depPlannedTime()).format());
+        deploys.depPlannedDateTime(moment(deploys.depPlannedDateTime()).format());
         console.log('done');
         console.log("Updated deploy: ", self.deploys);
     }
@@ -183,7 +207,8 @@ var TempDeployViewModel = function (signalR) {
 
 
 $(function () {
-
+    $("#txtPlannedDate").datepicker();
+    $("#ctlPlannedDate").datepicker();
     var signalR = $.connection.deploy;
     var viewModel = new TempDeployViewModel(signalR);
 

@@ -21,11 +21,9 @@ namespace DeployTrackerMVC2.Models
         }
     
         public int depID { get; set; }
-        public Nullable<int> depVID { get; set; }
         public string depFeature { get; set; }
         public string depVersion { get; set; }
-        public Nullable<System.DateTime> depPlannedDate { get; set; }
-        public Nullable<System.DateTimeOffset> depPlannedTime { get; set; }
+        public Nullable<System.DateTimeOffset> depPlannedDateTime { get; set; }
         public Nullable<System.DateTimeOffset> depStartTime { get; set; }
         public Nullable<System.DateTimeOffset> depEndTime { get; set; }
         public string depStatus { get; set; }

@@ -20,11 +20,9 @@
             <PropertyRef Name="depID" />
           </Key>
           <Property Name="depID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="depVID" Type="int" />
           <Property Name="depFeature" Type="varchar" MaxLength="50" />
           <Property Name="depVersion" Type="varchar" MaxLength="50" />
-          <Property Name="depPlannedDate" Type="date" />
-          <Property Name="depPlannedTime" Type="datetimeoffset" Precision="7" />
+          <Property Name="depPlannedDateTime" Type="datetimeoffset" Precision="7" />
           <Property Name="depStartTime" Type="datetimeoffset" Precision="7" />
           <Property Name="depEndTime" Type="datetimeoffset" Precision="7" />
           <Property Name="depStatus" Type="varchar" MaxLength="50" />
@@ -101,38 +99,6 @@
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="dbMainModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
-        <EntityType Name="tblComment">
-          <Key>
-            <PropertyRef Name="comID" />
-          </Key>
-          <Property Name="comID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="comBody" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
-          <Property Name="comDateTime" Type="DateTimeOffset" Precision="7" Nullable="false" />
-          <Property Name="comUser" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="depID" Type="Int32" />
-          <NavigationProperty Name="tblDeploy" Relationship="dbMainModel.comment_deploy_relationship" FromRole="tblComment" ToRole="tblDeploy" />
-        </EntityType>
-        <EntityType Name="tblDeploy">
-          <Key>
-            <PropertyRef Name="depID" />
-          </Key>
-          <Property Name="depID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="depVID" Type="Int32" />
-          <Property Name="depFeature" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="depVersion" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="depPlannedDate" Type="DateTime" Precision="0" />
-          <Property Name="depPlannedTime" Type="DateTimeOffset" Precision="7" />
-          <Property Name="depStartTime" Type="DateTimeOffset" Precision="7" />
-          <Property Name="depEndTime" Type="DateTimeOffset" Precision="7" />
-          <Property Name="depStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="depEnvironment" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="depLocked" Type="Boolean" />
-          <Property Name="noteID" Type="Int32" />
-          <Property Name="depSmoke" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="tblComments" Relationship="dbMainModel.comment_deploy_relationship" FromRole="tblDeploy" ToRole="tblComment" />
-          <NavigationProperty Name="tblNote" Relationship="dbMainModel.note_deploy_relationship" FromRole="tblDeploy" ToRole="tblNote" />
-          <Property Name="depTimeDiff" Type="Int32" annotation:StoreGeneratedPattern="Computed" />
-        </EntityType>
         <EntityType Name="tblEnvironment">
           <Key>
             <PropertyRef Name="envID" />
@@ -147,6 +113,51 @@
           <Property Name="feaID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
           <Property Name="feaName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
+        <EntityContainer Name="dbMainEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="tblEnvironments" EntityType="Self.tblEnvironment" />
+          <EntitySet Name="tblFeatures" EntityType="Self.tblFeature" />
+          <EntitySet Name="tblComments" EntityType="dbMainModel.tblComment" />
+          <EntitySet Name="tblDeploys" EntityType="dbMainModel.tblDeploy" />
+          <EntitySet Name="tblNotes" EntityType="dbMainModel.tblNote" />
+          <AssociationSet Name="comment_deploy_relationship" Association="dbMainModel.comment_deploy_relationship">
+            <End Role="tblDeploy" EntitySet="tblDeploys" />
+            <End Role="tblComment" EntitySet="tblComments" />
+          </AssociationSet>
+          <AssociationSet Name="note_deploy_relationship" Association="dbMainModel.note_deploy_relationship">
+            <End Role="tblNote" EntitySet="tblNotes" />
+            <End Role="tblDeploy" EntitySet="tblDeploys" />
+          </AssociationSet>
+          </EntityContainer>
+        <EntityType Name="tblComment">
+          <Key>
+            <PropertyRef Name="comID" />
+          </Key>
+          <Property Name="comID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="comBody" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="comDateTime" Type="DateTimeOffset" Nullable="false" Precision="7" />
+          <Property Name="comUser" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depID" Type="Int32" />
+          <NavigationProperty Name="tblDeploy" Relationship="dbMainModel.comment_deploy_relationship" FromRole="tblComment" ToRole="tblDeploy" />
+        </EntityType>
+        <EntityType Name="tblDeploy">
+          <Key>
+            <PropertyRef Name="depID" />
+          </Key>
+          <Property Name="depID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="depFeature" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depVersion" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depPlannedDateTime" Type="DateTimeOffset" Precision="7" />
+          <Property Name="depStartTime" Type="DateTimeOffset" Precision="7" />
+          <Property Name="depEndTime" Type="DateTimeOffset" Precision="7" />
+          <Property Name="depStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depEnvironment" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depLocked" Type="Boolean" />
+          <Property Name="noteID" Type="Int32" />
+          <Property Name="depSmoke" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="depTimeDiff" Type="Int32" annotation:StoreGeneratedPattern="Computed" />
+          <NavigationProperty Name="tblComments" Relationship="dbMainModel.comment_deploy_relationship" FromRole="tblDeploy" ToRole="tblComment" />
+          <NavigationProperty Name="tblNote" Relationship="dbMainModel.note_deploy_relationship" FromRole="tblDeploy" ToRole="tblNote" />
+        </EntityType>
         <EntityType Name="tblNote">
           <Key>
             <PropertyRef Name="noteID" />
@@ -156,21 +167,6 @@
           <Property Name="noteDateTime" Type="DateTimeOffset" Precision="7" />
           <NavigationProperty Name="tblDeploys" Relationship="dbMainModel.note_deploy_relationship" FromRole="tblNote" ToRole="tblDeploy" />
         </EntityType>
-        <EntityContainer Name="dbMainEntities" annotation:LazyLoadingEnabled="true">
-          <EntitySet Name="tblComments" EntityType="Self.tblComment" />
-          <EntitySet Name="tblDeploys" EntityType="Self.tblDeploy" />
-          <EntitySet Name="tblEnvironments" EntityType="Self.tblEnvironment" />
-          <EntitySet Name="tblFeatures" EntityType="Self.tblFeature" />
-          <EntitySet Name="tblNotes" EntityType="Self.tblNote" />
-          <AssociationSet Name="comment_deploy_relationship" Association="dbMainModel.comment_deploy_relationship">
-            <End Role="tblDeploy" EntitySet="tblDeploys" />
-            <End Role="tblComment" EntitySet="tblComments" />
-          </AssociationSet>
-          <AssociationSet Name="note_deploy_relationship" Association="dbMainModel.note_deploy_relationship">
-            <End Role="tblNote" EntitySet="tblNotes" />
-            <End Role="tblDeploy" EntitySet="tblDeploys" />
-          </AssociationSet>
-        </EntityContainer>
         <Association Name="comment_deploy_relationship">
           <End Type="dbMainModel.tblDeploy" Role="tblDeploy" Multiplicity="0..1">
             <OnDelete Action="Cascade" />
@@ -197,43 +193,12 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-      </Schema>
+        </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="dbMainModelStoreContainer" CdmEntityContainer="dbMainEntities">
-          <EntitySetMapping Name="tblComments">
-            <EntityTypeMapping TypeName="dbMainModel.tblComment">
-              <MappingFragment StoreEntitySet="tblComments">
-                <ScalarProperty Name="comID" ColumnName="comID" />
-                <ScalarProperty Name="comBody" ColumnName="comBody" />
-                <ScalarProperty Name="comDateTime" ColumnName="comDateTime" />
-                <ScalarProperty Name="comUser" ColumnName="comUser" />
-                <ScalarProperty Name="depID" ColumnName="depID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="tblDeploys">
-            <EntityTypeMapping TypeName="dbMainModel.tblDeploy">
-              <MappingFragment StoreEntitySet="tblDeploy">
-                <ScalarProperty Name="depTimeDiff" ColumnName="depTimeDiff" />
-                <ScalarProperty Name="depSmoke" ColumnName="depSmoke" />
-                <ScalarProperty Name="depID" ColumnName="depID" />
-                <ScalarProperty Name="depVID" ColumnName="depVID" />
-                <ScalarProperty Name="depFeature" ColumnName="depFeature" />
-                <ScalarProperty Name="depVersion" ColumnName="depVersion" />
-                <ScalarProperty Name="depPlannedDate" ColumnName="depPlannedDate" />
-                <ScalarProperty Name="depPlannedTime" ColumnName="depPlannedTime" />
-                <ScalarProperty Name="depStartTime" ColumnName="depStartTime" />
-                <ScalarProperty Name="depEndTime" ColumnName="depEndTime" />
-                <ScalarProperty Name="depStatus" ColumnName="depStatus" />
-                <ScalarProperty Name="depEnvironment" ColumnName="depEnvironment" />
-                <ScalarProperty Name="depLocked" ColumnName="depLocked" />
-                <ScalarProperty Name="noteID" ColumnName="noteID" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="tblEnvironments">
             <EntityTypeMapping TypeName="dbMainModel.tblEnvironment">
               <MappingFragment StoreEntitySet="tblEnvironments">
@@ -250,12 +215,41 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
+          <EntitySetMapping Name="tblComments">
+            <EntityTypeMapping TypeName="dbMainModel.tblComment">
+              <MappingFragment StoreEntitySet="tblComments">
+                <ScalarProperty Name="depID" ColumnName="depID" />
+                <ScalarProperty Name="comUser" ColumnName="comUser" />
+                <ScalarProperty Name="comDateTime" ColumnName="comDateTime" />
+                <ScalarProperty Name="comBody" ColumnName="comBody" />
+                <ScalarProperty Name="comID" ColumnName="comID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tblDeploys">
+            <EntityTypeMapping TypeName="dbMainModel.tblDeploy">
+              <MappingFragment StoreEntitySet="tblDeploy">
+                <ScalarProperty Name="depTimeDiff" ColumnName="depTimeDiff" />
+                <ScalarProperty Name="depSmoke" ColumnName="depSmoke" />
+                <ScalarProperty Name="noteID" ColumnName="noteID" />
+                <ScalarProperty Name="depLocked" ColumnName="depLocked" />
+                <ScalarProperty Name="depEnvironment" ColumnName="depEnvironment" />
+                <ScalarProperty Name="depStatus" ColumnName="depStatus" />
+                <ScalarProperty Name="depEndTime" ColumnName="depEndTime" />
+                <ScalarProperty Name="depStartTime" ColumnName="depStartTime" />
+                <ScalarProperty Name="depPlannedDateTime" ColumnName="depPlannedDateTime" />
+                <ScalarProperty Name="depVersion" ColumnName="depVersion" />
+                <ScalarProperty Name="depFeature" ColumnName="depFeature" />
+                <ScalarProperty Name="depID" ColumnName="depID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
           <EntitySetMapping Name="tblNotes">
             <EntityTypeMapping TypeName="dbMainModel.tblNote">
               <MappingFragment StoreEntitySet="tblNotes">
-                <ScalarProperty Name="noteID" ColumnName="noteID" />
-                <ScalarProperty Name="noteBody" ColumnName="noteBody" />
                 <ScalarProperty Name="noteDateTime" ColumnName="noteDateTime" />
+                <ScalarProperty Name="noteBody" ColumnName="noteBody" />
+                <ScalarProperty Name="noteID" ColumnName="noteID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

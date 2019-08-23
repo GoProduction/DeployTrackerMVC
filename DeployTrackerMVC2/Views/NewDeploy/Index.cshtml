@@ -11,6 +11,8 @@
     @section scripts{
         <script src="~/Scripts/knockout-3.5.0.js"></script>
         <script src="~/Scripts/knockout.mapping-latest.js"></script>
+        <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+        <link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
         <script src="~/Scripts/jquery-3.3.1.min.js"></script>
         <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
         <script src="~/signalr/hubs"></script>
@@ -39,19 +41,22 @@
                 <tbody>
                     <tr>
                         <td>
-                            <select id="txtFeature" name="txtFeature" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName'"></select>
+                            <select id="txtFeature" name="txtFeature" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName', value: $root.feature"></select>
                         </td>
                         <td>
-                            <input type="text" id="txtVersion" name="txtVersion" class="table" />
+                            <input data-bind="value: $root.version" type="text" id="txtVersion" name="txtVersion" class="table" />
                         </td>
                         <td>
-                            <select id="txtEnvironment" name="txtEnvironment" data-bind="options: $root.environmentList, optionsText: 'envName', optionsValue: 'envName'"></select>
+                            <select id="txtEnvironment" name="txtEnvironment" data-bind="options: $root.environmentList, 
+                                                                                            optionsText: 'envName', 
+                                                                                            optionsValue: 'envName', 
+                                                                                            value: $root.environment"></select>
                         </td>
                         <td>
-                            <input type="date" id="txtPlannedDate" name="txtPlannedDate" class="table" />
+                            <input data-bind="datepicker: $root.plannedDateTime, datepickerOptions: { minDate: new Date() }" id="txtPlannedDate" name="txtPlannedDate" class="table" />
                         </td>
                         <td>
-                            <input type="time" id="txtPlannedTime" name="txtPlannedTime" class="table" data-bind="timepickerInput: tempTime, format: 'HH:mm'" />
+                            <input type="time" id="txtPlannedTime" name="txtPlannedTime" class="table" data-bind="timepickerInput: $root.plannedDateTime" />
                         </td>
                         <td>
                             <input type="text" id="txtStatus" class="table" value="Queued" disabled />
@@ -65,7 +70,7 @@
         </div>
         <div id="timeviewerdiv">
             <h4 style="text-align:center">Time:</h4>
-            <span id="timeVal" data-bind="text: tempTime" style="text-align:center"></span>
+            <span id="timeVal" data-bind="text: $root.plannedDateTime" style="text-align:center"></span>
         </div>
     </form>
     <br />
@@ -97,8 +102,8 @@
         <td data-bind="text: depFeature"></td>
         <td data-bind="text: depVersion"></td>
         <td data-bind="text: depEnvironment"></td>
-        <td data-bind="dateFormatted: depPlannedDate, format: 'MMMM DD YYYY'"></td>
-        <td data-bind="timeFormatted: depPlannedTime, format: 'LT'"></td>
+        <td data-bind="dateFormatted: depPlannedDateTime, format: 'MMMM DD YYYY'"></td>
+        <td data-bind="timeFormatted: depPlannedDateTime, format: 'LT'"></td>
         <td data-bind="text: depStatus"></td>
         <td>
             <a class="btn btn-light" data-bind="click: $root.edit">Edit</a>
@@ -117,10 +122,10 @@
             <select id="ctlEnvironment" name="ctlEnvironment" data-bind="options: $root.environmentList, optionsText: 'envName', optionsValue: 'envName', value: depEnvironment"></select>
         </td>
         <td>
-            <input type="date" data-bind="dateFormatted: depPlannedDate, format: 'YYYY-MM-DD'" />
+            <input id="ctlPlannedDate" type="text" data-bind="datepicker: depPlannedDateTime" />
         </td>
         <td>
-            <input type="time" data-bind="timepickerInput: depPlannedTime" />
+            <input type="time" data-bind="timepickerInput: depPlannedDateTime" />
         </td>
         <td>
             <input type="text" data-bind="value: depStatus" disabled />
