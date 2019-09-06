@@ -37,7 +37,7 @@ Selecting a deploy within a table will open the deploy details window of the sel
 <img src="/readme_images/DevImg04.JPG">
 
 ## The QA Page
-<img src="/readme_images/QaImg01.JPG">
+<img src="/readme_images/QaImg01.jpg">
 
 The QA page looks almost identical to the Developer page. Users on this page cannot, however, change the deploy status. When a deploy has been marked as 'Completed', it will then appear in the Smoke Queue, where a user can then change the Smoke Status.
 
