@@ -42,3 +42,8 @@ Selecting a deploy within a table will open the deploy details window of the sel
 The QA page looks almost identical to the Developer page. Users on this page cannot, however, change the deploy status. When a deploy has been marked as 'Completed', it will then appear in the Smoke Queue, where a user can then change the Smoke Status.
 
 <img src="/readme_images/QaImg02.JPG">
+
+## The New Deploy Page
+<img src="/readme_images/NewImg01.jpg">
+
+The New Deploy page is meant for developers to enter and submit the features that will be deployed. Since features (more than likely) will be submitted in queue at the same time, this page was designed to add each feature to a table, and submitted when all features have been entered. This makes it much more efficent than queuing features one-by-one.
