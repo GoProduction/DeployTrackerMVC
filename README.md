@@ -20,19 +20,25 @@ Selecting a ribbon will prompt a modal that displays the deploys details.
 <img src="/readme_images/HomeModal.JPG">
 
 ## The Developer Page
-<img src="/readme_images/Developer.JPG">
+<img src="/readme_images/DevImg01.JPG">
 
-The developer page is separated by two tables: Queued Deploys (bottom) and Current Deploys (top). Each table allows for easy access to Edit, View, and change the status of the deploy. Whenever a deploy is created, it will automatically assume the status of "Queued", and will be displayed in the Queued Deploys table. When the status of the deploy is changed, it will then transfer over to the Current Deploys table.
-
+The developer page is separated by three tables: Queued Deploys (bottom), Current Deploys (top), and the Smoke Queue (right). Each table allows for easy access to Edit, View, and change the status of the deploy. Whenever a deploy is created, it will automatically assume the status of "Queued", and will be displayed in the Queued Deploys table. When the status of the deploy is changed, it will then transfer over to the Current Deploys table. The Current and Smoke tables also have filters that the user can use to parse deploys by date and status of the deploy.
 
 The status of the deploy can be changed by selecting the "Update Status" button in the deploy field.
 
-<img src="/readme_images/DeveloperStatusModal.JPG">
+<img src="/readme_images/DevImg02.JPG">
 
 If a deploys' status is set to FAILED, the user will be prompted to enter a comment into the comment box. They will not be able to save the status until a comment is entered.
 
-<img src="/readme_images/DeveloperStatusModalFail.JPG">
+<img src="/readme_images/DevImg03.JPG">
 
-Selecting a deploy within a table will open the deploy details window of the selected deploy.
+Selecting a deploy within a table will open the deploy details window of the selected deploy, where users can also edit if needed by selecting the 'Edit' button.
 
-<img src="/readme_images/RecordDetails.JPG">
+<img src="/readme_images/DevImg04.JPG">
+
+## The QA Page
+<img src="/readme_images/QaImg01.JPG">
+
+The QA page looks almost identical to the Developer page. Users on this page cannot, however, change the deploy status. When a deploy has been marked as 'Completed', it will then appear in the Smoke Queue, where a user can then change the Smoke Status.
+
+<img src="/readme_images/QaImg02.JPG">
