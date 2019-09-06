@@ -44,6 +44,6 @@ The QA page looks almost identical to the Developer page. Users on this page can
 <img src="/readme_images/QaImg02.JPG">
 
 ## The New Deploy Page
-<img src="/readme_images/NewImg01.jpg">
+<img src="/readme_images/NewImg01.JPG">
 
 The New Deploy page is meant for developers to enter and submit the features that will be deployed. Since features (more than likely) will be submitted in queue at the same time, this page was designed to add each feature to a table, and submitted when all features have been entered. This makes it much more efficent than queuing features one-by-one.
