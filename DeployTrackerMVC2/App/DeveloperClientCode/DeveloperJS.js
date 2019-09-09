@@ -536,7 +536,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
             if (id.value == mainItem.depID) {
                 if (ctl.value == 'Completed') {
-                    mainItem.depEndTime(dateNow());
+                    mainItem.depEndTime(moment(dateNow()).format());
                     mainItem.depSmoke(selSmoke);
                     console.log(selSmoke);
                     console.log(mainItem.depEndTime());
@@ -570,13 +570,13 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                             console.log("Ready state: ", msg.readyState);
                         }
                     });
-                    mainItem.depEndTime(dateNow());
+                    mainItem.depEndTime(moment(dateNow()).format());
                     console.log(mainItem.depEndTime());
                     deploySignalR.server.updateAll();
                     self.updateViewModelComment();
                 }
                 else if (ctl.value == 'Deploying') {
-                    mainItem.depStartTime(dateNow());
+                    mainItem.depStartTime(moment(dateNow()).format());
                     console.log(mainItem.depStartTime());
                 }
                 mainItem.depStatus(ctl.value);

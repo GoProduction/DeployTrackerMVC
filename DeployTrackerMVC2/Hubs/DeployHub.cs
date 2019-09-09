@@ -89,6 +89,10 @@ namespace DeployTrackerMVC2.Hubs
             {
                 Clients.Others.browserNotification(DateTime.Now.ToString("hh:mm tt") + " || " + "A SMOKE status has been updated...", message, icon);
             }
+            else if (type == "Batch")
+            {
+                Clients.Others.browserNotification(DateTime.Now.ToString("hh:mm tt") + " || " + "A new BATCH of deploys has been submitted...", message, icon);
+            }
             
         }
     }

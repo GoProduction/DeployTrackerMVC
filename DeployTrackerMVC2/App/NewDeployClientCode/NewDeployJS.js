@@ -147,6 +147,10 @@ var TempDeployViewModel = function (signalR) {
             errorToast(err);
         }
 
+        //Initialize variables for notifications
+        var icon = '/images/static_bulb.jpg';
+        var message = "A new batch of deploys has been submitted to the queue.";
+        signalR.server.notification("Batch", message, icon);
 
     };
 

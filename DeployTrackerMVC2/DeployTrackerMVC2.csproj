@@ -387,6 +387,7 @@
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="Global.asax" />
     <Content Include="Images\loading.gif" />
+    <Content Include="Images\static_bulb.jpg" />
     <Content Include="Images\static_conditional.jpg" />
     <Content Include="Images\static_fail.jpg" />
     <Content Include="Images\static_loading.jpg" />
