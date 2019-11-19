@@ -15,8 +15,7 @@ var Deploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTim
     this.depEnvironment = ko.observable(depEnvironment);
     this.Edit = ko.observable(Edit);
 };
-
-
+//Deploy viewmodel
 var TempDeployViewModel = function (signalR) {
 
     var self = this;
@@ -208,8 +207,6 @@ var TempDeployViewModel = function (signalR) {
         }));
     });
 }
-
-
 $(function () {
     $("#txtPlannedDate").datepicker();
     $("#ctlPlannedDate").datepicker();
@@ -225,8 +222,6 @@ $(function () {
 
 
 });
-
-
 var DeleteKey = function (array, key) {
     this.array = array;
     this.key = key;
@@ -235,11 +230,9 @@ var DeleteKey = function (array, key) {
     return newarray;
 
 }
-
 function errorToast(err) {
     toastr.error(err, 'Error:');
 }
-
 function successToast(msg) {
     toastr.success(msg, "Success!");
 
@@ -262,7 +255,6 @@ function successToast(msg) {
         "hideMethod": "fadeOut"
     }
 }
-
 function redirect() {
     var url = $("#Redirect").val();
     location.href = url;
