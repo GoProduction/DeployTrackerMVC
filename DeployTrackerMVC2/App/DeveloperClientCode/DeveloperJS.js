@@ -59,7 +59,7 @@ var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlanned
     self.depEndTime = ko.observable(ko.utils.unwrapObservable(depEndTime));
     self.depStatus = ko.observable(ko.utils.unwrapObservable(depStatus));
     self.depSmoke = ko.observable(ko.utils.unwrapObservable(depSmoke));
-    console.log("Planned time is: ", self.depPlannedDateTime);
+    console.log("Planned time is: ", ko.utils.unwrapObservable(self.depPlannedDateTime));
 }
 
 //MAIN VIEW MODEL
@@ -272,7 +272,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     } // Function to disable the 'LOCKED' status of the row
     self.watchModel = function (model, callback) {
         for (var key in model) {
-            if (model.hasOwnProperty(key) && ko.isObservable(model[key]) && key != 'Edit' && key != 'depLocked') {
+            if (model.hasOwnProperty(key) && ko.isObservable(model[key]) /*&& key != 'Edit' && key != 'depLocked'*/) {
                 self.subscribeToProperty(model, key, function (key, val) {
                     callback(model, key, val);
                 });
@@ -319,21 +319,12 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     //PATCH request will only send the changed property to the database, minimizing network traffic
     self.modelChanged = function (model, key, val) {
 
-        //Wrote this function to deal with the PATCH request firing after moving through the time field. The HTML
-        //time field will prematurely fire when moving through hh->mm parts of the field, causing the datetime
-        //value to become invalid. This function tells the patch request to fire after the field has lost focus.
-        
-            var payload = {};
-            payload[key] = val;
-            $.ajax({
-                url: '/odata/Deploys(' + model.depID + ')',
-                type: 'PATCH',
-                data: JSON.stringify(payload),
-                contentType: 'application/json',
-                dataType: 'json'
-                
-            });
-    }
+        var payload = {};
+        payload[key] = val;
+        patchData(payload, model);
+        console.log("PATCH request:");
+        console.log(payload);
+    };
 
     //GET REQUESTS///////////////////////////////////////////////////////
     $.getJSON('/odata/Deploys', function (data) {
@@ -584,26 +575,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             }
 
         });
-        //Notification
-        //Icons
-        var complete = '/images/static_pass.jpg';
-        var fail = '/images/static_fail.jpg';
-        var ready = '/images/static_loading.jpg';
-        //Icon assignment
-        if (ctl.value == 'Completed') {
-            icon = complete;
-        }
-        else if (ctl.value == 'Failed') {
-            icon = fail;
-        }
-        else {
-            icon = ready;
-        }
-
-        var message = "User has updated " + feature + " " + version + " to " + ctl.value;
-
-        deploySignalR.server.notification("Status", message, icon);
-
+        checkForNotification(ctl.value, feature, version, deploySignalR);
         comment.value = "";
         self.closeModal();
     } // Submit new status
@@ -761,6 +733,7 @@ $(function () {
     deploySignalR.client.updateDeploy = function (id, key, value) {
         var deploy = findDeploy(id);
         deploy[key](value);
+        console.log("Deploy updated to server")
 
     } // updateDeploy function, to be triggered through SignalR
     deploySignalR.client.unlockDeploy = function (id) {
@@ -827,7 +800,26 @@ $(function () {
 
 });
 
-/* Open when someone selects a record */
+//Patch data function using jQuery
+async function patchData(payload, model) {
+    let result;
+    try {
+        result = await $.ajax({
+            url: '/odata/Deploys(' + model.depID + ')',
+            type: 'PATCH',
+            async: true,
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+            dataType: 'json'
+        });
+        return result;
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
+
+//Open when someone selects a record
 function openNav() {
     
     $("#DetailsView").modal("show");
@@ -907,6 +899,25 @@ function infoToast(msg, cont) {
         "showMethod": "fadeIn",
         "hideMethod": "fadeOut"
     }
+}
+//Checks changed values for browser notification
+function checkForNotification(value, feature, version, signalR) {
+    deploySignalR = signalR;
+    var complete = '/images/static_pass.jpg';
+    var fail = '/images/static_fail.jpg';
+    var ready = '/images/static_loading.jpg';
+    //Icon assignment
+    if (value == 'Completed') {
+        icon = complete;
+    }
+    else if (value == 'Failed') {
+        icon = fail;
+    }
+    else {
+        icon = ready;
+    }
+    var message = "User has updated " + feature + " " + version + " to " + value;
+    deploySignalR.server.notification("Status", message, icon);
 }
 //Browser notification
 function browserNotification() {

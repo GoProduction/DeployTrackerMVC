@@ -6,6 +6,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -30,12 +31,14 @@ namespace DeployTrackerMVC2.Controllers
             return db.tblDeploys.Find(key);
         }
 
+        [AcceptVerbs("PATCH", "MERGE")]
         protected override tblDeploy PatchEntity(int key, Delta<tblDeploy> patch)
         {
             if (patch == null)
             {
                 return null;
             }
+            System.Diagnostics.Debug.WriteLine("The key is: " + key);
             var deployToPatch = GetEntityByKey(key);
             patch.Patch(deployToPatch);
             db.Entry(deployToPatch).State = EntityState.Modified;
@@ -49,7 +52,8 @@ namespace DeployTrackerMVC2.Controllers
             System.Diagnostics.Debug.WriteLine("Deploy has been patched: " + deployToPatch.depID + ", " + changedProperty + ", " + changedPropertyValue);
             return deployToPatch;
         }
-
+        
+        
         public IHttpActionResult Create(tblDeploy deploy)
         {
             if (!ModelState.IsValid)
