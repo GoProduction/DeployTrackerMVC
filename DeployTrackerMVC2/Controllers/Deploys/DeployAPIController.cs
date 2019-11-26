@@ -7,22 +7,29 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
-
+using System.Web.Http.OData;
 using DeployTrackerMVC2.App_Start;
 using DeployTrackerMVC2.Hubs;
 using DeployTrackerMVC2.Models;
+using JsonPatch;
+using JsonPatch.Formatting;
 using Microsoft.AspNet.SignalR;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace DeployTrackerMVC2.Controllers
 {
+    [RoutePrefix("api/DeployAPI")]
     public class DeployAPIController : ApiController
     {
 
+        public static void ConfigureApis(HttpConfiguration config) {
+            config.Formatters.Add(new JsonPatchFormatter());
+        }
 
         private dbMainEntities db = new dbMainEntities();
 
@@ -51,18 +58,22 @@ namespace DeployTrackerMVC2.Controllers
         }
 
         [HttpPatch]
-        [Route("{PatchDeploy}")]
-        public IHttpActionResult PatchDeploy ([FromBody] tblDeploy request)
+        [Route]
+        public HttpResponseMessage PatchDeploy(int id, Delta<tblDeploy> newDeploy)
         {
-            var deploy = db.tblDeploys.FirstOrDefault(c => c.depID == request.depID);
-            if (deploy == null) return NotFound();
-            else
+            using (dbMainEntities objContext = new dbMainEntities())
             {
-                deploy.depEnvironment = request.depEnvironment;
+                tblDeploy deploy = objContext.tblDeploys.SingleOrDefault(p => p.depID == id);
+                if (deploy == null)
+                {
+                    throw new HttpResponseException(HttpStatusCode.NotFound);
+                }
+                newDeploy.Patch(deploy);
+                objContext.SaveChanges();
             }
-            return Ok();
+            return Request.CreateResponse(HttpStatusCode.NoContent);
         }
-        
+
         // PUT: api/DeployAPI/5
         [ResponseType(typeof(void))]
         public IHttpActionResult PuttblDeploy(int id, tblDeploy tblDeploy)

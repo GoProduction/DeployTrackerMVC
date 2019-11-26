@@ -272,13 +272,16 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     } // Function to disable the 'LOCKED' status of the row
     self.watchModel = function (model, callback) {
         for (var key in model) {
-            if (model.hasOwnProperty(key) && ko.isObservable(model[key]) /*&& key != 'Edit' && key != 'depLocked'*/) {
+            if (model.hasOwnProperty(key) && ko.isObservable(model[key])) {
                 self.subscribeToProperty(model, key, function (key, val) {
                     callback(model, key, val);
+                    console.log("self.watchModel()", callback(model, key, val));
                 });
             }
         }
-    } // Checks to make sure properties are observable
+    }
+    
+    // Checks to make sure properties are observable
     self.subscribeToProperty = function (model, key, callback) {
         model[key].subscribe(function (val) {
             callback(key, val);
@@ -318,13 +321,11 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     //modelChanged function, to trigger when a row value changes (with jQuery PATCH request)
     //PATCH request will only send the changed property to the database, minimizing network traffic
     self.modelChanged = function (model, key, val) {
-
         var payload = {};
         payload[key] = val;
-        patchData(payload, model);
-        console.log("PATCH request:");
-        console.log(payload);
+        console.log("self.modelChanged()", payload);
     };
+    
 
     //GET REQUESTS///////////////////////////////////////////////////////
     $.getJSON('/odata/Deploys', function (data) {
@@ -344,7 +345,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
             }
 
-            self.watchModel(obsDeploy, self.modelChanged);
+            //self.watchModel(obsDeploy, self.modelChanged);
             
             return obsDeploy;
            
@@ -504,6 +505,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var feature = document.getElementById("spFeature").innerText;
         var version = document.getElementById("spVersion").innerText;
 
+        //JSON payload
+        var payload = {};
+
         //Checks if status has NOT been changed
         if (objstatus == ctl.value) {
             if (errorMsg.style.display == "none") {
@@ -527,10 +531,17 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
             if (id.value == mainItem.depID) {
                 if (ctl.value == 'Completed') {
+                    //Assign and format properties
+                    mainItem.depStatus(ctl.value);
                     mainItem.depEndTime(moment(dateNow()).format());
                     mainItem.depSmoke(selSmoke);
+                    //(Test log)
                     console.log(selSmoke);
                     console.log(mainItem.depEndTime());
+                    //Push properties to JSON payload
+                    payload["depStatus"] = ko.utils.unwrapObservable(mainItem.depStatus);
+                    payload["depEndTime"] = ko.utils.unwrapObservable(mainItem.depEndTime);
+                    payload["depSmoke"] = ko.utils.unwrapObservable(mainItem.depSmoke);
                 }
                 else if (ctl.value == 'Failed') {
                     //Comment JSON string
@@ -561,17 +572,37 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                             console.log("Ready state: ", msg.readyState);
                         }
                     });
+                    //Assign and format properties
+                    mainItem.depStatus(ctl.value);
                     mainItem.depEndTime(moment(dateNow()).format());
+                    //(Test log)
                     console.log(mainItem.depEndTime());
+                    //Push properties to JSON payload
+                    payload["depStatus"] = ko.utils.unwrapObservable(mainItem.depStatus);
+                    payload["depEndTime"] = ko.utils.unwrapObservable(mainItem.depEndTime)
+                    //Send signal to update all clients
                     deploySignalR.server.updateAll();
                     self.updateViewModelComment();
                 }
                 else if (ctl.value == 'Deploying') {
+                    //Assign and format properties
+                    mainItem.depStatus(ctl.value);
                     mainItem.depStartTime(moment(dateNow()).format());
+                    //Push properties to JSON payload
+                    payload["depStatus"] = ko.utils.unwrapObservable(mainItem.depStatus);
+                    payload["depStartTime"] = ko.utils.unwrapObservable(mainItem.depStartTime);
+                    //(Test log)
                     console.log(mainItem.depStartTime());
                 }
-                mainItem.depStatus(ctl.value);
-
+                else {
+                    mainItem.depStatus(ctl.value);
+                    payload["depStatus"] = ko.utils.unwrapObservable(mainItem.depStatus);
+                }
+                
+                console.log(payload);
+                //Call the PATCH request
+                patchData(payload, mainItem);
+                //deploySignalR.server.updateAll();
             }
 
         });
@@ -708,6 +739,7 @@ $(function () {
     var findDeploy = function (id) {
         return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
             if (item.depID == id) {
+                console.log("findDeploy()", ko.utils.unwrapObservable(item));
                 return item;
             }
         });
@@ -731,9 +763,12 @@ $(function () {
         }
     } // Update all function, to be triggered when new batch of deploys are created
     deploySignalR.client.updateDeploy = function (id, key, value) {
+        console.log("id", id);
+        console.log("key", key);
+        console.log("value", value);
         var deploy = findDeploy(id);
         deploy[key](value);
-        console.log("Deploy updated to server")
+        console.log("updateDeploy()", deploy[key](value));
 
     } // updateDeploy function, to be triggered through SignalR
     deploySignalR.client.unlockDeploy = function (id) {
@@ -799,8 +834,24 @@ $(function () {
 
 
 });
-
-//Patch data function using jQuery
+//PATCH request for status change
+function patchStatus(payload, model) {
+    let result;
+    try {
+        result = $.ajax({
+            url: '/odata/Deploys(' + model.depID + ')',
+            type: 'PATCH',
+            data: JSON.stringify(payload),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json'
+        });
+        return result;
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
+//PATCH data function using jQuery (default)
 async function patchData(payload, model) {
     let result;
     try {
