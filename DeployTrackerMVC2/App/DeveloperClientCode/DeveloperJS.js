@@ -176,7 +176,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                     }
 
                     self.watchModel(obsDeploy, self.modelChanged);
-                    console.log("Updated deploys...");
+                    console.log("self.updateViewModel");
                     return obsDeploy;
                 }));
 
@@ -223,8 +223,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             deploy.depSmoke));
 
         self.disableEdit();
-        console.log("Deploy being viewed is: ");
-        console.log(self.deployBeingEdited);
+        console.log("Deploy being viewed is: ", self.deployBeingEdited);
         
 
     } // Function to enable the edit-template, AND trigger the signalr LOCK event for all other clients
@@ -244,6 +243,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     }
     self.done = function () {
         var updatedDeploy = ko.utils.unwrapObservable(self.deployBeingEdited());
+        var comparison = Object.getOwnPropertyNames(updatedDeploy);
+        console.log("var comparison: ", comparison);
 
         var depID = updatedDeploy.depID;
         var depFeature = ko.utils.unwrapObservable(updatedDeploy.depFeature);
@@ -284,6 +285,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     // Checks to make sure properties are observable
     self.subscribeToProperty = function (model, key, callback) {
         model[key].subscribe(function (val) {
+            console.log("self.subscribeToProperty");
             callback(key, val);
         });
     } // Subscribes to observable objects, and listens for changes
@@ -581,7 +583,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                     payload["depStatus"] = ko.utils.unwrapObservable(mainItem.depStatus);
                     payload["depEndTime"] = ko.utils.unwrapObservable(mainItem.depEndTime)
                     //Send signal to update all clients
-                    deploySignalR.server.updateAll();
+                    //deploySignalR.server.updateAll();
                     self.updateViewModelComment();
                 }
                 else if (ctl.value == 'Deploying') {

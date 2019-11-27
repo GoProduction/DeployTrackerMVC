@@ -1,18 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using DeployTrackerMVC2.Hubs;
+using DeployTrackerMVC2.Models;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.Description;
 using System.Web.Http.OData;
-using DeployTrackerMVC2.Hubs;
-using DeployTrackerMVC2.Models;
 
 namespace DeployTrackerMVC2.Controllers
 {
@@ -43,13 +35,17 @@ namespace DeployTrackerMVC2.Controllers
             patch.Patch(deployToPatch);
             db.Entry(deployToPatch).State = EntityState.Modified;
             db.SaveChanges();
+            
+            //Prepare changed properties to send to all clients
+            var list = patch.GetChangedPropertyNames().ToList();
+            foreach (var changedProperty in list) {
+                object changedPropertyValue;
+                patch.TryGetPropertyValue(changedProperty, out changedPropertyValue);
+                Hub.Clients.All.updateDeploy(deployToPatch.depID, changedProperty, changedPropertyValue);
+                System.Diagnostics.Debug.WriteLine("Deploy has been patched: " + deployToPatch.depID + ", " + changedProperty + ", " + changedPropertyValue);
 
-            var changedProperty = patch.GetChangedPropertyNames().ToList()[0];
-            object changedPropertyValue;
-            patch.TryGetPropertyValue(changedProperty, out changedPropertyValue);
-
-            Hub.Clients.All.updateDeploy(deployToPatch.depID, changedProperty, changedPropertyValue);
-            System.Diagnostics.Debug.WriteLine("Deploy has been patched: " + deployToPatch.depID + ", " + changedProperty + ", " + changedPropertyValue);
+            }
+           
             return deployToPatch;
         }
         

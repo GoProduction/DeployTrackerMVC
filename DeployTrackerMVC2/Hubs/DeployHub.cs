@@ -19,29 +19,10 @@ namespace DeployTrackerMVC2.Hubs
         public override System.Threading.Tasks.Task OnConnected()
         {
             _mapping.TryAdd(Context.ConnectionId, new List<int>());
-            System.Diagnostics.Debug.Write(Context.ConnectionId + " has connected..");
+            System.Diagnostics.Debug.WriteLine(Context.ConnectionId + " has connected..");
             return base.OnConnected();
         }
 
-
-        public override System.Threading.Tasks.Task OnDisconnected(bool stopCalled)
-        {
-
-            foreach (var id in _mapping[Context.ConnectionId])
-            {
-                var deployToPatch = db.tblDeploys.Find(id);
-                deployToPatch.depLocked = false;
-                db.Entry(deployToPatch).State = EntityState.Modified;
-                db.SaveChanges();
-                Clients.Others.unlockDeploy(id);
-
-            }
-
-            var list = new List<int>();
-            _mapping.TryRemove(Context.ConnectionId, out list);
-            Console.Write(Context.ConnectionId + " has disconnected");
-            return base.OnDisconnected(stopCalled);
-        }
         public void Lock(int id)
         {
             var deployToPatch = db.tblDeploys.Find(id);
@@ -66,6 +47,7 @@ namespace DeployTrackerMVC2.Hubs
             var deployToPatch = db.tblDeploys.Find(id);
             db.Entry(deployToPatch).State = EntityState.Modified;
             db.SaveChanges();
+            System.Diagnostics.Debug.WriteLine("FeatureChange(id = " + id + ")");
         }
 
         public void UpdateAll()
@@ -95,5 +77,25 @@ namespace DeployTrackerMVC2.Hubs
             }
             
         }
+        /*
+        public override System.Threading.Tasks.Task OnDisconnected(bool stopCalled)
+        {
+
+            foreach (var id in _mapping[Context.ConnectionId])
+            {
+                var deployToPatch = db.tblDeploys.Find(id);
+                deployToPatch.depLocked = false;
+                db.Entry(deployToPatch).State = EntityState.Modified;
+                db.SaveChanges();
+                Clients.Others.unlockDeploy(id);
+
+            }
+
+            var list = new List<int>();
+            _mapping.TryRemove(Context.ConnectionId, out list);
+            Console.Write(Context.ConnectionId + " has disconnected");
+            return base.OnDisconnected(stopCalled);
+        }
+        */
     }
 }
