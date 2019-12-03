@@ -1,40 +1,4 @@
-﻿//Global variables
-var smokeState;
-var smokeWindow = document.getElementById("smokeWindow");
-var smokeButton = document.getElementById("smokeToggleButton");
-var objstatus = '';
-var selID = '';
-
-//Cache Variables
-////Current Deploys
-//////Type
-var ctStore = localStorage['curTypeCached'];
-if (ctStore) var curTypeCached = JSON.parse(ctStore);
-else curTypeCached = { val: 'All' };
-console.log("curTypeCached is");
-console.log(curTypeCached);
-//////Time
-var ctmStore = localStorage['curTimeCached'];
-if (ctmStore) var curTimeCached = JSON.parse(ctmStore);
-else curTimeCached = { val: '24' };
-console.log("curTimeCached is");
-console.log(curTimeCached);
-
-////Smoke Deploys
-//////Type
-var stStore = localStorage['smokeTypeCached'];
-if (stStore) var smokeTypeCached = JSON.parse(stStore);
-else smokeTypeCached = { val: 'All' };
-console.log("smokeTypeCached is ");
-console.log(smokeTypeCached);
-//////Time
-var stmStore = localStorage['smokeTimeCached'];
-if (stmStore) var smokeTimeCached = JSON.parse(stmStore);
-else smokeTimeCached = { val: '24' };
-console.log('smokeTimeCached is ');
-console.log(smokeTimeCached);
-
-//Knockout find function (used for filter)
+﻿//Knockout find function (used for filter)
 ko.observableArray.fn.find = function (prop, data) {
     var valueToMatch = data[prop];
     return ko.utils.arrayFirst(this(), function (item) {
@@ -651,8 +615,8 @@ $(function () {
             infoToast(msg, cont);
         }
         else if (viewModel.obsCheckEdit() == 0) {
-            viewModel.updateViewModel();
-            viewModel.updateViewModelComment();
+            var viewModel = new DeployViewModel(deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached);
+            ko.applyBindings(viewModel);
             console.log('Viewmodel updated');
         }
     } // Update all function, to be triggered when new batch of deploys are created
@@ -667,15 +631,6 @@ $(function () {
         viewModel.updateViewModelComment();
         console.log("New comment submitted...");
     }
-    deploySignalR.client.unlockDeploy = function (id) {
-        var deploy = findDeploy(id);
-        deploy.depLocked(false);
-    } // unlockDeploy function, to be triggered when user selects "done"
-    deploySignalR.client.lockDeploy = function (id) {
-        var deploy = findDeploy(id);
-        deploy.depLocked(true);
-
-    } // lockDeploy function, to be triggered when a user selects "edit"
     deploySignalR.client.browserNotification = function (type, message, icon) {
         // Let's check if the browser supports notifications
         if (!("Notification" in window)) {
@@ -703,8 +658,6 @@ $(function () {
             });
         }
 
-    // At last, if the user has denied notifications, and you 
-    // want to be respectful there is no need to bother them any more.
     }
 
     //CONNECTION FUNCTIONS/////////////////////////////////////////
@@ -731,9 +684,6 @@ $(function () {
 
 });
 
-$(document).ready(function () {
-   
-});
 /* Open when someone selects a record */
 function openNav() {
 

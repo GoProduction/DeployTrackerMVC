@@ -1,51 +1,10 @@
-﻿//Global variables
-var smokeState;
-var smokeWindow = document.getElementById("smokeWindow");
-var smokeButton = document.getElementById("smokeToggleButton");
-var objstatus = '';
-var selID = '';
-
-//Cache Variables
-////Current Deploys
-//////Type
-var ctStore = localStorage['curTypeCached'];
-if (ctStore) var curTypeCached = JSON.parse(ctStore);
-else curTypeCached = { val: 'All' };
-console.log("curTypeCached is");
-console.log(curTypeCached);
-//////Time
-var ctmStore = localStorage['curTimeCached'];
-if (ctmStore) var curTimeCached = JSON.parse(ctmStore);
-else curTimeCached = { val: '24' };
-console.log("curTimeCached is");
-console.log(curTimeCached);
-
-////Smoke Deploys
-//////Type
-var stStore = localStorage['smokeTypeCached'];
-if (stStore) var smokeTypeCached = JSON.parse(stStore);
-else smokeTypeCached = { val: 'All' };
-console.log("smokeTypeCached is ");
-console.log(smokeTypeCached);
-//////Time
-var stmStore = localStorage['smokeTimeCached'];
-if (stmStore) var smokeTimeCached = JSON.parse(stmStore);
-else smokeTimeCached = { val: '24' };
-console.log('smokeTimeCached is ');
-console.log(smokeTimeCached);
-//Loading function
-$(window).on('load', function () {
-    //$(".loading-class").fadeOut("slow");
-});
-
-//Knockout find function (used for filter)
+﻿//Knockout find function (used for filter)
 ko.observableArray.fn.find = function (prop, data) {
     var valueToMatch = data[prop];
     return ko.utils.arrayFirst(this(), function (item) {
         return item[prop] === valueToMatch;
     });
 };
-
 
 //Model for Deploy
 var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
@@ -68,7 +27,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     var self = this;
     self.loadingVar = ko.observable(0);
     
-
     //FILTER OBSERVABLES FOR TABLES
     self.typeArray = ko.observableArray([
         { text: 'All Current Deploys', val: 'All' },
@@ -138,24 +96,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         openNav();
 
     }; // Run when record is selected, and open the record modal
-    self.displayModeQ = function (deploy) {
-        if (deploy.depLocked()) {
-            console.log('Locked row');
-            return 'locked-template-q';
-        }
-        else {
-            return deploy.Edit() ? 'edit-template-q' : 'read-template-q';
-        }
-    } // Changes the display mode of a table when a client is editing a row in the QUEUED table
-    self.displayModeC = function (deploy) {
-        if (deploy.depLocked()) {
-            console.log('Locked row');
-            return 'locked-template-c';
-        }
-        else {
-            return deploy.Edit() ? 'edit-template-c' : 'read-template-c';
-        }
-    } // Changes the display mode of a table when a client is editing a row in the CURRENT table
     self.updateViewModel = function () {
         try {
             $.getJSON('/odata/Deploys', function (data) {
@@ -169,10 +109,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                         depStartTime: ko.observable(deploy.depStartTime),
                         depEndTime: ko.observable(deploy.depEndTime),
                         depStatus: ko.observable(deploy.depStatus),
-                        depSmoke: ko.observable(deploy.depSmoke),
-                        Edit: ko.observable(false),
-                        depLocked: ko.observable(deploy.depLocked)
-
+                        depSmoke: ko.observable(deploy.depSmoke)
                     }
 
                     self.watchModel(obsDeploy, self.modelChanged);
@@ -242,10 +179,17 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.disableEdit();
     }
     self.done = function () {
-        var updatedDeploy = ko.utils.unwrapObservable(self.deployBeingEdited());
-        var comparison = Object.getOwnPropertyNames(updatedDeploy);
-        console.log("var comparison: ", comparison);
 
+        //Prep properties for PATCH request
+        var oldDeploy = ko.toJS(self.originalDeploy());
+        var newDeploy = ko.toJS(self.deployBeingEdited());
+        var payload = diff(oldDeploy, newDeploy);
+        console.log("Change payload: ", payload);
+        //Send the PATCH request
+        patchData(payload, self.originalDeploy());
+
+        //Assign changes to variables
+        var updatedDeploy = ko.utils.unwrapObservable(self.deployBeingEdited());
         var depID = updatedDeploy.depID;
         var depFeature = ko.utils.unwrapObservable(updatedDeploy.depFeature);
         var depVersion = ko.utils.unwrapObservable(updatedDeploy.depVersion);
@@ -255,7 +199,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var depEndTime = ko.utils.unwrapObservable(updatedDeploy.depEndTime);
         var depStatus = ko.utils.unwrapObservable(updatedDeploy.depStatus);
         var depSmoke = ko.utils.unwrapObservable(updatedDeploy.depSmoke);
-
+        //Update deploy with assigned variables
         self.originalDeploy().depID = depID;
         self.originalDeploy().depFeature(depFeature);
         self.originalDeploy().depVersion(depVersion);
@@ -266,8 +210,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.originalDeploy().depStatus(depStatus);
         self.originalDeploy().depSmoke(depSmoke);
 
-        //self.deployBeingEdited(0);
-        //self.originalDeploy(0);
+        //Disable the edit fields
         self.disableEdit();
         
     } // Function to disable the 'LOCKED' status of the row
@@ -341,16 +284,11 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 depStartTime: ko.observable(deploy.depStartTime),
                 depEndTime: ko.observable(deploy.depEndTime),
                 depStatus: ko.observable(deploy.depStatus),
-                depSmoke: ko.observable(deploy.depSmoke),
-                Edit: ko.observable(false),
-                depLocked: ko.observable(deploy.depLocked)
-
+                depSmoke: ko.observable(deploy.depSmoke)
             }
 
-            //self.watchModel(obsDeploy, self.modelChanged);
-            
             return obsDeploy;
-           
+
         }));
         self.loadingVar(self.loadingVar() + 1);
         if (self.loadingVar() == 4) {
@@ -732,12 +670,10 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
 //SignalR Events
 $(function () {
-
+    ko.options.deferUpdates = true;
     $("editPlannedDate").datepicker();
     var deploySignalR = $.connection.deploy;
     var viewModel = new DeployViewModel(deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached);
-    //Initialize editPlannedTime field
-    
     var findDeploy = function (id) {
         return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
             if (item.depID == id) {
@@ -760,7 +696,6 @@ $(function () {
         }
         else if (viewModel.obsCheckEdit() == 0) {
             viewModel.updateViewModel();
-            viewModel.updateViewModelComment();
             console.log('Viewmodel updated');
         }
     } // Update all function, to be triggered when new batch of deploys are created
@@ -773,15 +708,6 @@ $(function () {
         console.log("updateDeploy()", deploy[key](value));
 
     } // updateDeploy function, to be triggered through SignalR
-    deploySignalR.client.unlockDeploy = function (id) {
-        var deploy = findDeploy(id);
-        deploy.depLocked(false);
-    } // unlockDeploy function, to be triggered when user selects "done"
-    deploySignalR.client.lockDeploy = function (id) {
-        var deploy = findDeploy(id);
-        deploy.depLocked(true);
-
-    } // lockDeploy function, to be triggered when a user selects "edit"
     deploySignalR.client.browserNotification = function (type, message, icon) {
         // Let's check if the browser supports notifications
         if (!("Notification" in window)) {
@@ -836,41 +762,6 @@ $(function () {
 
 
 });
-//PATCH request for status change
-function patchStatus(payload, model) {
-    let result;
-    try {
-        result = $.ajax({
-            url: '/odata/Deploys(' + model.depID + ')',
-            type: 'PATCH',
-            data: JSON.stringify(payload),
-            contentType: 'application/json; charset=utf-8',
-            dataType: 'json'
-        });
-        return result;
-    }
-    catch (err) {
-        console.error(err);
-    }
-}
-//PATCH data function using jQuery (default)
-async function patchData(payload, model) {
-    let result;
-    try {
-        result = await $.ajax({
-            url: '/odata/Deploys(' + model.depID + ')',
-            type: 'PATCH',
-            async: true,
-            data: JSON.stringify(payload),
-            contentType: 'application/json',
-            dataType: 'json'
-        });
-        return result;
-    }
-    catch (err) {
-        console.error(err);
-    }
-}
 
 //Open when someone selects a record
 function openNav() {
