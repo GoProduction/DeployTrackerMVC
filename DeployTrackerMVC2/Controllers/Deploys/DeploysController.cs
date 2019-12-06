@@ -18,6 +18,7 @@ namespace DeployTrackerMVC2.Controllers
             return db.tblDeploys;
         }
 
+        
         protected override tblDeploy GetEntityByKey(int key)
         {
             return db.tblDeploys.Find(key);

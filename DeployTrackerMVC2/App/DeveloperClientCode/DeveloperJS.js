@@ -6,21 +6,6 @@ ko.observableArray.fn.find = function (prop, data) {
     });
 };
 
-//Model for Deploy
-var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
-    var self = this;
-    self.depID = depID;
-    self.depFeature = ko.observable(ko.utils.unwrapObservable(depFeature));
-    self.depVersion = ko.observable(ko.utils.unwrapObservable(depVersion));
-    self.depEnvironment = ko.observable(ko.utils.unwrapObservable(depEnvironment));
-    self.depPlannedDateTime = ko.observable(new Date(ko.unwrap(depPlannedDateTime)));
-    self.depStartTime = ko.observable(ko.utils.unwrapObservable(depStartTime));
-    self.depEndTime = ko.observable(ko.utils.unwrapObservable(depEndTime));
-    self.depStatus = ko.observable(ko.utils.unwrapObservable(depStatus));
-    self.depSmoke = ko.observable(ko.utils.unwrapObservable(depSmoke));
-    console.log("Planned time is: ", ko.utils.unwrapObservable(self.depPlannedDateTime));
-}
-
 //MAIN VIEW MODEL
 var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached) {
 
@@ -96,32 +81,22 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         openNav();
 
     }; // Run when record is selected, and open the record modal
-    self.updateViewModel = function () {
-        try {
-            $.getJSON('/odata/Deploys', function (data) {
-                self.deploy(ko.utils.arrayMap(data.value, function (deploy) {
-                    var obsDeploy = {
-                        depID: deploy.depID,
-                        depFeature: ko.observable(deploy.depFeature),
-                        depVersion: ko.observable(deploy.depVersion),
-                        depEnvironment: ko.observable(deploy.depEnvironment),
-                        depPlannedDateTime: ko.observable(deploy.depPlannedDateTime),
-                        depStartTime: ko.observable(deploy.depStartTime),
-                        depEndTime: ko.observable(deploy.depEndTime),
-                        depStatus: ko.observable(deploy.depStatus),
-                        depSmoke: ko.observable(deploy.depSmoke)
-                    }
-
-                    self.watchModel(obsDeploy, self.modelChanged);
-                    console.log("self.updateViewModel");
-                    return obsDeploy;
-                }));
-
-            });
-        }
-        catch (err) {
-            errorToast(err);
-        }
+    self.updateViewModel = function (payload) {
+        var jvsObject = JSON.parse(payload);
+        var newDeploy = new incomingDeploy(
+            jvsObject.depID,
+            jvsObject.depFeature,
+            jvsObject.depVersion,
+            jvsObject.depEnvironment,
+            jvsObject.depPlannedDateTime,
+            jvsObject.depStartTime,
+            jvsObject.depEndTime,
+            jvsObject.depStatus,
+            jvsObject.depSmoke);
+        console.log("New JS object", jvsObject);
+        self.deploy.push(newDeploy);
+        self.watchModel(newDeploy, self.modelChanged);
+        
     } // Updates the viewmodel when new DEPLOYS have been submitted
     self.updateViewModelComment = function () {
         try {
@@ -356,10 +331,16 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
     ///TABLE FILTERS////////////////////////////////////////////////////
     self.queuedDeploys = ko.computed(function () {
-        return ko.utils.arrayFilter(self.deploy(), function (rec) {
-            return rec.depStatus() === 'Queued';
+        var filteredValue = "Queued";
+        var filtered = filteredValue ? ko.utils.arrayFilter(self.deploy(), function (rec) {
+            return rec.depStatus() === "Queued";
+        }) : self.deploy();
+
+        return filtered.sort(function (l, r) {
+            console.log("Sorted queued deploys");
+            return (l.depPlannedDateTime() < r.depPlannedDateTime() ? 1 : -1)
         });
-    }); // Queued Deploys table filter
+    });// Queued Deploys table filter
     self.currentDeploys = ko.computed(function () {
         return ko.utils.arrayFilter(self.deploy(), function (rec) {
 
@@ -593,7 +574,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
         return ((l.depEndTime() == r.depEndTime()) ? (l.depEndTime() < r.depEndTime() ? 1 : -1) : (l.depStartTime() < r.depStartTime() ? 1 : -1))
     }
-
+    self.sortQueue = function () {
+        self.queuedDeploys().slice(0).sort();
+    }
     //CACHING FUNCTIONS/////////////////////////////////////////////
     self.cacheCurrentType = function () {
         var ctl = document.getElementById("ctlCurrentType");
@@ -670,7 +653,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
 //SignalR Events
 $(function () {
-    ko.options.deferUpdates = true;
+    
     $("editPlannedDate").datepicker();
     var deploySignalR = $.connection.deploy;
     var viewModel = new DeployViewModel(deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached);
@@ -684,10 +667,9 @@ $(function () {
     } // Helper function that iterates over each record within the ViewModel, and finds and returns the ID that matches
 
     //SIGNALR FUNCTIONS//////////////////////////////////////////////
-    deploySignalR.client.updateAll = function () {
-
+    deploySignalR.client.updateAll = function (payload) {
+        
         console.log(viewModel.obsCheckEdit());
-
         //Warning toast triggered if client is engaged in editing a row
         if (viewModel.obsCheckEdit() >= 1) {
             var msg = "You are currently editing a record. Changes have been made to other records. Please refresh your browser when you are finished.";
@@ -695,7 +677,11 @@ $(function () {
             infoToast(msg, cont);
         }
         else if (viewModel.obsCheckEdit() == 0) {
-            viewModel.updateViewModel();
+            viewModel.updateViewModel(payload);
+            viewModel.resortList = ko.computed(function () {
+                viewModel.queuedDeploys();
+                return viewModel.queuedDeploys().sort(function (l, r) { return (l.depPlannedDateTime() < r.depPlannedDateTime() ? 1 : -1) });
+            });
             console.log('Viewmodel updated');
         }
     } // Update all function, to be triggered when new batch of deploys are created

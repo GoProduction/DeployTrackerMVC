@@ -23,24 +23,6 @@ namespace DeployTrackerMVC2.Hubs
             return base.OnConnected();
         }
 
-        public void Lock(int id)
-        {
-            var deployToPatch = db.tblDeploys.Find(id);
-            deployToPatch.depLocked = true;
-            db.Entry(deployToPatch).State = EntityState.Modified;
-            db.SaveChanges();
-            Clients.Others.lockDeploy(id);
-            _mapping[Context.ConnectionId].Add(id);
-        }
-        public void Unlock(int id)
-        {
-            var deployToPatch = db.tblDeploys.Find(id);
-            deployToPatch.depLocked = false;
-            db.Entry(deployToPatch).State = EntityState.Modified;
-            db.SaveChanges();
-            Clients.Others.unlockDeploy(id);
-            _mapping[Context.ConnectionId].Remove(id);
-        }
 
         public void FeatureChange(int id)
         {
@@ -50,9 +32,9 @@ namespace DeployTrackerMVC2.Hubs
             System.Diagnostics.Debug.WriteLine("FeatureChange(id = " + id + ")");
         }
 
-        public void UpdateAll()
+        public void UpdateAll(String response)
         {
-            Clients.All.updateAll();
+            Clients.All.updateAll(response);
 
         }
 

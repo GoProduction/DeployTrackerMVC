@@ -1,5 +1,4 @@
-﻿
-//Diff function, used to compare old values with new. Use by passing (OldDeploy, NewDeploy) parameters
+﻿//Diff function, used to compare old values with new. Use by passing (OldDeploy, NewDeploy) parameters
 var diff = function (obj1, obj2) {
 
     // Make sure an object to compare is provided
@@ -137,5 +136,33 @@ async function patchData(payload, model) {
     catch (err) {
         console.error(err);
     }
+}
+//Model for Deploy (when grabbed from DOM node/already binded record)
+var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
+    var self = this;
+    self.depID = depID;
+    self.depFeature = ko.observable(ko.utils.unwrapObservable(depFeature));
+    self.depVersion = ko.observable(ko.utils.unwrapObservable(depVersion));
+    self.depEnvironment = ko.observable(ko.utils.unwrapObservable(depEnvironment));
+    self.depPlannedDateTime = ko.observable(new Date(ko.unwrap(depPlannedDateTime)));
+    self.depStartTime = ko.observable(ko.utils.unwrapObservable(depStartTime));
+    self.depEndTime = ko.observable(ko.utils.unwrapObservable(depEndTime));
+    self.depStatus = ko.observable(ko.utils.unwrapObservable(depStatus));
+    self.depSmoke = ko.observable(ko.utils.unwrapObservable(depSmoke));
+    console.log("Planned time is: ", ko.utils.unwrapObservable(self.depPlannedDateTime));
+}
+//Model for Deploy when passing from server/newly submitted
+var incomingDeploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
+    var self = this;
+    self.depID = depID;
+    self.depFeature = ko.observable(depFeature);
+    self.depVersion = ko.observable(depVersion);
+    self.depEnvironment = ko.observable(depEnvironment);
+    self.depPlannedDateTime = ko.observable(depPlannedDateTime);
+    self.depStartTime = ko.observable(depStartTime);
+    self.depEndTime = ko.observable(depEndTime);
+    self.depStatus = ko.observable(depStatus);
+    self.depSmoke = ko.observable(depSmoke);
+
 }
 

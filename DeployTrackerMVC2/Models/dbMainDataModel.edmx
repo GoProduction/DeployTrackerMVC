@@ -27,7 +27,6 @@
           <Property Name="depEndTime" Type="datetimeoffset" Precision="7" />
           <Property Name="depStatus" Type="varchar" MaxLength="50" />
           <Property Name="depEnvironment" Type="varchar" MaxLength="50" />
-          <Property Name="depLocked" Type="bit" />
           <Property Name="noteID" Type="int" />
           <Property Name="depSmoke" Type="varchar" MaxLength="50" />
           <Property Name="depTimeDiff" Type="int" StoreGeneratedPattern="Computed" />
@@ -151,7 +150,6 @@
           <Property Name="depEndTime" Type="DateTimeOffset" Precision="7" />
           <Property Name="depStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="depEnvironment" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="depLocked" Type="Boolean" />
           <Property Name="noteID" Type="Int32" />
           <Property Name="depSmoke" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="depTimeDiff" Type="Int32" annotation:StoreGeneratedPattern="Computed" />
@@ -232,7 +230,6 @@
                 <ScalarProperty Name="depTimeDiff" ColumnName="depTimeDiff" />
                 <ScalarProperty Name="depSmoke" ColumnName="depSmoke" />
                 <ScalarProperty Name="noteID" ColumnName="noteID" />
-                <ScalarProperty Name="depLocked" ColumnName="depLocked" />
                 <ScalarProperty Name="depEnvironment" ColumnName="depEnvironment" />
                 <ScalarProperty Name="depStatus" ColumnName="depStatus" />
                 <ScalarProperty Name="depEndTime" ColumnName="depEndTime" />

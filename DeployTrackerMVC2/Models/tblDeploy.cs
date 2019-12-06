@@ -28,7 +28,6 @@ namespace DeployTrackerMVC2.Models
         public Nullable<System.DateTimeOffset> depEndTime { get; set; }
         public string depStatus { get; set; }
         public string depEnvironment { get; set; }
-        public Nullable<bool> depLocked { get; set; }
         public Nullable<int> noteID { get; set; }
         public string depSmoke { get; set; }
         public Nullable<int> depTimeDiff { get; set; }

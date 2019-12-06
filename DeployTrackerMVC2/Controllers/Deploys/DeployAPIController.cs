@@ -121,7 +121,7 @@ namespace DeployTrackerMVC2.Controllers
             }
             
             db.tblDeploys.Add(deploy);
-            deploy.depLocked = false;
+            
             
             db.SaveChanges();
 

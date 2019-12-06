@@ -137,7 +137,7 @@
                     <h3>Queued Deploys</h3>
                 </div>
                 <div id="TableQueue" style="overflow-x:auto">
-                    <table class="table" id="DevTable" data-bind="visible: !loading()">
+                    <table class="table" id="DevTable">
                         <thead>
                             <tr>
                                 <th style="display:none">ID</th>
@@ -149,8 +149,16 @@
                                 <th class="column2">Status</th>
                             </tr>
                         </thead>
-                        <tbody data-bind="foreach: queuedDeploys().sort(function (l, r) { return (l.depPlannedTime() == r.depPlannedTime()) ? (l.depPlannedDate() < r.depPlannedDate() ? 1 : -1) : (l.depPlannedTime() < r.depPlannedTime() ? 1 : -1) })" class="table">
-                            <tr data-bind="template: {name: 'read-template-q', data: $data }" class="table table-on-hover"></tr>
+                        <tbody id="queuedTableBody" data-bind="foreach: queuedDeploys" class="table">
+                            <tr class="table table-on-hover">
+                                <td style="display:none" data-bind="text: depID"></td>
+                                <td data-bind="text: depFeature, event: { click: $root.selectRecord}"></td>
+                                <td class="column3" data-bind="text: depVersion, event: { click: $root.selectRecord}"></td>
+                                <td data-bind="text: depEnvironment, event: { click: $root.selectRecord}"></td>
+                                <td class="column1" data-bind="dateFormatted: depPlannedDateTime, format: 'MMMM DD YYYY', event: { click: $root.selectRecord}"></td>
+                                <td class="column1" data-bind="timeFormatted: depPlannedDateTime, format: 'hh:mm a', event: { click: $root.selectRecord}"></td>
+                                <td class="column2" data-bind="text: depStatus, event: { click: $root.selectRecord}"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -192,6 +200,7 @@
                         <input style="height: 25px" />
                     </div>
                 </div>
+                <!------Table---------------------------------->
                 <div>
                     <table class="table">
                         <thead>
@@ -246,105 +255,6 @@
                 </div>
             </div>
         </div>
-        
-        <!-------CURRENT TABLE TEMPLATES-------->
-        <!--Read Template----------------------->
-        <script id="read-template-c" type="text/html">
-            <!--ID field-->
-            <td style="display:none" data-bind="text: depID"></td>
-            <!--Feature field-->
-            <td data-bind="text: depFeature,
-                        event: { click: $root.selectRecord},
-                        css: { 'css-deploying': depStatus() === 'Deploying',
-                                'css-failed': depStatus() === 'Failed',
-                                'css-completed': depStatus() === 'Completed'}"></td>
-            <!--Version field-->
-            <td class="column3"
-                data-bind="text: depVersion,
-                        event: { click: $root.selectRecord},
-                        css: { 'css-deploying': depStatus() === 'Deploying',
-                                'css-failed': depStatus() === 'Failed',
-                                'css-completed': depStatus() === 'Completed'}"></td>
-            <!--Environment field-->
-            <td data-bind="text: depEnvironment,
-                        event: { click: $root.selectRecord},
-                        css: { 'css-deploying': depStatus() === 'Deploying',
-                                'css-failed': depStatus() === 'Failed',
-                                'css-completed': depStatus() === 'Completed'}"></td>
-            <!--Start Time field-->
-            <td class="column1"
-                data-bind="timeFormatted: depStartTime,
-                        format: 'h:mm a',
-                        event: { click: $root.selectRecord},
-                        css: { 'css-deploying': depStatus() === 'Deploying',
-                                'css-failed': depStatus() === 'Failed',
-                                'css-completed': depStatus() === 'Completed'}"></td>
-            <!--End Time field-->
-            <td class="column1"
-                data-bind="timeFormatted: depEndTime,
-                        format: 'h:mm a',
-                        event: { click: $root.selectRecord},
-                        css: { 'css-deploying': depStatus() === 'Deploying',
-                                'css-failed': depStatus() === 'Failed',
-                                'css-completed': depStatus() === 'Completed'}"></td>
-            <!--Status field-->
-            <td class="column2"
-                data-bind='text: depStatus,
-                        event: { click: $root.selectRecord},
-                        css: { "css-deploying": depStatus() === "Deploying",
-                                "css-failed": depStatus() === "Failed",
-                                "css-completed": depStatus() === "Completed"}'></td>
-        </script>
-        
-        <!-------QUEUED TABLE TEMPLATES--------->
-        <!--Read Template----------------------->
-        <script id="read-template-q" type="text/html">
-            <td style="display:none" data-bind="text: depID"></td>
-            <td data-bind="text: depFeature, event: { click: $root.selectRecord}"></td>
-            <td class="column3" data-bind="text: depVersion, event: { click: $root.selectRecord}"></td>
-            <td data-bind="text: depEnvironment, event: { click: $root.selectRecord}"></td>
-            <td class="column1" data-bind="dateFormatted: depPlannedDate, format: 'MMMM DD YYYY', event: { click: $root.selectRecord}"></td>
-            <td class="column1" data-bind="timeFormatted: depPlannedTime, format: 'LT', event: { click: $root.selectRecord}"></td>
-            <td class="column2" data-bind="text: depStatus, event: { click: $root.selectRecord}"></td>
-        </script>
-
-        <!-------SMOKE TABLE TEMPLATES-->
-        <script id="read-template-s" type="text/html">
-            <td style="display:none" data-bind="text: depID"></td>
-            <!--Feature field-->
-            <td data-bind="text: depFeature,
-                            event: { click: $root.selectRecord},
-                            css: { 'css-smoke-pass': depSmoke() === 'Pass',
-                                    'css-smoke-conditional': depSmoke() === 'Conditional',
-                                    'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-            <!--Version field-->
-            <td data-bind="text: depVersion,
-                            event: { click: $root.selectRecord},
-                            css: { 'css-smoke-pass': depSmoke() === 'Pass',
-                                    'css-smoke-conditional': depSmoke() === 'Conditional',
-                                    'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-            <!--Environment field-->
-            <td data-bind="text: depEnvironment,
-                            event: { click: $root.selectRecord},
-                            css: { 'css-smoke-pass': depSmoke() === 'Pass',
-                                    'css-smoke-conditional': depSmoke() === 'Conditional',
-                                    'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-            <!--Smoke field-->
-            <td data-bind="text: depSmoke,
-                            event: { click: $root.selectRecord},
-                            css: { 'css-smoke-pass': depSmoke() === 'Pass',
-                                    'css-smoke-conditional': depSmoke() === 'Conditional',
-                                    'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-            <!--Button field-->
-            <td data-bind="css: { 'css-smoke-pass': depSmoke() === 'Pass',
-                                    'css-smoke-conditional': depSmoke() === 'Conditional',
-                                    'css-smoke-fail': depSmoke() === 'Fail'}">
-                <button class="btn btn-sm btn-primary" data-bind="click: $root.openStatusModal">
-                    <i class="fa fa-tasks"></i>
-                    <span>Update Status</span>
-                </button>
-            </td>
-        </script>
     </div>
     <!--Notifications/Toasts-->
     <div aria-live="polite" aria-atomic="true" style="position: relative; min-height: 200px;">

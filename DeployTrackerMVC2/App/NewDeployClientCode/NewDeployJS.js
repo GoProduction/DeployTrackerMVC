@@ -126,6 +126,11 @@ var TempDeployViewModel = function (signalR) {
                         dataType: "json",
                         success: function (data) {
                             console.log(data);
+                            //Convert data to JSON for passing parameters
+                            var response = ko.toJSON(data);
+                            //Call the signalR hub to update all clients
+                            signalR.server.updateAll(response);
+                            successToast("Deploys have been successfully submitted.");
                         },
 
                         error: function (msg) {
@@ -136,14 +141,13 @@ var TempDeployViewModel = function (signalR) {
             }
             var overlay = document.getElementById("submitOverlay");
             overlay.style.width = "100%";
-            //Call the signalR hub to update all clients
-            signalR.server.updateAll();
-            successToast("Deploys have been successfully submitted.");
-            setTimeout(redirect, 3000);
+            
+            //setTimeout(redirect, 3000);
 
         }
         catch (err) {
             errorToast(err);
+            console.log(err);
         }
 
         //Initialize variables for notifications
