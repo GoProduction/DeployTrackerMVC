@@ -98,28 +98,17 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.watchModel(newDeploy, self.modelChanged);
         
     } // Updates the viewmodel when new DEPLOYS have been submitted
-    self.updateViewModelComment = function () {
-        try {
-            $.getJSON('/odata/Comments', function (data) {
-                self.comment(ko.utils.arrayMap(data.value, function (comment) {
-                    var obsComment = {
-                        comID: comment.comID,
-                        comBody: ko.observable(comment.comBody),
-                        comDateTime: ko.observable(new Date(comment.comDateTime)),
-                        comUser: ko.observable(comment.comUser),
-                        depID: ko.observable(comment.depID)
-                    }
-
-                    self.watchModel(obsComment, self.modelChanged);
-                    console.log("Updated comments...");
-                    return obsComment;
-                }));
-
-            });
-        }
-        catch (err) {
-            errorToast(err);
-        }
+    self.updateViewModelComment = function (payload) {
+        var jvsObject = JSON.parse(payload);
+        var newComment = new Comment(
+            jvsObject.comID,
+            jvsObject.comBody,
+            jvsObject.comDateTime,
+            jvsObject.comUser,
+            jvsObject.depID
+        );
+        console.log("New comment: ", jvsObject);
+        self.comment.push(newComment);
     } // Updates the viewmodel when new COMMENT has been submitted
     self.edit = function (deploy) {
         self.originalDeploy(deploy);
@@ -220,6 +209,10 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         document.getElementById("editEnvironment").disabled = false;
         document.getElementById("editPlannedDate").disabled = false;
         document.getElementById("editPlannedTime").disabled = false;
+        //Prep smoke drop-down for edit by evaluation
+        var divID = document.getElementById("editSmoke");
+        var smokeValue = divID.options[divID.selectedIndex].text;
+        evalSmoke(divID, smokeValue);
         //Footer divs
         document.getElementById('footerEditDisabled').style.display = 'none';
         document.getElementById('footerEditEnabled').style.display = 'block';
@@ -232,6 +225,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         document.getElementById("editEnvironment").disabled = true;
         document.getElementById("editPlannedDate").disabled = true;
         document.getElementById("editPlannedTime").disabled = true;
+        document.getElementById("editSmoke").disabled = true;
         //Footer divs
         document.getElementById('footerEditDisabled').style.display = 'block';
         document.getElementById('footerEditEnabled').style.display = 'none';
@@ -338,7 +332,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
         return filtered.sort(function (l, r) {
             console.log("Sorted queued deploys");
-            return (l.depPlannedDateTime() < r.depPlannedDateTime() ? 1 : -1)
+            return (l.depPlannedDateTime() > r.depPlannedDateTime() ? 1 : -1)
         });
     });// Queued Deploys table filter
     self.currentDeploys = ko.computed(function () {
@@ -537,35 +531,14 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             console.log("Empty comment field... can not continue.");
             return;
         }
-
-        var json = {};
-        json["comBody"] = commentField.value;
-        json["comDateTime"] = dateNow();
-        json["depID"] = self.deployBeingEdited().depID;
-        console.log(JSON.stringify(json));
-
-        $.ajax({
-            url: "/api/CommentAPI",
-            type: "POST",
-            async: true,
-            mimeType: "text/html",
-            data: JSON.stringify(json),
-            contentType: "application/json",
-            dataType: "json",
-            success: function (data) {
-                console.log(data);
-                console.log("Successfully posted comment");
-            },
-
-            error: function (msg) {
-                console.log("error: ", msg.status);
-                console.log(msg.statusText);
-                console.log(msg.responseText);
-                console.log("Ready state: ", msg.readyState);
-            }
-        });
-        deploySignalR.server.updateAll();
-        self.updateViewModelComment();
+        //Prepare value for POSTing comment
+        var payload = {};
+        payload["comBody"] = commentField.value;
+        payload["comDateTime"] = dateNow();
+        payload["depID"] = self.deployBeingEdited().depID;
+        //POST comment
+        postComment(deploySignalR, payload);
+        //Disable the comment field
         cancelComment();
     } //Submit new comment (in RECORD DETAILS modal)
 
@@ -685,6 +658,9 @@ $(function () {
             console.log('Viewmodel updated');
         }
     } // Update all function, to be triggered when new batch of deploys are created
+    deploySignalR.client.updateComments = function (payload) {
+        viewModel.updateViewModelComment(payload);
+    }
     deploySignalR.client.updateDeploy = function (id, key, value) {
         console.log("id", id);
         console.log("key", key);
@@ -748,6 +724,17 @@ $(function () {
 
 
 });
+//Evaluates the current smoke status of the record, and enables/disabled based off its value
+function evalSmoke(divID, value) {
+    console.log("evalSmoke(divID) = ", divID);
+    console.log("evalSmoke(value) = ", value);
+    if (value != "Not Ready") {
+        divID.disabled = true;
+    }
+    else {
+        divID.disabled = false;
+    }
+}
 
 //Open when someone selects a record
 function openNav() {

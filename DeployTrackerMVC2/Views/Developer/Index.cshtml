@@ -22,6 +22,7 @@
         <script src="~/App/DeveloperClientCode/DeveloperJS.js"></script>
         <script src="~/App/GlobalFunctions/Data-Traversal.js"></script>
         <script src="~/App/GlobalFunctions/Caching.js"></script>
+        <script src="~/App/GlobalFunctions/Notifications.js"></script>
 
     }
 </head>
@@ -525,9 +526,9 @@
                                     <tr>
                                         <td style="padding-right: 3px"><label class="record-label">Environment</label></td>
                                         <td><select id="editEnvironment" data-bind="options: $root.environment,
-                                    optionsText: 'envName',
-                                    optionsValue: 'envName',
-                                    value: deployBeingEdited().depEnvironment"></select></td>
+                                                                                    optionsText: 'envName',
+                                                                                    optionsValue: 'envName',
+                                                                                    value: deployBeingEdited().depEnvironment"></select></td>
                                     </tr>
                                     <tr>
                                         <td style="padding-right: 3px"><label class="record-label">Planned Date</label></td>
@@ -548,13 +549,16 @@
                                     <tr>
                                         <td style="padding-right: 3px"><label class="record-label">Deploy Status</label></td>
                                         <td><select data-bind="options: $root.status,
-                                    optionsText: 'tmpStatus',
-                                    optionsValue: 'tmpStatus',
-                                    value: deployBeingEdited().depStatus" disabled></select></td>
+                                                                optionsText: 'tmpStatus',
+                                                                optionsValue: 'tmpStatus',
+                                                                value: deployBeingEdited().depStatus" disabled></select></td>
                                     </tr>
                                     <tr>
                                         <td style="padding-right: 3px"><label class="record-label">Smoke Status</label></td>
-                                        <td><input type="text" data-bind="value: deployBeingEdited().depSmoke" disabled /></td>
+                                        <td><select id="editSmoke" data-bind="options: $root.smoke, 
+                                                               optionsText: 'tmpSmoke', 
+                                                                optionsValue: 'tmpSmoke',
+                                                                value: deployBeingEdited().depSmoke" disabled /></td>
                                     </tr>
                                 </table>
                                 
@@ -588,7 +592,7 @@
                                 <div id="comment-button-div-2" class="status-modal-footer" style="display:none">
                                     <button class="btn btn-primary btn-sm" style="text-align:center; width:40%" data-bind="click: $root.submitComment">
                                         <i class="fa fa-cloud"></i>
-                                        <span>Save</span>
+                                        <span>Submit</span>
                                     </button>
                                     <button class="btn btn-warning btn-sm" style="text-align:center; width:40%" data-bind="click: cancelComment">Cancel</button>
                                 </div>

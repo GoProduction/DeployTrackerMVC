@@ -99,28 +99,17 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.watchModel(newDeploy, self.modelChanged);
 
     } // Updates the viewmodel when new DEPLOYS have been submitted
-    self.updateViewModelComment = function () {
-        try {
-            $.getJSON('/odata/Comments', function (data) {
-                self.comment(ko.utils.arrayMap(data.value, function (comment) {
-                    var obsComment = {
-                        comID: comment.comID,
-                        comBody: ko.observable(comment.comBody),
-                        comDateTime: ko.observable(new Date(comment.comDateTime)),
-                        comUser: ko.observable(comment.comUser),
-                        depID: ko.observable(comment.depID)
-                    }
-
-                    self.watchModel(obsComment, self.modelChanged);
-                    console.log("Updated comments...");
-                    return obsComment;
-                }));
-
-            });
-        }
-        catch (err) {
-            errorToast(err);
-        }
+    self.updateViewModelComment = function (payload) {
+        var jvsObject = JSON.parse(payload);
+        var newComment = new Comment(
+            jvsObject.comID,
+            jvsObject.comBody,
+            jvsObject.comDateTime,
+            jvsObject.comUser,
+            jvsObject.depID
+        );
+        console.log("New comment: ", jvsObject);
+        self.comment.push(newComment);
     } // Updates the viewmodel when new COMMENT has been submitted
     self.watchModel = function (model, callback) {
         for (var key in model) {
@@ -214,7 +203,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
         return filtered.sort(function (l, r) {
             console.log("Sorted queued deploys");
-            return (l.depPlannedDateTime() < r.depPlannedDateTime() ? 1 : -1)
+            return (l.depPlannedDateTime() > r.depPlannedDateTime() ? 1 : -1)
         });
     });// Queued Deploys table filter
     self.currentDeploys = ko.computed(function () {
@@ -268,16 +257,16 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var error = document.getElementById("errorStatusModalChange");
         var comment = document.getElementById("commentBody");
 
+        modal.style.display = "block";
+        $("#commentBody").fadeOut();
+        console.log('modal triggered');
+
         ctl.value = deploy.depSmoke();
         objstatus = deploy.depSmoke();
         console.log(objstatus);
         id.value = deploy.depID;
         feature.innerText = deploy.depFeature();
         version.innerText = deploy.depVersion();
-
-        modal.style.display = "block";
-        toggleElementVisibility(error, comment);
-        console.log('modal triggered');
 
         window.onclick = function (event) {
             if (event.target == modal) {
@@ -298,6 +287,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var id = document.getElementById("ctlmodalID");
         var errorMsg = document.getElementById("errorStatusModalChange");
         var comment = document.getElementById("commentField");
+        var commentBody = document.getElementById("commentBody");
         var feature = document.getElementById("spFeature").innerText;
         var icon = '';
 
@@ -331,34 +321,14 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
                 if (ctl.value == 'Fail' || ctl.value == 'Conditional') {
                     //Comment JSON string
-                    var json = {};
+                    var payload = {};
                     //json["odata.type"] = "DeployTrackerMVC2.tblComment";
-                    json["comBody"] = comment.value;
-                    json["comDateTime"] = dateNow();
-                    json["depID"] = id.value;
-                    console.log(JSON.stringify(json));
-
-                    $.ajax({
-                        url: "/api/CommentAPI",
-                        type: "POST",
-                        async: true,
-                        mimeType: "text/html",
-                        data: JSON.stringify(json),
-                        contentType: "application/json",
-                        dataType: "json",
-                        success: function (data) {
-                            console.log(data);
-                            console.log("Successfully posted comment");
-                        },
-
-                        error: function (msg) {
-                            console.log("error: ", msg.status);
-                            console.log(msg.statusText);
-                            console.log(msg.responseText);
-                            console.log("Ready state: ", msg.readyState);
-                        }
-                    });
-
+                    payload["comBody"] = comment.value;
+                    payload["comDateTime"] = dateNow();
+                    payload["depID"] = id.value;
+                    console.log(JSON.stringify(payload));
+                    postComment(deploySignalR, payload);
+                    
                 }
                 mainItem.depSmoke(ctl.value);
                 //Prep variables for PATCH
@@ -368,33 +338,16 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             }
 
         });
-        //Notification
-        //Icons
-        var pass = '/images/static_pass.jpg';
-        var fail = '/images/static_fail.jpg';
-        var conditional = '/images/static_conditional';
-        var ready = '/images/static_loading.jpg';
-        //Icon assignment
-        if (ctl.value == 'Pass') {
-            icon = pass;
-        }
-        else if (ctl.value == 'Conditional') {
-            icon = conditional;
-        }
-        else if (ctl.value == 'Fail') {
-            icon = fail;
-        }
-        else {
-            icon = ready;
-        }
 
+        //Evaluate status and assign icon
+        var icon = assignIcon(ctl.value);
+        //Build message
         var message = "User has updated " + feature + " to " + ctl.value;
-
+        //Send notification to server
         deploySignalR.server.notification("Smoke", message, icon);
-
         $("#statusModal").fadeOut();
         errorMsg.style.display = "none";
-        comment.style.display = "none";
+        $("#commentBody").fadeOut();
         comment.value = "";
         //deploySignalR.server.updateAll();
 
@@ -406,35 +359,14 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             console.log("Empty comment field... can not continue.");
             return;
         }
-
-        var json = {};
-        json["comBody"] = commentField.value;
-        json["comDateTime"] = dateNow();
-        json["depID"] = self.obsID();
-        console.log(JSON.stringify(json));
-
-        $.ajax({
-            url: "/api/CommentAPI",
-            type: "POST",
-            async: true,
-            mimeType: "text/html",
-            data: JSON.stringify(json),
-            contentType: "application/json",
-            dataType: "json",
-            success: function (data) {
-                console.log(data);
-                console.log("Successfully posted comment");
-            },
-
-            error: function (msg) {
-                console.log("error: ", msg.status);
-                console.log(msg.statusText);
-                console.log(msg.responseText);
-                console.log("Ready state: ", msg.readyState);
-            }
-        });
-        deploySignalR.server.updateAll();
-        self.updateViewModelComment();
+        //Prepare value for POSTing comment
+        var payload = {};
+        payload["comBody"] = commentField.value;
+        payload["comDateTime"] = dateNow();
+        payload["depID"] = self.selected().depID;
+        //POST comment
+        postComment(deploySignalR, payload);
+        //Disable the comment field
         cancelComment();
     } //Submit new comment (in RECORD DETAILS modal)
 
@@ -576,9 +508,8 @@ $(function () {
 
 
     } // updateDeploy function, to be triggered through SignalR
-    deploySignalR.client.updateComments = function () {
-        viewModel.updateViewModelComment();
-        console.log("New comment submitted...");
+    deploySignalR.client.updateComments = function (payload) {
+        viewModel.updateViewModelComment(payload);
     }
     deploySignalR.client.browserNotification = function (type, message, icon) {
         // Let's check if the browser supports notifications
@@ -671,8 +602,13 @@ function checkModalStatus (status, smoke, statusHeader, smokeHeader) {
 }
 //Checks visibility of modal elements and makes them not visible
 function toggleElementVisibility(elm1, elm2) {
-    elm1.style.display = "none";
-    elm2.style.display = "none";
+    if (elm1.style.display != "none") {
+        elm1.style.display = "none";
+    }
+    if (elm2.style.display != "none") {
+        elm2.style.display = "none";
+    }
+    
 }
 //Error toast
 function errorToast(err) {

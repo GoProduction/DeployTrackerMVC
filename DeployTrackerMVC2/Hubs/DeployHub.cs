@@ -38,9 +38,9 @@ namespace DeployTrackerMVC2.Hubs
 
         }
 
-        public void UpdateComments()
+        public void UpdateComments(String response)
         {
-            Clients.All.updateComments();
+            Clients.All.updateComments(response);
         }
 
         public void Notification(string type, string message, string icon)

@@ -142,7 +142,7 @@ var TempDeployViewModel = function (signalR) {
             var overlay = document.getElementById("submitOverlay");
             overlay.style.width = "100%";
             
-            //setTimeout(redirect, 3000);
+            setTimeout(redirect, 3000);
 
         }
         catch (err) {

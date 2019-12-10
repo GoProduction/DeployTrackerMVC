@@ -137,6 +137,33 @@ async function patchData(payload, model) {
         console.error(err);
     }
 }
+//POST request for posting comment
+async function postComment(signalR, payload) {
+    let result;
+    try {
+        result = await $.ajax({
+            url: "/api/CommentAPI",
+            type: "POST",
+            async: true,
+            mimeType: "text/html",
+            data: JSON.stringify(payload),
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                var response = JSON.stringify(payload);
+                signalR.server.updateComments(response);
+                console.log("postComment() ", data);
+                
+            }
+        });
+    }
+    catch (msg) {
+        console.log("error: ", msg.status);
+        console.log(msg.statusText);
+        console.log(msg.responseText);
+        console.log("Ready state: ", msg.readyState);
+    }
+}
 //Model for Deploy (when grabbed from DOM node/already binded record)
 var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
     var self = this;
@@ -150,6 +177,15 @@ var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlanned
     self.depStatus = ko.observable(ko.utils.unwrapObservable(depStatus));
     self.depSmoke = ko.observable(ko.utils.unwrapObservable(depSmoke));
     console.log("Planned time is: ", ko.utils.unwrapObservable(self.depPlannedDateTime));
+}
+//Model for Comment
+var Comment = function (comID, comBody, comDateTime, comUser, depID) {
+    var self = this;
+    self.comID = comID;
+    self.comBody = ko.observable(comBody);
+    self.comDateTime = ko.observable(comDateTime);
+    self.comUser = ko.observable(comUser);
+    self.depID = ko.observable(depID);
 }
 //Model for Deploy when passing from server/newly submitted
 var incomingDeploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
