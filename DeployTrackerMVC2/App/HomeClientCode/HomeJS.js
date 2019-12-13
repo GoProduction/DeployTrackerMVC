@@ -13,8 +13,8 @@ $.get("/api/DeployAPI", function (data) {
         return {
             id: source.depID,
             text: source.depFeature + " v" + source.depVersion,
-            start: moment(source.depPlannedDate).format('YYYY-MM-DDTHH:mm:ss'),
-            end: moment(source.depPlannedDate).format('YYYY-MM-DDTHH:mm:ss'),
+            start: moment(source.depPlannedDateTime).format('YYYY-MM-DDTHH:mm:ss'),
+            end: moment(source.depPlannedDateTime).format('YYYY-MM-DDTHH:mm:ss'),
             status: source.depStatus
             
         };
@@ -79,8 +79,8 @@ dp.onEventClicked = function (args) {
             header.innerText = data.depFeature + " v" + data.depVersion;
             txtID.innerText = data.depID;
             txtEnvironment.innerText = data.depEnvironment;
-            txtPlannedDate.innerText = moment(data.depPlannedDate).format("MMM DD YYYY");
-            txtPlannedTime.innerText = moment(data.depPlannedTime).format("LT");
+            txtPlannedDate.innerText = moment(data.depPlannedDateTime).format("MMM DD YYYY");
+            txtPlannedTime.innerText = moment(data.depPlannedDateTime).format("LT");
             txtStartTime.innerText = moment(data.depStartTime).format("LT");
             txtEndTime.innerText = moment(data.depEndTime).format("LT");
             txtStatus.innerText = data.depStatus;

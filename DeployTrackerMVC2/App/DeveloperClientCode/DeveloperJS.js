@@ -53,7 +53,10 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     ]); // Status observable array
     self.smoke = ko.observableArray([
         { tmpSmoke: "Ready" },
-        { tmpSmoke: "Not Ready" }
+        { tmpSmoke: "Not Ready" },
+        { tmpSmoke: "Pass" },
+        { tmpSmoke: "Conditional" },
+        { tmpSmoke: "Fail" }
     ]);
     self.comment = ko.observableArray(); // Comment observable array
     self.selected = ko.observableArray(self.deploy()[0]); //Determines if record is selected
@@ -210,9 +213,14 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         document.getElementById("editPlannedDate").disabled = false;
         document.getElementById("editPlannedTime").disabled = false;
         //Prep smoke drop-down for edit by evaluation
-        var divID = document.getElementById("editSmoke");
-        var smokeValue = divID.options[divID.selectedIndex].text;
-        evalSmoke(divID, smokeValue);
+        var smokeField = document.getElementById("editSmoke");
+        var smokeValue = smokeField.options[smokeField.selectedIndex].text;
+        evalSmoke(smokeField, smokeValue);
+        //Disable last three fields in drop-down
+        smokeField.options[2].disabled = true;
+        smokeField.options[3].disabled = true;
+        smokeField.options[4].disabled = true;
+        
         //Footer divs
         document.getElementById('footerEditDisabled').style.display = 'none';
         document.getElementById('footerEditEnabled').style.display = 'block';

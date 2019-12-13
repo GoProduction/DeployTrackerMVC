@@ -20,3 +20,7 @@
 
     return icon;
 }//Evaluate status and assign icon
+function assignMessage(feature, version, environment, value) {
+    var message = "User has updated " + feature + " " + version + " in " + environment + " to " + value;
+    return message;
+}//Creates message string
