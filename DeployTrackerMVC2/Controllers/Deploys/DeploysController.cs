@@ -3,12 +3,13 @@ using DeployTrackerMVC2.Models;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.OData;
 
 namespace DeployTrackerMVC2.Controllers
 {
-    public class DeploysController : EntitySetControllerWithHub<DeployHub>
+    public class DeploysController : SetEntitySetAccessRule<DeployHub>
     {
         private dbMainEntities db = new dbMainEntities();
 
@@ -50,7 +51,6 @@ namespace DeployTrackerMVC2.Controllers
             return deployToPatch;
         }
         
-        
         public IHttpActionResult Create(tblDeploy deploy)
         {
             if (!ModelState.IsValid)
@@ -61,10 +61,12 @@ namespace DeployTrackerMVC2.Controllers
             db.SaveChanges();
             return Created(deploy);
         }
-
-        public IHttpActionResult Delete([FromODataUri] int key)
+        [AcceptVerbs("DELETE")]
+        
+        public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
             tblDeploy deploy = db.tblDeploys.Find(key);
+            System.Diagnostics.Debug.WriteLine(key);
             if (deploy == null)
             {
                 return NotFound();

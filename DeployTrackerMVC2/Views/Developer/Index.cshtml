@@ -33,6 +33,13 @@
         <div class="row">
             <!--Current and Queued Tables column-->
             <div class="dev-left-panel">
+                <!--Dev Toolbar-->
+                <div class="dev-toolbar">
+                    <button class="btn btn-sm btn-light" data-bind="click: $root.openQDModal">
+                        <i class="fa fa-forward"></i>
+                        <span>Quick Deploy</span>
+                    </button>
+                </div>
                 <!------Current Deploys------------------------>
                 <h3 style="text-align:center; width:100%">Current Deploys</h3>
                 <!------Filter--------------------------------->
@@ -173,7 +180,7 @@
                                         <i class="fa fa-tasks"></i>
                                         <span class="button-text">Update Status</span>
                                     </button>
-                                    <button id="btnDeleteFromQueue" class="btn btn-sm btn-danger" type="button">
+                                    <button id="btnDeleteFromQueue" class="btn btn-sm btn-danger" type="button" data-toggle="modal" data-bind="click: $root.openDeleteModal">
                                         <i class="fa fa-trash"></i>
                                         <span class="button-text">Remove</span>
                                     </button>
@@ -234,23 +241,23 @@
                         <tbody data-bind="foreach: smokeDeploys().sort($root.sortByDate)">
                             <tr class="table table-on-hover">
                                 <td style="display:none" data-bind="text: depID"></td>
-                                <td data-bind="text: depFeature, 
-                                                event: { click: $root.edit}, 
+                                <td data-bind="text: depFeature,
+                                                event: { click: $root.edit},
                                                 css: { 'css-smoke-pass': depSmoke() === 'Pass',
                                                         'css-smoke-conditional': depSmoke() === 'Conditional',
                                                         'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-                                <td data-bind="text: depVersion, 
-                                                event: { click: $root.edit}, 
+                                <td data-bind="text: depVersion,
+                                                event: { click: $root.edit},
                                                 css: { 'css-smoke-pass': depSmoke() === 'Pass',
                                                         'css-smoke-conditional': depSmoke() === 'Conditional',
                                                         'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-                                <td data-bind="text: depEnvironment, 
-                                                event: { click: $root.edit}, 
+                                <td data-bind="text: depEnvironment,
+                                                event: { click: $root.edit},
                                                 css: { 'css-smoke-pass': depSmoke() === 'Pass',
                                                         'css-smoke-conditional': depSmoke() === 'Conditional',
                                                         'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-                                <td data-bind="text: depSmoke, 
-                                                event: { click: $root.edit}, 
+                                <td data-bind="text: depSmoke,
+                                                event: { click: $root.edit},
                                                 css: { 'css-smoke-pass': depSmoke() === 'Pass',
                                                         'css-smoke-conditional': depSmoke() === 'Conditional',
                                                         'css-smoke-fail': depSmoke() === 'Fail'}"></td>
@@ -437,8 +444,8 @@
     <div class="modal status-modal" id="statusModal">
         <div class="status-modal-content">
             <div class="status-modal-header" style="text-align: center">
-                <h3>Select Status...</h3>
                 <span class="close" data-bind="click: $root.closeModal">&times;</span>
+                <h3>Select Status...</h3>
             </div>
             <div id="mainContent" class="status-modal-body">
                 <p>
@@ -610,6 +617,63 @@
                         </div>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+    <!--Delete Modal-->
+    <div id="deleteModal" class="modal delete-modal" role="dialog" tabindex="-1">
+            <div class="delete-modal-content">
+                <!--Header-->
+                <div class="delete-modal-header">
+                    <span class="close" data-bind="click: $root.closeDeleteModal">&times;</span>
+                    <h4>Deleting record...</h4>
+                </div>
+                <!--Body-->
+                <div class="delete-modal-body">
+                    <span class="text-center">Are you sure you want to delete this record?</span>
+                </div>
+                <!--Footer-->
+                <div class="delete-modal-footer">
+                    <button id="btnDeleteDelModal" class="btn btn-sm btn-danger" data-bind="click: $root.deleteRecord">Confirm Deletion</button>
+                    <button id="btnCancelDelModal" class="btn btn-sm btn-warning" data-bind="click: $root.closeDeleteModal">Cancel</button>
+                </div>
+            </div>
+    </div>
+    <!--Quick Deploy Modal-->
+    <div id="quickDeployModal" class="modal qd-modal" role="dialog" tabindex="-1">
+        <div class="qd-modal-content">
+            <!--Header-->
+            <div class="qd-modal-header">
+                <span class="close" data-bind="click: $root.closeQDModal">&times;</span>
+                <h4>Quick Deploy</h4>
+            </div>
+            <!--Body-->
+            <div class="qd-modal-body">
+                <table>
+                    <tr>
+                        <td><label>Feature: </label></td>
+                        <td><select id="qdFeature" data-bind="options: $root.feature, 
+                                                                optionsText: 'feaName', 
+                                                                optionsValue: 'feaName'"></select></td>
+                        <td><label>Version: </label></td>
+                        <td><input id="qdVersion"/></td>
+                        <td><label>Environment: </label></td>
+                        <td><select id="qdEnvironment" data-bind="options: $root.environment, 
+                                                                    optionsText: 'envName', 
+                                                                    optionsValue: 'envName'"></select></td>
+                    </tr>
+                </table>
+            </div>
+            <!--Footer-->
+            <div class="qd-modal-footer">
+                <button class="btn btn-sm btn-primary" data-bind="click: $root.submitQD">
+                    <i class="fa fa-paper-plane"></i>
+                    <span>Deploy Now</span>
+                </button>
+                <button class="btn btn-sm btn-secondary" data-bind="click: $root.closeQDModal">
+                    <i class="fa fa-ban"></i>
+                    <span>Cancel</span>
+                </button>
             </div>
         </div>
     </div>

@@ -24,3 +24,28 @@ function assignMessage(feature, version, environment, value) {
     var message = "User has updated " + feature + " " + version + " in " + environment + " to " + value;
     return message;
 }//Creates message string
+function errorToast(err) {
+    toastr.error(err, 'Error:');
+}
+function successToast(msg) {
+    toastr.success(msg, "Success!");
+
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "limit": "5",
+        "newestOnTop": false,
+        "progressBar": false,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "9000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+}

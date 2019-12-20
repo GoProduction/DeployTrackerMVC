@@ -113,6 +113,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         console.log("New comment: ", jvsObject);
         self.comment.push(newComment);
     } // Updates the viewmodel when new COMMENT has been submitted
+    self.removeDeploy = function (deploy) {
+        self.deploy.remove(deploy);
+    }
     self.edit = function (deploy) {
         self.originalDeploy(deploy);
         self.deployBeingEdited(new Deploy(
@@ -248,7 +251,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         console.log("self.modelChanged()", payload);
     };
     
-
     //GET REQUESTS///////////////////////////////////////////////////////
     $.getJSON('/odata/Deploys', function (data) {
         self.deploy(ko.utils.arrayMap(data.value, function (deploy) {
@@ -383,7 +385,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         });
     }); // Filters the comments section based on record selected
 
-    ///MODAL FUNCTIONS/////////////////////////////////////////////////
+    ///STATUS MODAL FUNCTIONS/////////////////////////////////////////////////
     self.openModal = function (deploy) {
 
         var modal = document.getElementById("statusModal");
@@ -550,6 +552,63 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         cancelComment();
     } //Submit new comment (in RECORD DETAILS modal)
 
+    ///DELETE MODAL FUNCTIONS
+    self.openDeleteModal = function (deploy) {
+        var modal = document.getElementById("deleteModal");
+        modal.style.display = "block";
+        self.selected(deploy);
+        console.log(self.selected().depFeature);
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                self.closeDeleteModal();
+            }
+        }
+    }
+    self.closeDeleteModal = function () {
+        $("#deleteModal").fadeOut();
+    }
+    self.deleteRecord = function () {
+        var model = self.selected();
+        deleteDeploy(deploySignalR, model);
+        self.closeDeleteModal();
+    }
+
+    //QUICK DEPLOY MODAL FUNCTIONS
+    self.openQDModal = function () {
+        var modal = document.getElementById("quickDeployModal");
+        modal.style.display = "block";
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                self.closeQDModal();
+            }
+        }
+    }
+    self.closeQDModal = function () {
+        $("#quickDeployModal").fadeOut();
+    }
+    self.submitQD = function () {
+        var ctlFeature = document.getElementById("qdFeature");
+        var ctlVersion = document.getElementById("qdVersion");
+        var ctlEnvironment = document.getElementById("qdEnvironment");
+
+        if (ctlVersion.value == null) {
+            errorToast("You must enter a version number");
+            return;
+        }
+
+        var newDeploy = new QuickDeploy(
+            ctlFeature.value,
+            ctlVersion.value,
+            ctlEnvironment.value,
+            dateNow(),
+            dateNow(),
+            "Deploying",
+            "Not Ready"
+        );
+        postDeploy(deploySignalR, newDeploy);
+        self.closeQDModal();
+    }
+
     //SORTING FUNCTION
     self.sortByDate = function (l, r) {
 
@@ -558,6 +617,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.sortQueue = function () {
         self.queuedDeploys().slice(0).sort();
     }
+
     //CACHING FUNCTIONS/////////////////////////////////////////////
     self.cacheCurrentType = function () {
         var ctl = document.getElementById("ctlCurrentType");
@@ -678,6 +738,10 @@ $(function () {
         console.log("updateDeploy()", deploy[key](value));
 
     } // updateDeploy function, to be triggered through SignalR
+    deploySignalR.client.removeDeploy = function (id) {
+        var record = findDeploy(id);
+        viewModel.removeDeploy(record);
+    }
     deploySignalR.client.browserNotification = function (type, message, icon) {
         // Let's check if the browser supports notifications
         if (!("Notification" in window)) {

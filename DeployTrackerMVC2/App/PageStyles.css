@@ -156,3 +156,9 @@
         flex: 100%;
     }
 }
+
+.dev-toolbar{
+    width: 100%;
+    padding: 2px 2px 2px 2px;
+    text-align: right;
+}

@@ -9,13 +9,13 @@ using System.Web.Http.OData;
 
 namespace DeployTrackerMVC2.Controllers
 {
-    public class EntitySetControllerWithHub<THub> : EntitySetController<tblDeploy, int>
+    public class SetEntitySetAccessRule<THub> : EntitySetController<tblDeploy, int>
     where THub : IHub
     {
         Lazy<IHubContext> hub = new Lazy<IHubContext>(
             () => GlobalHost.ConnectionManager.GetHubContext<THub>()
         );
-
+        
         protected IHubContext Hub
         {
             get { return hub.Value; }

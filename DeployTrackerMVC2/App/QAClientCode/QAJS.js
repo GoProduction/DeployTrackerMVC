@@ -111,6 +111,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         console.log("New comment: ", jvsObject);
         self.comment.push(newComment);
     } // Updates the viewmodel when new COMMENT has been submitted
+    self.removeDeploy = function (deploy) {
+        self.deploy.remove(deploy);
+    }
     self.watchModel = function (model, callback) {
         for (var key in model) {
             if (model.hasOwnProperty(key) && ko.isObservable(model[key]) && key != 'Edit' && key != 'depLocked') {
@@ -519,6 +522,10 @@ $(function () {
     } // updateDeploy function, to be triggered through SignalR
     deploySignalR.client.updateComments = function (payload) {
         viewModel.updateViewModelComment(payload);
+    }
+    deploySignalR.client.removeDeploy = function (id) {
+        var record = findDeploy(id);
+        viewModel.removeDeploy(record);
     }
     deploySignalR.client.browserNotification = function (type, message, icon) {
         // Let's check if the browser supports notifications

@@ -43,6 +43,11 @@ namespace DeployTrackerMVC2.Hubs
             Clients.All.updateComments(response);
         }
 
+        public void RemoveDeploy(int id) 
+        {
+            Clients.All.removeDeploy(id);
+        }
+
         public void Notification(string type, string message, string icon)
         {
             if(type == "Status")

@@ -164,6 +164,44 @@ async function postComment(signalR, payload) {
         console.log("Ready state: ", msg.readyState);
     }
 }
+//POST request for posting new deploy
+async function postDeploy(signalR, payload) {
+    let result;
+    try {
+        result = await $.ajax({
+            url: "/api/DeployAPI",
+            type: "POST",
+            async: true,
+            mimeType: "text/html",
+            data: JSON.stringify(payload),
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                var response = JSON.stringify(data);
+                signalR.server.updateAll(response);
+                console.log("postDeploy() ", data);
+
+            }
+        });
+    }
+    catch (msg) {
+        console.log("error: ", msg.status);
+        console.log(msg.statusText);
+        console.log(msg.responseText);
+        console.log("Ready state: ", msg.readyState);
+    }  
+}
+//DELETE request for deleting deploy
+async function deleteDeploy(signalR, model) {
+    $.ajax({
+        url: '/api/DeployAPI/' + model.depID,
+        type: 'DELETE',
+        success: function (result) {
+            signalR.server.removeDeploy(model.depID);
+            
+        }
+    });
+}
 //Model for Deploy (when grabbed from DOM node/already binded record)
 var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
     var self = this;
@@ -201,4 +239,13 @@ var incomingDeploy = function (depID, depFeature, depVersion, depEnvironment, de
     self.depSmoke = ko.observable(depSmoke);
 
 }
-
+//Model for quick deploy
+var QuickDeploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depStatus, depSmoke) {
+    this.depFeature = depFeature;
+    this.depVersion = depVersion;
+    this.depEnvironment = depEnvironment;
+    this.depPlannedDateTime = depPlannedDateTime;
+    this.depStartTime = depStartTime;
+    this.depStatus = depStatus;
+    this.depSmoke = depSmoke;
+}
