@@ -23,6 +23,7 @@
         <script src="~/App/GlobalFunctions/Data-Traversal.js"></script>
         <script src="~/App/GlobalFunctions/Caching.js"></script>
         <script src="~/App/GlobalFunctions/Notifications.js"></script>
+        <script src="~/App/GlobalFunctions/PageRedirect.js"></script>
 
     }
 </head>
@@ -33,13 +34,6 @@
         <div class="row">
             <!--Current and Queued Tables column-->
             <div class="dev-left-panel">
-                <!--Dev Toolbar-->
-                <div class="dev-toolbar">
-                    <button class="btn btn-sm btn-light" data-bind="click: $root.openQDModal">
-                        <i class="fa fa-forward"></i>
-                        <span>Quick Deploy</span>
-                    </button>
-                </div>
                 <!------Current Deploys------------------------>
                 <h3 style="text-align:center; width:100%">Current Deploys</h3>
                 <!------Filter--------------------------------->
@@ -65,6 +59,17 @@
                     <div class="filter-third">
                         <span>Contains: </span>
                         <input style="height: 25px" />
+                    </div>
+                    <!--Dev Toolbar-->
+                    <div class="dev-toolbar">
+                        <button class="btn btn-sm btn-light" data-bind="click: $root.openQDModal">
+                            <i class="fa fa-forward"></i>
+                            <span>Quick Deploy</span>
+                        </button>
+                        <button class="btn btn-sm btn-info" onclick="redirectNewDeploy()">
+                            <i class="fa fa-file"></i>
+                            <span>New Deploy(s)</span>
+                        </button>
                     </div>
                 </div>
                 <br />
@@ -148,9 +153,9 @@
                         </tbody>
                     </table>
                 </div>
-
+                <div class="divider"></div>
                 <!------Queued Deploys------------------------->
-                <h3 class="text-center">Queued Deploys</h3>
+                <h3 class="text-center">Deploy Queue</h3>
                 <br />
                 <div id="TableQueue" style="overflow-x:auto">
                     <table class="table" id="DevTable">

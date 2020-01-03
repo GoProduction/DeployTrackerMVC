@@ -591,7 +591,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var ctlVersion = document.getElementById("qdVersion");
         var ctlEnvironment = document.getElementById("qdEnvironment");
 
-        if (ctlVersion.value == null) {
+        if (ctlVersion.value.length == 0) {
             errorToast("You must enter a version number");
             return;
         }

@@ -264,6 +264,7 @@
     <Content Include="App\DeveloperClientCode\DeveloperJS.js" />
     <Content Include="App\GlobalFunctions\Caching.js" />
     <Content Include="App\GlobalFunctions\Notifications.js" />
+    <Content Include="App\GlobalFunctions\PageRedirect.js" />
     <Content Include="App\HomeClientCode\HomeJS.js" />
     <Content Include="App\HomeModal.css" />
     <Content Include="App\monthcalendartheme.css" />

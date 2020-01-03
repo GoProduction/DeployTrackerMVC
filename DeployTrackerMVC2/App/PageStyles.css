@@ -108,7 +108,7 @@
     display: table;
     clear: both;
 }
-@media only screen and (max-width: 1200px) {
+@media only screen and (max-width: 1250px) {
     .smoke-panel-tab{
         display: none;
     }
