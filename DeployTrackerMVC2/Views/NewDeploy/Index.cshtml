@@ -17,8 +17,12 @@
         <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
         <script src="~/signalr/hubs"></script>
         <script src="~/Scripts/moment.min.js"></script>
+        <script src="~/Scripts/tinymce/tinymce.min.js"></script>
+        <link href="~/App/PageStyles.css" rel="stylesheet" />
         <link href="~/App/ButtonStyles.css" rel="stylesheet" />
         <link href="~/App/BodyStyles.css" rel="stylesheet" />
+        <link href="~/App/ModalStyles.css" rel="stylesheet" />
+        <link href="~/App/TableStyles.css" rel="stylesheet" />
         <script src="~/App/CustomBindings.js"></script>
         <script src="~/App/NewDeployClientCode/NewDeployJS.js"></script>
         <script src="~/App/GlobalFunctions/Notifications.js"></script>
@@ -48,9 +52,9 @@
                             <input data-bind="value: $root.version" type="text" id="txtVersion" name="txtVersion" class="table" />
                         </td>
                         <td>
-                            <select id="txtEnvironment" name="txtEnvironment" data-bind="options: $root.environmentList, 
-                                                                                            optionsText: 'envName', 
-                                                                                            optionsValue: 'envName', 
+                            <select id="txtEnvironment" name="txtEnvironment" data-bind="options: $root.environmentList,
+                                                                                            optionsText: 'envName',
+                                                                                            optionsValue: 'envName',
                                                                                             value: $root.environment"></select>
                         </td>
                         <td>
@@ -63,7 +67,16 @@
                             <input type="text" id="txtStatus" class="table" value="Queued" disabled />
                         </td>
                         <td>
-                            <button id="btnAdd" class="btn btn-success" data-bind="click: $root.add">Add</button>
+                            <button id="btnAdd" class="btn btn-sm btn-success" data-bind="click: $root.add">
+                                <i class="fa fa-plus"></i>
+                                <span>Add Deploy</span>
+                            </button>
+                        </td>
+                        <td>
+                            <button id="btnAddMasterNote" class="btn btn-sm btn-info" data-bind="click: $root.openCLModal">
+                                <i class="fa fa-plus"></i>
+                                <span id="masterNoteText">Add Change Log</span>
+                            </button>
                         </td>
                     </tr>
                 </tbody>
@@ -97,6 +110,76 @@
     <div id="submitDiv">
         <button class="btn btn-primary" data-bind="click: $root.submit">Submit</button>
     </div>
+    <!--Change Log Modal-->
+    <div id="clModal" class="modal change-log-modal" role="dialog" tabindex="-1">
+        <div class="change-log-modal-content">
+            <!--Header-->
+            <div class="change-log-modal-header">
+                <span class="close" data-bind="click: $root.closeCLModal">&times;</span>
+                <h4 id="clModalHeader">Change Logs</h4>
+            </div>
+            <!--Body-->
+            <div id="clModalBody" class="change-log-modal-body">
+                <div id="clPage1">
+                    <div class="row">
+                        <div class="cl-modal-left-div">
+                            <div class="cl-table-div">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr><td><h5>CLID#</h5></td><td><h5>Date and Time</h5></td></tr>
+                                    </thead>
+                                    <tbody data-bind="foreach: notes">
+                                        <tr class="table table-on-hover">
+                                            <td data-bind="text: noteID"></td>
+                                            <td data-bind="dateFormatted: noteDateTime, 
+                                                            format: 'LLL',
+                                                            click: $root.selectCL"></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="cl-modal-right-div">
+                            <h4 style="text-align:center">Preview</h4>
+                            <content class="cl-modal-right-preview">
+                                <span id="clPreview"></span>
+                            </content>
+                        </div>
+                    </div>
+                </div>
+                <div id="clPage2">
+                    <textarea id="clTextEditor" class="cl-text-area" cols="50"></textarea>
+                </div>
+            </div>
+            <!--Footer-->
+            <div id="clModalFooter" class="change-log-modal-footer">
+                <div id="clFooter1">
+                    <button class="btn btn-sm btn-primary" data-bind="click: $root.newCL">
+                        <i class="fa fa-plus-circle"></i>
+                        <span>New Change Log</span>
+                    </button>
+                    <button class="btn btn-sm btn-secondary" data-bind="click: $root.closeCLModal">
+                        <i class="fa fa-ban"></i>
+                        <span>Cancel</span>
+                    </button>
+                </div>
+                <div id="clFooter2">
+                    <button class="btn btn-sm btn-info" data-bind="click: $root.directToFirstPage">
+                        <i class="fa fa-arrow-circle-left"></i>
+                        <span>Back</span>
+                    </button>
+                    <button class="btn btn-sm btn-primary" data-bind="click: $root.submitCL">
+                        <i class="fa fa-check-circle"></i>
+                        <span>Submit</span>
+                    </button>
+                    <button class="btn btn-sm btn-secondary" data-bind="click: $root.cancelCL">
+                        <i class="fa fa-ban"></i>
+                        <span>Cancel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!--Read template for table-->
     <script id="read-template" type="text/html">
@@ -110,7 +193,6 @@
             <a class="btn btn-light" data-bind="click: $root.edit">Edit</a>
         </td>
     </script>
-
     <!--Edit template for table-->
     <script id="edit-template" type="text/html">
         <td>
@@ -135,15 +217,13 @@
             <a class="btn btn-success" data-bind="click: $root.done">Done</a>
         </td>
     </script>
-
     <!--Empty template for data-->
     <script id="empty-template" type="text/html">
         <td>
             <h3 style="text-align: center">There are no added deploys yet...</h3>
         </td>
     </script>
-    <div id="submitOverlay" class="success-overlay" style="width:0">
-    </div>
+    <div id="submitOverlay" class="success-overlay" style="width:0"></div>
     @Html.Hidden("Redirect", Url.Action("Index", "Developer"))
 </body>
 </html>

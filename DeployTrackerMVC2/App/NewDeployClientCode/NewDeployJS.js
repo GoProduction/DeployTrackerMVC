@@ -5,6 +5,17 @@ var environment = document.getElementById("txtEnvironment");
 var plannedDate = document.getElementById("txtPlannedDate");
 var plannedTime = document.getElementById("txtPlannedTime");
 
+//Note template
+var Note = function (noteID, noteBody, noteDateTime) {
+    this.noteID = ko.observable(noteID);
+    this.noteBody = ko.observable(noteBody);
+    this.noteDateTime = ko.observable(noteDateTime);
+}
+var NewNote = function (noteBody, noteDateTime) {
+    this.noteBody = noteBody;
+    this.noteDateTime = noteDateTime;
+}
+
 //Deploy template
 var Deploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTime, depStatus, depSmoke, Edit) {
     this.depFeature = ko.observable(depFeature);
@@ -24,6 +35,7 @@ var TempDeployViewModel = function (signalR) {
     self.deploys = ko.observableArray();
     self.featureList = ko.observableArray();
     self.environmentList = ko.observableArray();
+    self.notes = ko.observableArray();
     self.tempTime = ko.observable(new Date());
     console.log("The temp time is: ", self.tempTime);
 
@@ -32,6 +44,11 @@ var TempDeployViewModel = function (signalR) {
     self.version = ko.observable();
     self.environment = ko.observable();
     self.plannedDateTime = ko.observable(new Date());
+
+    //Observables for MASTER note
+    self.selectedCL = ko.observableArray(self.notes()[0]);
+    self.mnBody = ko.observable();
+    self.mnDateTime = ko.observable();
 
     //Computed observables(to split up datetime field)
     self.computedDate = ko.computed({
@@ -50,7 +67,6 @@ var TempDeployViewModel = function (signalR) {
             return moment(self.plannedDateTime()).format('HH:mm');
         }
     });
-
 
     //Function to determine the display mode of the table
     self.displayMode = function (deploys) {
@@ -101,7 +117,6 @@ var TempDeployViewModel = function (signalR) {
         
 
     };
-
     self.submit = function () {
 
         try {
@@ -156,18 +171,104 @@ var TempDeployViewModel = function (signalR) {
         signalR.server.notification("Batch", message, icon);
 
     };
-
     self.edit = function (deploys) {
         deploys.Edit(true);
         deploys.depPlannedDateTime(new Date(deploys.depPlannedDateTime()));
     };
-
     self.done = function (deploys) {
         deploys.Edit(false);
         deploys.depPlannedDateTime(moment(deploys.depPlannedDateTime()).format());
         console.log('done');
         console.log("Updated deploy: ", self.deploys);
     }
+
+    //Change Log modal functions
+    self.openCLModal = function () {
+        var modal = document.getElementById("clModal");
+        modal.style.display = "block";
+        self.directToFirstPage();
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                self.closeCLModal();
+            }
+        }
+    }
+    self.closeCLModal = function () {
+        $("#clModal").fadeOut("fast");
+        self.directToFirstPage();
+        
+    }
+    self.cancelCL = function () {
+        console.log("Close");
+        $('textarea').each(function (k, v) {
+            tinymce.get(k).setContent('');
+        });
+        self.directToFirstPage();
+    }
+    self.newCL = function () {
+        self.directToSecondPage();
+    }
+    self.submitCL = function () {
+        var textBody = tinymce.activeEditor.getContent({format: 'html'});
+        var newNote = new NewNote(textBody, new Date());
+
+        $.ajax({
+            url: '/api/NotesAPI',
+            type: 'POST',
+            async: true,
+            mimeType: 'text/html',
+            data: JSON.stringify(newNote),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                console.log(data);
+                $('textarea').each(function (k, v) {
+                    tinymce.get(k).setContent('');
+                });
+                self.notes.push(data);
+                successToast("Note has been successfully submitted.");
+            },
+
+            error: function (msg) {
+                console.log("error: ", msg.status);
+            }
+        });
+
+        self.directToFirstPage();
+    }
+    self.selectCL = function (data) {
+        self.selectedCL(data);
+        console.log("Selected CL", self.selectedCL().noteID);
+        var noteBody = ko.unwrap(self.selectedCL().noteBody);
+        var preview = document.getElementById("clPreview");
+        $("#clPreview").html(noteBody);
+
+    }
+    self.directToFirstPage = function () {
+        var firstPage = document.getElementById("clPage1");
+        var secondPage = document.getElementById("clPage2");
+        var firstFooter = document.getElementById("clFooter1");
+        var secondFooter = document.getElementById("clFooter2");
+        
+        firstPage.style.display = "block";
+        secondPage.style.display = "none";
+        firstFooter.style.display = "block";
+        secondFooter.style.display = "none";
+        
+    }
+    self.directToSecondPage = function () {
+        var firstPage = document.getElementById("clPage1");
+        var secondPage = document.getElementById("clPage2");
+        var firstFooter = document.getElementById("clFooter1");
+        var secondFooter = document.getElementById("clFooter2");
+
+        firstPage.style.display = "none";
+        secondPage.style.display = "block";
+        firstFooter.style.display = "none";
+        secondFooter.style.display = "block";
+    }
+    
 
     //Checks to make sure properties are observable
     self.watchModel = function (model, callback) {
@@ -198,7 +299,6 @@ var TempDeployViewModel = function (signalR) {
             return obsFeature;
         }));
     });
-
     //Fetching data from tblEnvironment
     $.getJSON('/odata/Environments', function (data) {
         self.environmentList(ko.utils.arrayMap(data.value, function (environmentList) {
@@ -210,6 +310,18 @@ var TempDeployViewModel = function (signalR) {
             return obsEnvironment;
         }));
     });
+    //Fetching data from tblNotes
+    $.getJSON('/odata/Notes', function (data) {
+        self.notes(ko.utils.arrayMap(data.value, function (notes) {
+            var obsNote = {
+                noteID: notes.noteID,
+                noteBody: ko.observable(notes.noteBody),
+                noteDateTime: ko.observable(notes.noteDateTime)
+            }
+
+            return obsNote;
+        }));
+    });
 }
 $(function () {
     $("#txtPlannedDate").datepicker();
@@ -217,15 +329,30 @@ $(function () {
     var signalR = $.connection.deploy;
     var viewModel = new TempDeployViewModel(signalR);
 
-
     $.connection.hub.start().done(function () {
         ko.applyBindings(viewModel);
-        console.log('Connected to signalR hub...')
+        console.log('Connected to signalR hub...');
+
+        //Initialize text editor
+        tinymce.init({
+            selector: '#clTextEditor',
+            init_instance_callback: function (editor) {
+                console.log("Editor: " + editor.id + " is now initialized.");
+            }
+        });
+        
     });
 
 
 
 });
+//Converts HTML to regular text
+function stripHTML(html) {
+    var tmp = document.createElement("div");
+    tmp.innerHTML = html;
+    return tmp.textContent || tmp.innerText;
+}
+
 var DeleteKey = function (array, key) {
     this.array = array;
     this.key = key;
