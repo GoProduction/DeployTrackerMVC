@@ -1,0 +1,81 @@
+﻿<DOCTYPE html />
+<!--Change Log Page-->
+<html lang="en">
+<head>
+    @section scripts{
+        <script src="~/Scripts/knockout-3.5.1.js"></script>
+        <script src="~/Scripts/moment.min.js"></script>
+        <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
+        <script src="~/signalr/hubs"></script>
+        <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+        <link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+        <script src="~/Scripts/jquery.timepicker.min.js"></script>
+        <script src="~/Scripts/tinymce/tinymce.min.js"></script>
+        <link href="~/Content/jquery.timepicker.css" rel="stylesheet" />
+        <link href="~/App/ButtonStyles.css" rel="stylesheet" />
+        <link href="~/App/TableStyles.css" rel="stylesheet" />
+        <link href="~/App/ModalStyles.css" rel="stylesheet" />
+        <link href="~/App/PageStyles.css" rel="stylesheet" />
+        <script src="~/App/GlobalFunctions/Data-Traversal.js"></script>
+        <script src="~/App/CustomBindings.js"></script>
+        <script src="~/App/GlobalFunctions/Notifications.js"></script>
+        <script src="~/App/ChangeLogsClientCode/ChangeLogsJS.js"></script>
+        
+    }
+</head>
+<body>
+    <div id="loadingDiv" class="loading-class"></div>
+    <div id="header" style="text-align: center">
+        <h3>Change Logs</h3>
+    </div>
+    <div id="pageBody" class="clPage-body">
+        <div id="firstPage" class="row">
+            <div class="clPage-left-pane">
+                <table id="clTable" class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <td><h4>CLID#</h4></td>
+                            <td><h4>Date and Time</h4></td>
+                        </tr>
+                    </thead>
+                    <tbody data-bind="foreach: $root.sortedChangeLogs()">
+                        <tr class="table-on-hover" data-bind="click: $root.select, css: { rowSelect: $root.selectedCL() === $data }">
+                            <td data-bind="text: noteID"></td>
+                            <td data-bind="fullDateTime: noteDateTime"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <content id="previewWindow" class="clPage-right-pane">
+
+            </content>
+        </div>
+        <div id="secondPage" class="row">
+            <h4>New change log...</h4>
+            <textarea id="textEditor" style="width: 100%"></textarea>
+        </div>
+    </div>
+    <div id="pageFooter" class="clPage-footer">
+        <div id="firstFooter">
+            <button class="btn btn-sm btn-primary" data-bind="click: $root.newChangeLog">
+                <i class="fa fa-plus-circle"></i>
+                <span>New Change Log</span>
+            </button>
+        </div>
+        <div id="secondFooter">
+            <button class="btn btn-sm btn-warning" data-bind="click: $root.back">
+                <i class="fa fa-arrow-circle-left"></i>
+                <span>Back</span>
+            </button>
+            <button class="btn btn-sm btn-primary" data-bind="click: $root.submitCL">
+                <i class="fa fa-save"></i>
+                <span>Submit</span>
+            </button>
+            <button class="btn btn-sm btn-danger" data-bind="click: $root.cancel">
+                <i class="fa fa-times-circle"></i>
+                <span>Cancel</span>
+            </button>
+        </div>
+    </div>
+</body>
+</html>

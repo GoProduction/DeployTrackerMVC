@@ -44,6 +44,11 @@ namespace DeployTrackerMVC2
                 defaults: new { controller = "Notes", action = "Index", id = UrlParameter.Optional }
             );
 
+            routes.MapRoute(
+                name: "ChangeLogs",
+                url: "{controller}/{action}/{id}",
+                defaults: new { controller = "ChangeLogs", action = "Index", id = UrlParameter.Optional }
+            );
         }
 
         public static void RegisterHttp(HttpConfiguration config)

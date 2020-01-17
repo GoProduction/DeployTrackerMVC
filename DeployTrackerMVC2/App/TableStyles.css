@@ -69,3 +69,8 @@
 tr.home-comment-table-row>td{
     padding: 4px;
 }
+/*Selected row*/
+.rowSelect{
+    background-color: cadetblue;
+    font: bold;
+}

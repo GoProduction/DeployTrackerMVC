@@ -49,3 +49,25 @@ function successToast(msg) {
         "hideMethod": "fadeOut"
     }
 }
+function infoToast(msg, cont) {
+    toastr["info"](msg, cont);
+
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "limit": "5",
+        "newestOnTop": false,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": false,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        "timeOut": "9000",
+        "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+}

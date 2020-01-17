@@ -214,14 +214,11 @@
     <Compile Include="Controllers\Deploys\EntitySetControllerWithHub.cs" />
     <Compile Include="Controllers\Notes\NotesAPIController.cs" />
     <Compile Include="Controllers\Notes\NotesController.cs" />
-    <Compile Include="Controllers\QAController.cs" />
-    <Compile Include="Controllers\DeveloperController.cs" />
+    <Compile Include="Controllers\PageControllers.cs" />
     <Compile Include="Controllers\Environments\EnvironmentEntitySetController.cs" />
     <Compile Include="Controllers\Environments\EnvironmentsController.cs" />
     <Compile Include="Controllers\Features\FeatureEntitySetController.cs" />
     <Compile Include="Controllers\Features\FeaturesController.cs" />
-    <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\NewDeployController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -262,6 +259,7 @@
     <Content Include="App\BodyStyles.css" />
     <Content Include="App\ButtonStyles.css" />
     <Content Include="App\CalendarStyles.css" />
+    <Content Include="App\ChangeLogsClientCode\ChangeLogsJS.js" />
     <Content Include="App\CustomBindings.js" />
     <Content Include="App\DeveloperClientCode\DeveloperJS.js" />
     <Content Include="App\GlobalFunctions\Caching.js" />
@@ -837,6 +835,7 @@
     <Content Include="Scripts\tinymce\skins\ui\oxide\fonts\tinymce-mobile.woff" />
     <Content Include="Scripts\tinymce\skins\ui\oxide-dark\fonts\tinymce-mobile.woff" />
     <Content Include="Scripts\tinymce\langs\readme.md" />
+    <Content Include="Views\ChangeLogs\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

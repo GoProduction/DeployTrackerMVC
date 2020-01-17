@@ -191,6 +191,33 @@ async function postDeploy(signalR, payload) {
         console.log("Ready state: ", msg.readyState);
     }  
 }
+//POST request for posting new note (change log)
+async function postNote(signalR, payload) {
+    let result;
+    try {
+        result = await $.ajax({
+            url: '/api/NotesAPI',
+            type: 'POST',
+            async: true,
+            mimeType: 'text/html',
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var response = JSON.stringify(data);
+                console.log("response: ", response);
+                signalR.server.updateNotes(response);
+                successToast("Note has been successfully submitted.");
+            }
+        });
+    }
+    catch (msg) {
+        console.log("error: ", msg.status);
+        console.log(msg.statusText);
+        console.log(msg.responseText);
+        console.log("Ready state: ", msg.readyState);
+    }
+};
 //DELETE request for deleting deploy
 async function deleteDeploy(signalR, model) {
     $.ajax({

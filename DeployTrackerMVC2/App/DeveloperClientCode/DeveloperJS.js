@@ -838,57 +838,7 @@ function updateCurrentPaginate() {
             css('display', 'table-row').animate({ opacity: 1 }, 300);
     });
 };
-//Error toast
-function errorToast(err) {
-    toastr.error(err, 'Error:');
-    console.log(err);
-}
-//Success toast
-function successToast(msg) {
-    toastr.success(msg, "Success!");
 
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "limit": "5",
-        "newestOnTop": false,
-        "progressBar": false,
-        "positionClass": "toast-top-right",
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "9000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-}
-//Info toast
-function infoToast(msg, cont) {
-    toastr["info"](msg, cont);
-
-    toastr.options = {
-        "closeButton": true,
-        "debug": false,
-        "limit": "5",
-        "newestOnTop": false,
-        "progressBar": true,
-        "positionClass": "toast-top-right",
-        "preventDuplicates": false,
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "9000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-}
 //Checks changed values for browser notification
 function checkForNotification(value, feature, version, signalR) {
     deploySignalR = signalR;

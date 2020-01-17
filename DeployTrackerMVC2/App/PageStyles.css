@@ -1,4 +1,5 @@
-﻿/*First loading class (with gif)*/
+﻿
+/*First loading class (with gif)*/
 .no-js #loader{display: none;}
 .js #loader {
     display: block;
@@ -163,3 +164,34 @@
     text-align: right;
 }
 
+/*Change Log page styles*/
+.clPage-body {
+    
+}
+.clPage-left-pane {
+    width: 30%;
+    height: 600px;
+    overflow-y: scroll;
+    
+}
+.clPage-right-pane {
+    width: 70%;
+    height: 600px;
+    overflow-y: scroll;
+    overflow-wrap: normal;
+    border: solid thin;
+    padding-left: 2em;
+    padding-right: 2em;
+}
+.clPage-footer{
+    text-align: center;
+    padding: 5px 5px 5px 5px;
+}
+@media only screen and (max-width: 1045px) {
+    .clPage-left-pane{
+        width: 100%;
+    }
+    .clPage-right-pane{
+        width: 100%;
+    }
+}
