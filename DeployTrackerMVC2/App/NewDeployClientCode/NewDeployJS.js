@@ -4,6 +4,7 @@ var version = document.getElementById("txtVersion");
 var environment = document.getElementById("txtEnvironment");
 var plannedDate = document.getElementById("txtPlannedDate");
 var plannedTime = document.getElementById("txtPlannedTime");
+var masterNoteText = document.getElementById("masterNoteText");
 
 //Note template
 var Note = function (noteID, noteBody, noteDateTime) {
@@ -17,13 +18,14 @@ var NewNote = function (noteBody, noteDateTime) {
 }
 
 //Deploy template
-var Deploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTime, depStatus, depSmoke, Edit) {
+var Deploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTime, depStatus, depSmoke, noteID, Edit) {
     this.depFeature = ko.observable(depFeature);
     this.depVersion = ko.observable(depVersion);
     this.depPlannedDateTime = ko.observable(depPlannedDateTime);
     this.depStatus = ko.observable(depStatus);
     this.depSmoke = ko.observable(depSmoke);
     this.depEnvironment = ko.observable(depEnvironment);
+    this.noteID = ko.observable(noteID);
     this.Edit = ko.observable(Edit);
 };
 //Deploy viewmodel
@@ -39,6 +41,11 @@ var TempDeployViewModel = function (signalR) {
     self.tempTime = ko.observable(new Date());
     console.log("The temp time is: ", self.tempTime);
 
+    //Observables for selected deploy
+    self.selectedDeploy = ko.observableArray();
+    self.selectedType = ko.observable();
+    self.selectedIndex = ko.observable();
+
     //Observables for the NEW deploy fields
     self.feature = ko.observable();
     self.version = ko.observable();
@@ -47,6 +54,7 @@ var TempDeployViewModel = function (signalR) {
 
     //Observables for MASTER note
     self.selectedCL = ko.observableArray(self.notes()[0]);
+    self.masterCL = ko.observableArray();
     self.mnBody = ko.observable();
     self.mnDateTime = ko.observable();
 
@@ -90,17 +98,18 @@ var TempDeployViewModel = function (signalR) {
             depStatus: 'Queued',
             depSmoke: "Not Ready",
             depEnvironment: self.environment(),
+            noteID: self.masterCL().noteID,
             Edit: false
 
         }];
 
         if (feature.value.length == 0 || version.value.length == 0 || environment.value.length == 0 || plannedDate.value.length == 0 || plannedTime.value.length == 0) {
-            alert('You must enter ALL fields');
+            errorToast('You must enter ALL fields');
 
         }
         else {
             var newDeploy = ko.utils.arrayMap(newRecord, function (data) {
-                return new Deploy(data.depFeature, data.depVersion, data.depEnvironment, data.depPlannedDateTime, data.depStatus, data.depSmoke, data.Edit)
+                return new Deploy(data.depFeature, data.depVersion, data.depEnvironment, data.depPlannedDateTime, data.depStatus, data.depSmoke, data.noteID, data.Edit)
             });
 
             //Push the new record to the temp table
@@ -184,6 +193,7 @@ var TempDeployViewModel = function (signalR) {
 
     //Change Log modal functions
     self.openCLModal = function () {
+        
         var modal = document.getElementById("clModal");
         modal.style.display = "block";
         self.directToFirstPage();
@@ -244,6 +254,8 @@ var TempDeployViewModel = function (signalR) {
         var preview = document.getElementById("clPreview");
         $("#clPreview").html(noteBody);
 
+        $(".rowSelect").focus();
+
     }
     self.directToFirstPage = function () {
         var firstPage = document.getElementById("clPage1");
@@ -268,7 +280,59 @@ var TempDeployViewModel = function (signalR) {
         firstFooter.style.display = "none";
         secondFooter.style.display = "block";
     }
-    
+
+    //Master open modal function for grabbing parameters
+    self.openModalAndEval = function (data, type, index) {
+        
+        self.selectedDeploy(data);
+        self.selectedType(type);
+        self.selectedIndex(index);
+        console.log('self.selectedDeploy: ', ko.unwrap(self.selectedDeploy), 'self.selectedType: ', self.selectedType, 'self.selectedIndex: ', self.selectedIndex);
+        var id = ko.unwrap(data.noteID);
+        console.log('noteID: ', id);
+        
+        if (id !== undefined) {
+            self.selectCL(self.findNote(id));
+        };
+        
+        self.openCLModal();
+    }
+
+    //Master close modal function for evaluating whether its a MASTER change log selection, or an EDIT change log selection
+    self.closeModalAndEval = function () {
+        var evalType = ko.unwrap(self.selectedType);
+        var evalIndex = ko.unwrap(self.selectedIndex);
+        if (self.selectedCL() == '') {
+            errorToast("You must select a change log to continue.");
+            return;
+        }
+        else if (evalType == 'edit') {
+            self.deploys()[evalIndex].noteID(self.selectedCL().noteID);
+            self.closeCLModal();
+        }
+        else {
+            masterNoteText.innerText = "Select new Change Log";
+            self.masterCL(ko.unwrap(self.selectedCL));
+            console.log(self.masterCL);
+            self.closeCLModal();
+        }
+    }
+
+    //Computed functions
+    self.sortedChangeLogs = ko.computed(function () {
+        var CLList = self.notes();
+        return CLList.sort(function (l, r) {
+            return (l.noteDateTime() < r.noteDateTime() ? 1 : -1);
+        });
+    });
+    self.findNote = function (id) {
+        return ko.utils.arrayFirst(self.notes(), function (item) {
+            if (item.noteID == id) {
+                console.log("findNote()", ko.utils.unwrapObservable(item));
+                return item;
+            }
+        });
+    }
 
     //Checks to make sure properties are observable
     self.watchModel = function (model, callback) {
@@ -342,9 +406,7 @@ $(function () {
         });
         
     });
-
-
-
+    
 });
 //Converts HTML to regular text
 function stripHTML(html) {
@@ -366,3 +428,4 @@ function redirect() {
     var url = $("#Redirect").val();
     location.href = url;
 }
+

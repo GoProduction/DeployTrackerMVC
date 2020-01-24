@@ -26,63 +26,70 @@
         <script src="~/App/CustomBindings.js"></script>
         <script src="~/App/NewDeployClientCode/NewDeployJS.js"></script>
         <script src="~/App/GlobalFunctions/Notifications.js"></script>
+        <link href="~/App/NewDeployClientCode/NewDeployCSS.css" rel="stylesheet" />
     }
 </head>
 <body>
     <form id="FieldsForm" class="jumbotron">
-        <div>
-            <h2 style="text-align: center">New Deploy</h2>
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Feature</th>
-                        <th>Version</th>
-                        <th>Environment</th>
-                        <th>Planned Date</th>
-                        <th>Planned Time</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>
-                            <select id="txtFeature" name="txtFeature" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName', value: $root.feature"></select>
-                        </td>
-                        <td>
-                            <input data-bind="value: $root.version" type="text" id="txtVersion" name="txtVersion" class="table" />
-                        </td>
-                        <td>
-                            <select id="txtEnvironment" name="txtEnvironment" data-bind="options: $root.environmentList,
+        <h2 style="text-align: center">New Deploy</h2>
+        <div class="row">
+            <div class="nd-col-1">
+                <table class="nd-table">
+                    <thead class="nd-thead">
+                        <tr class="nd-tr">
+                            <th class="nd-th">Feature</th>
+                            <th class="nd-th">Version</th>
+                            <th class="nd-th">Environment</th>
+                            <th class="nd-th">Planned Date</th>
+                            <th class="nd-th">Planned Time</th>
+                            <th class="nd-th">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="nd-tbody">
+                        <tr class="nd-tr">
+                            <td class="nd-td t1-td" data-title="Feature">
+                                <select id="txtFeature" style="max-width: 90%;" name="txtFeature" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName', value: $root.feature"></select>
+                            </td>
+                            <td class="nd-td t1-td">
+                                <input data-bind="value: $root.version" type="text" id="txtVersion" name="txtVersion" class="table" />
+                            </td>
+                            <td class="nd-td t1-td">
+                                <select id="txtEnvironment" name="txtEnvironment" data-bind="options: $root.environmentList,
                                                                                             optionsText: 'envName',
                                                                                             optionsValue: 'envName',
                                                                                             value: $root.environment"></select>
-                        </td>
-                        <td>
-                            <input data-bind="datepicker: $root.plannedDateTime, datepickerOptions: { minDate: new Date() }" id="txtPlannedDate" name="txtPlannedDate" class="table" />
-                        </td>
-                        <td>
-                            <input type="time" id="txtPlannedTime" name="txtPlannedTime" class="table" data-bind="timepickerInput: $root.plannedDateTime" />
-                        </td>
-                        <td>
-                            <input type="text" id="txtStatus" class="table" value="Queued" disabled />
-                        </td>
-                        <td>
-                            <button id="btnAdd" class="btn btn-sm btn-success" data-bind="click: $root.add">
-                                <i class="fa fa-plus"></i>
-                                <span>Add Deploy</span>
-                            </button>
-                        </td>
-                        <td>
-                            <button id="btnAddMasterNote" class="btn btn-sm btn-info" data-bind="click: $root.openCLModal">
-                                <i class="fa fa-plus"></i>
-                                <span id="masterNoteText">Add Change Log</span>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                            </td>
+                            <td class="nd-td t1-td">
+                                <input data-bind="datepicker: $root.plannedDateTime, datepickerOptions: { minDate: new Date() }" id="txtPlannedDate" name="txtPlannedDate" class="table" />
+                            </td>
+                            <td class="nd-td t1-td">
+                                <input type="time" id="txtPlannedTime" name="txtPlannedTime" class="table" data-bind="timepickerInput: $root.plannedDateTime" />
+                            </td>
+                            <td class="nd-td t1-td">
+                                <input type="text" id="txtStatus" class="table" value="Queued" disabled />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="nd-col-2" data-bind="with: masterCL">
+                <div>
+                    <button id="btnAdd" class="btn btn-sm btn-success" data-bind="click: $root.add">
+                        <i class="fa fa-plus"></i>
+                        <span>Add Deploy</span>
+                    </button>
+                    <button id="btnAssignMasterNote" class="btn btn-sm btn-info" data-bind="click: function(data, type, index){$root.openModalAndEval($data, 'master', '0', data, type, index)}">
+                        <i class="fa fa-clipboard"></i>
+                        <span id="masterNoteText">Select Change Log</span>
+                    </button>
+                </div>
+                <div>
+                    <span style="font-weight: bold">Selected Change Log: </span>
+                    <span data-bind="text: $root.masterCL().noteID"></span>
+                </div>
+            </div>
         </div>
-        <div id="timeviewerdiv">
+        <div id="timeviewerdiv" style="display: none">
             <h4 style="text-align:center">Time:</h4>
             <span id="timeVal" data-bind="text: $root.plannedDateTime" style="text-align:center"></span>
         </div>
@@ -90,20 +97,21 @@
     <br />
     <hr />
     <div id="DataTable">
-        <table class="table" id="DeploysTable">
-            <thead>
-                <tr>
-                    <th>Feature</th>
-                    <th>Version</th>
-                    <th>Environment</th>
-                    <th>Planned Date</th>
-                    <th>Planned Time</th>
-                    <th>Status</th>
-                    <th>...</th>
+        <table class="nd-table" id="DeploysTable">
+            <thead class="nd-thead">
+                <tr class="nd-tr">
+                    <th class="nd-th">Feature</th>
+                    <th class="nd-th">Version</th>
+                    <th class="nd-th">Environment</th>
+                    <th class="nd-th">Planned Date</th>
+                    <th class="nd-th">Planned Time</th>
+                    <th class="nd-th">Status</th>
+                    <th class="nd-th">CL#</th>
+                    <th class="nd-th">...</th>
                 </tr>
             </thead>
-            <tbody data-bind="foreach: deploys" class="table">
-                <tr data-bind="template: {name: $root.displayMode, data: $data }" class="table"></tr>
+            <tbody class="nd-tbody" data-bind="foreach: deploys">
+                <tr class="nd-tr" data-bind="template: {name: $root.displayMode, data: $data }"></tr>
             </tbody>
         </table>
     </div>
@@ -126,21 +134,20 @@
                             <div class="cl-table-div">
                                 <table class="table table-bordered">
                                     <thead>
-                                        <tr><td><h5>CLID#</h5></td><td><h5>Date and Time</h5></td></tr>
+                                        <tr><td class="fancy-header">CLID#</td><td class="fancy-header">Date and Time</td></tr>
                                     </thead>
-                                    <tbody data-bind="foreach: notes">
-                                        <tr class="table table-on-hover">
+                                    <tbody data-bind="foreach: $root.sortedChangeLogs">
+                                        <tr class="table table-on-hover" data-bind="click: $root.selectCL, css: { rowSelect: $root.selectedCL() === $data }">
                                             <td data-bind="text: noteID"></td>
                                             <td data-bind="dateFormatted: noteDateTime, 
-                                                            format: 'LLL',
-                                                            click: $root.selectCL"></td>
+                                                            format: 'LLL'"></td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                         <div class="cl-modal-right-div">
-                            <h4 style="text-align:center">Preview</h4>
+                            <h4 class="fancy-header" style="text-align: center" data-bind="text: $root.selectedCL().noteID"></h4>
                             <content class="cl-modal-right-preview">
                                 <span id="clPreview"></span>
                             </content>
@@ -154,7 +161,11 @@
             <!--Footer-->
             <div id="clModalFooter" class="change-log-modal-footer">
                 <div id="clFooter1">
-                    <button class="btn btn-sm btn-primary" data-bind="click: $root.newCL">
+                    <button class="btn btn-sm btn-primary" data-bind="click: $root.closeModalAndEval">
+                        <i class="fa fa-check-circle"></i>
+                        <span>Select</span>
+                    </button>
+                    <button class="btn btn-sm btn-info" data-bind="click: $root.newCL">
                         <i class="fa fa-plus-circle"></i>
                         <span>New Change Log</span>
                     </button>
@@ -183,43 +194,55 @@
 
     <!--Read template for table-->
     <script id="read-template" type="text/html">
-        <td data-bind="text: depFeature"></td>
-        <td data-bind="text: depVersion"></td>
-        <td data-bind="text: depEnvironment"></td>
-        <td data-bind="dateFormatted: depPlannedDateTime, format: 'MMMM DD YYYY'"></td>
-        <td data-bind="timeFormatted: depPlannedDateTime, format: 'LT'"></td>
-        <td data-bind="text: depStatus"></td>
-        <td>
+        <td class="nd-td t2-td" data-bind="text: depFeature"></td>
+        <td class="nd-td t2-td" data-bind="text: depVersion"></td>
+        <td class="nd-td t2-td" data-bind="text: depEnvironment"></td>
+        <td class="nd-td t2-td" data-bind="dateFormatted: depPlannedDateTime, format: 'MMMM DD YYYY'"></td>
+        <td class="nd-td t2-td" data-bind="timeFormatted: depPlannedDateTime, format: 'LT'"></td>
+        <td class="nd-td t2-td" data-bind="text: depStatus"></td>
+        <td class="nd-td t2-td">
+            <button class="btn btn-sm btn-dark" disabled>
+                <i class="fa fa-clipboard"></i>
+                <span data-bind="text: noteID"></span>
+            </button>
+        </td>
+        <td class="nd-td t2-td">
             <a class="btn btn-light" data-bind="click: $root.edit">Edit</a>
         </td>
     </script>
     <!--Edit template for table-->
     <script id="edit-template" type="text/html">
-        <td>
-            <select id="ctlFeature" name="ctlFeature" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName', value: depFeature"></select>
+        <td class="nd-td t2-td">
+            <select id="ctlFeature" name="ctlFeature" style="max-width: 90%" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName', value: depFeature"></select>
         </td>
-        <td>
-            <input type="text" data-bind="value: depVersion" />
+        <td class="nd-td t2-td">
+            <input type="text" style="max-width: 90%" data-bind="value: depVersion" />
         </td>
-        <td>
-            <select id="ctlEnvironment" name="ctlEnvironment" data-bind="options: $root.environmentList, optionsText: 'envName', optionsValue: 'envName', value: depEnvironment"></select>
+        <td class="nd-td t2-td">
+            <select id="ctlEnvironment" style="max-width: 90%" name="ctlEnvironment" data-bind="options: $root.environmentList, optionsText: 'envName', optionsValue: 'envName', value: depEnvironment"></select>
         </td>
-        <td>
-            <input id="ctlPlannedDate" type="text" data-bind="datepicker: depPlannedDateTime" />
+        <td class="nd-td t2-td">
+            <input id="ctlPlannedDate" style="max-width: 90%" type="text" data-bind="datepicker: depPlannedDateTime" />
         </td>
-        <td>
-            <input type="time" data-bind="timepickerInput: depPlannedDateTime" />
+        <td class="nd-td t2-td">
+            <input type="time" style="max-width: 90%" data-bind="timepickerInput: depPlannedDateTime" />
         </td>
-        <td>
-            <input type="text" data-bind="value: depStatus" disabled />
+        <td class="nd-td t2-td">
+            <input type="text" style="max-width: 90%" data-bind="value: depStatus" disabled />
         </td>
-        <td>
+        <td class="nd-td t2-td">
+            <button class="btn btn-sm btn-info" data-bind="click: function(data, type, index){$root.openModalAndEval($data, 'edit', $parentContext.$index(), data, type, index)}">
+                <i class="fa fa-clipboard"></i>
+                <span data-bind="text: noteID"></span>
+            </button>
+        </td>
+        <td class="nd-td t2-td">
             <a class="btn btn-success" data-bind="click: $root.done">Done</a>
         </td>
     </script>
     <!--Empty template for data-->
     <script id="empty-template" type="text/html">
-        <td>
+        <td class="nd-td t2-td">
             <h3 style="text-align: center">There are no added deploys yet...</h3>
         </td>
     </script>

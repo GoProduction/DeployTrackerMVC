@@ -1,0 +1,38 @@
+﻿TODO:
+NewDeploy/Index.html and NewDeployJS
+*-Add functionality to select master change log to apply to seperate deploys by default; once a master deploy has been selected,
+	a "Selected Change Log" field should appear, and the "Select Change Log" button should change to "Select a Different Change Log"
+*-Deploy should have a noteID field
+*-Edit Deploy field should have a change log button to select change log
+*-Add sorting to notes array
+*-Add selected field color
+*-Have modal go to original change log when selecting from table
+-Change focus to selected row when opening modal(low priority)
+*-Make page compatable for mobile
+-Disable SUBMIT button until at least one record has been entered
+-Add a "Remove" button AND function in deploy table
+-Add a "Remove Selection" button in change log modal
+-Add an "Edit" button AND function in the change log modal
+
+Developer/Index.html and DeveloperJS
+-OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.
+	-Add a Smoke Status field into the current deploys table.
+	-Inside the deploy status field, add the update status button, with the deploy status text embedded inside.
+*-Update table headers with black background/white text with global class (.fancy-header?)
+-FIX status change when set to fail
+-Add a tblNotes GET request
+-Add a change log button to deploy modal
+-Copy/Paste change log modal and functionality from NewDeployJS and html file
+-Have deploy details modal transition to change log modal on request
+-Remove green from color-scheme when deploy has FINISHED deploying
+
+QA/Index.html and QAJS
+-OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.
+	-Add a Smoke Status field into the current deploys table. In this field will be the update status button with the smoke status text
+	embedded inside
+-Update table headers with black background/white text with global class (.fancy-header?)
+-Add a tblNotes GET request
+-Add a change log button to deploy modal
+-Copy/Paste change log modal and functionality from NewDeployJS and html file WITHOUT the ability to view/change other change logs
+-Have deploy details modal transition to change log modal on request
+-Remove green from color-scheme when deploy has FINISHED deploying

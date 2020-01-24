@@ -74,3 +74,9 @@ tr.home-comment-table-row>td{
     background-color: cadetblue;
     font: bold;
 }
+.fancy-header {
+    background: #333;
+    color: white;
+    font-weight: bold;
+    border: 1px solid #ccc;
+}

@@ -1,16 +1,4 @@
-﻿var Note = function (noteID, noteBody, noteDateTime) {
-    this.noteID = noteID;
-    this.noteBody = ko.observable(noteBody);
-    this.noteDateTime = ko.observable(noteDateTime);
-}
-
-//Used for POST request compatability
-var NewNote = function (noteBody, noteDateTime) {
-    this.noteBody = noteBody;
-    this.noteDateTime = noteDateTime;
-}
-
-var CLViewModel = function (signalR) {
+﻿var CLViewModel = function (signalR) {
     var self = this;
     self.changeLogs = ko.observableArray();
     self.selectedCL = ko.observableArray(self.changeLogs()[0]);

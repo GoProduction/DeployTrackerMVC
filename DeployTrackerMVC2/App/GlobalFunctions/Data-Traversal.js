@@ -276,3 +276,14 @@ var QuickDeploy = function (depFeature, depVersion, depEnvironment, depPlannedDa
     this.depStatus = depStatus;
     this.depSmoke = depSmoke;
 }
+//Note model used for knockout binding
+var Note = function (noteID, noteBody, noteDateTime) {
+    this.noteID = noteID;
+    this.noteBody = ko.observable(noteBody);
+    this.noteDateTime = ko.observable(noteDateTime);
+}
+//Note model used for POST request compatability
+var NewNote = function (noteBody, noteDateTime) {
+    this.noteBody = noteBody;
+    this.noteDateTime = noteDateTime;
+}

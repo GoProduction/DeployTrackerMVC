@@ -1,0 +1,111 @@
+﻿/*Two top panels*/
+.nd-col-1 {
+    width: 80%;
+}
+
+.nd-col-2 {
+    justify-content: center;
+    border: solid thin;
+    padding: 20px 20px 20px 20px;
+    grid-column-end: auto;
+    width: 20%;
+}
+
+
+.nd-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+/* Zebra striping */
+.nd-tr:nth-of-type(odd) {
+    background: #eee;
+}
+
+.nd-th {
+    background: #333;
+    color: white;
+    font-weight: bold;
+}
+
+.nd-td, .nd-th {
+    padding: 6px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+
+@media only screen and (max-width: 930px), (min-device-width: 768px) and (max-device-width: 1024px) {
+
+    .jumbotron{
+        width: 100%;
+    }
+    /* Force table to not be like tables anymore */
+    .nd-table, .nd-thead, .nd-tbody, .nd-th, .nd-td, .nd-tr {
+        display: block;
+    }
+
+        /* Hide table headers (but not display: none;, for accessibility) */
+        .nd-thead .nd-tr {
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+        }
+
+    .nd-tr {
+        border: 1px solid #ccc;
+    }
+
+    .nd-td {
+        /* Behave  like a "row" */
+        border: none;
+        border-bottom: 1px solid #eee;
+        position: relative;
+        padding-left: 50%;
+    }
+
+        .nd-td:before {
+            /* Now like a table header */
+            position: absolute;
+            /* Top/left values mimic padding */
+            top: 6px;
+            left: 6px;
+            width: 45%;
+            padding-right: 10px;
+            white-space: nowrap;
+        }
+
+        /*
+	Label the data
+	*/
+    /*Top table; table 1*/
+    .t1-td:nth-of-type(1):before{ content: "Feature"; font-weight: bold; }
+    .t1-td:nth-of-type(2):before{ content: "Version"; font-weight: bold; }
+    .t1-td:nth-of-type(3):before{ content: "Environment"; font-weight: bold; }
+    .t1-td:nth-of-type(4):before{ content: "Planned Date"; font-weight: bold; }
+    .t1-td:nth-of-type(5):before{ content: "Planned Time"; font-weight: bold; }
+    .t1-td:nth-of-type(6):before{ content: "Status"; font-weight: bold; }
+
+    /*Bottom table; table 2*/
+    .t2-td:nth-of-type(1):before { content: "Feature"; font-weight: bold; }
+    .t2-td:nth-of-type(2):before { content: "Version"; font-weight: bold; }
+    .t2-td:nth-of-type(3):before { content: "Environment"; font-weight: bold; }
+    .t2-td:nth-of-type(4):before { content: "Planned Date"; font-weight: bold; }
+    .t2-td:nth-of-type(5):before { content: "Planned Time"; font-weight: bold; }
+    .t2-td:nth-of-type(6):before { content: "Status"; font-weight: bold; }
+    .t2-td:nth-of-type(7):before { content: "CL#"; font-weight: bold; }
+    .t2-td:nth-of-type(8):before { content: "..."; font-weight: bold; }
+}
+.rowSelect {
+        background-color: cadetblue;
+        font: bold;
+}
+
+@media only screen and (max-width: 1282px) {
+    .nd-col-1 {
+        width: 100%;
+    }
+
+    .nd-col-2 {
+        width: 100%;
+    }
+}

@@ -79,14 +79,14 @@
                         <thead>
                             <tr>
                                 <th style="display:none">ID</th>
-                                <th>Date</th>
-                                <th>Feature</th>
-                                <th class="column3">Version</th>
-                                <th>Environment</th>
-                                <th class="column1">Start Time</th>
-                                <th class="column1">End Time</th>
-                                <th class="column2">Status</th>
-                                <th>...</th>
+                                <th class="fancy-header">Date</th>
+                                <th class="fancy-header">Feature</th>
+                                <th class="column3 fancy-header">Version</th>
+                                <th class="fancy-header">Environment</th>
+                                <th class="column1 fancy-header">Start Time</th>
+                                <th class="column1 fancy-header">End Time</th>
+                                <th class="column2 fancy-header">Status</th>
+                                <th class="fancy-header">...</th>
                             </tr>
                         </thead>
                         <tbody data-bind="foreach: currentDeploys().sort($root.sortByDate)" class="table">
@@ -162,13 +162,13 @@
                         <thead>
                             <tr>
                                 <th style="display:none">ID</th>
-                                <th>Feature</th>
-                                <th class="column3">Version</th>
-                                <th>Environment</th>
-                                <th class="column1">Planned Date</th>
-                                <th class="column1">Planned Time</th>
-                                <th class="column2">Status</th>
-                                <th>...</th>
+                                <th class="fancy-header">Feature</th>
+                                <th class="column3 fancy-header">Version</th>
+                                <th class="fancy-header">Environment</th>
+                                <th class="column1 fancy-header">Planned Date</th>
+                                <th class="column1 fancy-header">Planned Time</th>
+                                <th class="column2 fancy-header">Status</th>
+                                <th class="fancy-header">...</th>
                             </tr>
                         </thead>
                         <tbody id="queuedTableBody" data-bind="foreach: queuedDeploys" class="table">
