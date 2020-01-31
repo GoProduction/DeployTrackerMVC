@@ -4,7 +4,12 @@ var version = document.getElementById("txtVersion");
 var environment = document.getElementById("txtEnvironment");
 var plannedDate = document.getElementById("txtPlannedDate");
 var plannedTime = document.getElementById("txtPlannedTime");
-var masterNoteText = document.getElementById("masterNoteText");
+var firstPage = document.getElementById("clPage1");
+var secondPage = document.getElementById("clPage2");
+var firstFooter = document.getElementById("clFooter1");
+var secondFooter = document.getElementById("clFooter2");
+var thirdFooter = document.getElementById("clFooter3");
+
 
 //Note template
 var Note = function (noteID, noteBody, noteDateTime) {
@@ -34,7 +39,7 @@ var TempDeployViewModel = function (signalR) {
     var self = this;
 
     //Deploys array
-    self.deploys = ko.observableArray();
+    self.deploys = ko.observableArray(0);
     self.featureList = ko.observableArray();
     self.environmentList = ko.observableArray();
     self.notes = ko.observableArray();
@@ -57,6 +62,7 @@ var TempDeployViewModel = function (signalR) {
     self.masterCL = ko.observableArray();
     self.mnBody = ko.observable();
     self.mnDateTime = ko.observable();
+    self.editBody = ko.observable();
 
     //Computed observables(to split up datetime field)
     self.computedDate = ko.computed({
@@ -78,10 +84,17 @@ var TempDeployViewModel = function (signalR) {
 
     //Function to determine the display mode of the table
     self.displayMode = function (deploys) {
-        if (deploys.Edit()) {
+        
+        if (self.deploys().length == 0) {
+            console.log("Empty template");
+            return 'empty-template';
+        }
+        else if (deploys.Edit()) {
+            
             return 'edit-template';
         }
         else if (deploys.Edit(false)) {
+            
             return 'read-template';
         }
 
@@ -115,7 +128,7 @@ var TempDeployViewModel = function (signalR) {
             //Push the new record to the temp table
             self.deploys.push.apply(self.deploys, newDeploy);
             
-            console.log(ko.toJSON(self.deploys));
+            console.log(ko.toJS(self.deploys));
 
         }
         
@@ -184,12 +197,20 @@ var TempDeployViewModel = function (signalR) {
         deploys.Edit(true);
         deploys.depPlannedDateTime(new Date(deploys.depPlannedDateTime()));
     };
+    self.remove = function (deploy) {
+        self.deploys.remove(deploy);
+    };
     self.done = function (deploys) {
         deploys.Edit(false);
         deploys.depPlannedDateTime(moment(deploys.depPlannedDateTime()).format());
         console.log('done');
-        console.log("Updated deploy: ", self.deploys);
-    }
+        console.log("Updated deploy: ", ko.toJS(self.deploys));
+    };
+
+    //Remove CL from deploy in table
+    self.removeCL = function (deploy) {
+        deploy.noteID(undefined);
+    };
 
     //Change Log modal functions
     self.openCLModal = function () {
@@ -211,9 +232,7 @@ var TempDeployViewModel = function (signalR) {
     }
     self.cancelCL = function () {
         console.log("Close");
-        $('textarea').each(function (k, v) {
-            tinymce.get(k).setContent('');
-        });
+        self.editBody(0);
         self.directToFirstPage();
     }
     self.newCL = function () {
@@ -257,28 +276,37 @@ var TempDeployViewModel = function (signalR) {
         $(".rowSelect").focus();
 
     }
+    self.removeSelection = function () {
+        self.masterCL('undefined');
+    }
     self.directToFirstPage = function () {
-        var firstPage = document.getElementById("clPage1");
-        var secondPage = document.getElementById("clPage2");
-        var firstFooter = document.getElementById("clFooter1");
-        var secondFooter = document.getElementById("clFooter2");
         
         firstPage.style.display = "block";
         secondPage.style.display = "none";
         firstFooter.style.display = "block";
         secondFooter.style.display = "none";
-        
+        thirdFooter.style.display = "none";
+
     }
     self.directToSecondPage = function () {
-        var firstPage = document.getElementById("clPage1");
-        var secondPage = document.getElementById("clPage2");
-        var firstFooter = document.getElementById("clFooter1");
-        var secondFooter = document.getElementById("clFooter2");
-
+       
         firstPage.style.display = "none";
         secondPage.style.display = "block";
         firstFooter.style.display = "none";
         secondFooter.style.display = "block";
+        thirdFooter.style.display = "none";
+    }
+    self.directToEditPage = function () {
+
+        var content = ko.toJS(self.selectedCL().noteBody);
+        self.editBody(content);
+
+        firstPage.style.display = "none";
+        secondPage.style.display = "block";
+        firstFooter.style.display = "none";
+        secondFooter.style.display = "none";
+        thirdFooter.style.display = "block";
+
     }
 
     //Master open modal function for grabbing parameters
@@ -288,6 +316,7 @@ var TempDeployViewModel = function (signalR) {
         self.selectedType(type);
         self.selectedIndex(index);
         console.log('self.selectedDeploy: ', ko.unwrap(self.selectedDeploy), 'self.selectedType: ', self.selectedType, 'self.selectedIndex: ', self.selectedIndex);
+        
         var id = ko.unwrap(data.noteID);
         console.log('noteID: ', id);
         
@@ -302,6 +331,7 @@ var TempDeployViewModel = function (signalR) {
     self.closeModalAndEval = function () {
         var evalType = ko.unwrap(self.selectedType);
         var evalIndex = ko.unwrap(self.selectedIndex);
+        
         if (self.selectedCL() == '') {
             errorToast("You must select a change log to continue.");
             return;
@@ -311,9 +341,10 @@ var TempDeployViewModel = function (signalR) {
             self.closeCLModal();
         }
         else {
-            masterNoteText.innerText = "Select new Change Log";
-            self.masterCL(ko.unwrap(self.selectedCL));
-            console.log(self.masterCL);
+            
+            self.masterCL(ko.utils.unwrapObservable(self.selectedCL()));
+            console.log("self.masterCL: ", self.masterCL());
+            console.log("textContent: ", masterNoteText.textContent);
             self.closeCLModal();
         }
     }
@@ -333,7 +364,6 @@ var TempDeployViewModel = function (signalR) {
             }
         });
     }
-
     //Checks to make sure properties are observable
     self.watchModel = function (model, callback) {
         for (var key in model) {
@@ -344,13 +374,19 @@ var TempDeployViewModel = function (signalR) {
             }
         }
     }
-
     //Subscribes to observable objects, and listens for changes
     self.subscribeToProperty = function (model, key, callback) {
         model[key].subscribe(function (val) {
             callback(key, val);
         });
     }
+    self.isDirty = ko.computed(function () {
+        for (key in self) {
+            if (self.hasOwnProperty(key) && ko.isObservable(self[key]) && typeof self[key].isDirty === 'function' && self[key].isDirty()) {
+                return true;
+            }
+        }
+    });
 
     //Fetching data from tblFeature
     $.getJSON('/odata/Features', function (data) {
@@ -395,9 +431,11 @@ $(function () {
 
     $.connection.hub.start().done(function () {
         ko.applyBindings(viewModel);
+        
         console.log('Connected to signalR hub...');
 
         //Initialize text editor
+        
         tinymce.init({
             selector: '#clTextEditor',
             init_instance_callback: function (editor) {

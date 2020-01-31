@@ -18,6 +18,8 @@
         <script src="~/signalr/hubs"></script>
         <script src="~/Scripts/moment.min.js"></script>
         <script src="~/Scripts/tinymce/tinymce.min.js"></script>
+        <script src="~/Scripts/tinymce/jquery.tinymce.min.js"></script>
+        <script src="~/Scripts/wysiwyg.min.js"></script>
         <link href="~/App/PageStyles.css" rel="stylesheet" />
         <link href="~/App/ButtonStyles.css" rel="stylesheet" />
         <link href="~/App/BodyStyles.css" rel="stylesheet" />
@@ -32,8 +34,8 @@
 <body>
     <form id="FieldsForm" class="jumbotron">
         <h2 style="text-align: center">New Deploy</h2>
-        <div class="row">
-            <div class="nd-col-1">
+        <div>
+            <div class="nd-row-1">
                 <table class="nd-table">
                     <thead class="nd-thead">
                         <tr class="nd-tr">
@@ -48,13 +50,13 @@
                     <tbody class="nd-tbody">
                         <tr class="nd-tr">
                             <td class="nd-td t1-td" data-title="Feature">
-                                <select id="txtFeature" style="max-width: 90%;" name="txtFeature" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName', value: $root.feature"></select>
+                                <select class="table" style="max-width: 100%" id="txtFeature" name="txtFeature" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName', value: $root.feature"></select>
                             </td>
                             <td class="nd-td t1-td">
                                 <input data-bind="value: $root.version" type="text" id="txtVersion" name="txtVersion" class="table" />
                             </td>
                             <td class="nd-td t1-td">
-                                <select id="txtEnvironment" name="txtEnvironment" data-bind="options: $root.environmentList,
+                                <select id="txtEnvironment" name="txtEnvironment" class="table" data-bind="options: $root.environmentList,
                                                                                             optionsText: 'envName',
                                                                                             optionsValue: 'envName',
                                                                                             value: $root.environment"></select>
@@ -72,20 +74,20 @@
                     </tbody>
                 </table>
             </div>
-            <div class="nd-col-2" data-bind="with: masterCL">
+            <div align="right" class="nd-row-2" data-bind="with: $root.masterCL">
                 <div>
                     <button id="btnAdd" class="btn btn-sm btn-success" data-bind="click: $root.add">
                         <i class="fa fa-plus"></i>
                         <span>Add Deploy</span>
                     </button>
-                    <button id="btnAssignMasterNote" class="btn btn-sm btn-info" data-bind="click: function(data, type, index){$root.openModalAndEval($data, 'master', '0', data, type, index)}">
+                    <button id="btnAssignMasterNote" class="btn btn-sm btn-info" data-bind="click: function(data, type, index){$parent.openModalAndEval($data, 'master', '0', data, type, index)}">
                         <i class="fa fa-clipboard"></i>
-                        <span id="masterNoteText">Select Change Log</span>
+                        <span id="masterNoteText" data-bind="text: $root.masterCL().noteID || 'Select a Change Log'"></span>
                     </button>
-                </div>
-                <div>
-                    <span style="font-weight: bold">Selected Change Log: </span>
-                    <span data-bind="text: $root.masterCL().noteID"></span>
+                    <button class="btn btn-sm btn-dark" data-bind="click: $root.removeSelection, enable: $root.masterCL().noteID >= 0">
+                        <i class="fa fa-xing"></i>
+                        <span>Remove Selected CL</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -111,12 +113,12 @@
                 </tr>
             </thead>
             <tbody class="nd-tbody" data-bind="foreach: deploys">
-                <tr class="nd-tr" data-bind="template: {name: $root.displayMode, data: $data }"></tr>
+                <tr class="nd-tr" data-bind="template: {name: $parent.displayMode, data: $data }"></tr>
             </tbody>
         </table>
     </div>
-    <div id="submitDiv">
-        <button class="btn btn-primary" data-bind="click: $root.submit">Submit</button>
+    <div id="submitDiv" class="nd-page-footer">
+        <button class="btn btn-primary" data-bind="click: $root.submit, enable: $root.deploys().length >= 1">Submit</button>
     </div>
     <!--Change Log Modal-->
     <div id="clModal" class="modal change-log-modal" role="dialog" tabindex="-1">
@@ -128,6 +130,7 @@
             </div>
             <!--Body-->
             <div id="clModalBody" class="change-log-modal-body">
+                <!--Page 1-->
                 <div id="clPage1">
                     <div class="row">
                         <div class="cl-modal-left-div">
@@ -154,16 +157,21 @@
                         </div>
                     </div>
                 </div>
+                <!--Page 2-->
                 <div id="clPage2">
-                    <textarea id="clTextEditor" class="cl-text-area" cols="50"></textarea>
+                    <textarea id="clTextEditor" data-bind="wysiwyg: $root.editBody" class="cl-text-area" cols="50"></textarea>
                 </div>
             </div>
             <!--Footer-->
             <div id="clModalFooter" class="change-log-modal-footer">
                 <div id="clFooter1">
-                    <button class="btn btn-sm btn-primary" data-bind="click: $root.closeModalAndEval">
+                    <button class="btn btn-sm btn-primary" data-bind="click: $root.closeModalAndEval, enable: $root.selectedCL().noteID >= 0">
                         <i class="fa fa-check-circle"></i>
                         <span>Select</span>
+                    </button>
+                    <button class="btn btn-sm btn-warning" data-bind="click: $root.directToEditPage, enable: $root.selectedCL().noteID >= 0">
+                        <i class="fa fa-edit"></i>
+                        <span>Edit</span>
                     </button>
                     <button class="btn btn-sm btn-info" data-bind="click: $root.newCL">
                         <i class="fa fa-plus-circle"></i>
@@ -182,6 +190,16 @@
                     <button class="btn btn-sm btn-primary" data-bind="click: $root.submitCL">
                         <i class="fa fa-check-circle"></i>
                         <span>Submit</span>
+                    </button>
+                    <button class="btn btn-sm btn-secondary" data-bind="click: $root.cancelCL">
+                        <i class="fa fa-ban"></i>
+                        <span>Cancel</span>
+                    </button>
+                </div>
+                <div id="clFooter3">
+                    <button class="btn btn-sm btn-primary">
+                        <i class="fa fa-save"></i>
+                        <span>Save</span>
                     </button>
                     <button class="btn btn-sm btn-secondary" data-bind="click: $root.cancelCL">
                         <i class="fa fa-ban"></i>
@@ -207,7 +225,14 @@
             </button>
         </td>
         <td class="nd-td t2-td">
-            <a class="btn btn-light" data-bind="click: $root.edit">Edit</a>
+            <button class="btn btn-sm btn-light" data-bind="click: $root.edit">
+                <i class="fa fa-clipboard"></i>
+                <span>Edit</span>
+            </button>
+            <button class="btn btn-sm btn-danger" data-bind="click: $root.remove">
+                <i class="fa fa-xing-square"></i>
+                <span>Remove</span>
+            </button>
         </td>
     </script>
     <!--Edit template for table-->
@@ -235,9 +260,12 @@
                 <i class="fa fa-clipboard"></i>
                 <span data-bind="text: noteID"></span>
             </button>
+            <button class="btn btn-sm btn-danger" data-bind="click: $root.removeCL, enable: $data.noteID() >= 0">
+                <i class="fa fa-times"></i>
+            </button>
         </td>
         <td class="nd-td t2-td">
-            <a class="btn btn-success" data-bind="click: $root.done">Done</a>
+            <a class="btn btn-sm btn-success" data-bind="click: $root.done">Done</a>
         </td>
     </script>
     <!--Empty template for data-->
