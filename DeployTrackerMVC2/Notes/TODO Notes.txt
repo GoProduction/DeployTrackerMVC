@@ -7,15 +7,15 @@ NewDeploy/Index.html and NewDeployJS
 *-Add sorting to notes array
 *-Add selected field color
 *-Have modal go to original change log when selecting from table
--Change focus to selected row when opening modal(low priority)
 *-Make page compatable for mobile
 *-Disable SUBMIT button until at least one record has been entered
 *-Add a "Remove" button AND function in deploy table
 *-Add a "Remove Selection" button for master change log
 *-Add a "Remove CL" button in deploys table
--Add an "Edit" button AND function in the change log modal
--Refresh UI after new change log
--Implement empty table template
+*-Add an "Edit" button AND function in the change log modal
+*-Refresh UI after new change log
+-Implement empty table template (low priority)
+-Change focus to selected row when opening modal(low priority)
 
 Developer/Index.html and DeveloperJS
 -OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.

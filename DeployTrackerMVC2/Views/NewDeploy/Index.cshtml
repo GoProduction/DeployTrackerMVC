@@ -13,7 +13,7 @@
         <script src="~/Scripts/knockout.mapping-latest.js"></script>
         <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
         <link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
-        <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+        
         <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
         <script src="~/signalr/hubs"></script>
         <script src="~/Scripts/moment.min.js"></script>
@@ -25,13 +25,14 @@
         <link href="~/App/BodyStyles.css" rel="stylesheet" />
         <link href="~/App/ModalStyles.css" rel="stylesheet" />
         <link href="~/App/TableStyles.css" rel="stylesheet" />
+        <script src="~/App/GlobalFunctions/Data-Traversal.js"></script>
         <script src="~/App/CustomBindings.js"></script>
         <script src="~/App/NewDeployClientCode/NewDeployJS.js"></script>
         <script src="~/App/GlobalFunctions/Notifications.js"></script>
         <link href="~/App/NewDeployClientCode/NewDeployCSS.css" rel="stylesheet" />
     }
 </head>
-<body>
+<body id="BodyContent">
     <form id="FieldsForm" class="jumbotron">
         <h2 style="text-align: center">New Deploy</h2>
         <div>
@@ -142,7 +143,7 @@
                                     <tbody data-bind="foreach: $root.sortedChangeLogs">
                                         <tr class="table table-on-hover" data-bind="click: $root.selectCL, css: { rowSelect: $root.selectedCL() === $data }">
                                             <td data-bind="text: noteID"></td>
-                                            <td data-bind="dateFormatted: noteDateTime, 
+                                            <td data-bind="dateFormatted: noteDateTime,
                                                             format: 'LLL'"></td>
                                         </tr>
                                     </tbody>
@@ -152,14 +153,18 @@
                         <div class="cl-modal-right-div">
                             <h4 class="fancy-header" style="text-align: center" data-bind="text: $root.selectedCL().noteID"></h4>
                             <content class="cl-modal-right-preview">
-                                <span id="clPreview"></span>
+                                <span id="clPreview" data-bind="html: $root.selectedCL().noteBody"></span>
                             </content>
                         </div>
                     </div>
                 </div>
                 <!--Page 2-->
-                <div id="clPage2">
-                    <textarea id="clTextEditor" data-bind="wysiwyg: $root.editBody" class="cl-text-area" cols="50"></textarea>
+                <div id="clPage2" data-bind="foreach: $root.noteBeingEdited">
+                    <textarea id="clTextEditor1" data-bind="wysiwyg: noteBody" class="cl-text-area" cols="50"></textarea>
+                    <div>
+                        <label>noteBeingEdited().noteBody: </label>
+                        <span data-bind="text: noteBody"></span>
+                    </div>
                 </div>
             </div>
             <!--Footer-->
@@ -169,7 +174,7 @@
                         <i class="fa fa-check-circle"></i>
                         <span>Select</span>
                     </button>
-                    <button class="btn btn-sm btn-warning" data-bind="click: $root.directToEditPage, enable: $root.selectedCL().noteID >= 0">
+                    <button class="btn btn-sm btn-warning" data-bind="click: $root.editCL, enable: $root.selectedCL().noteID >= 0">
                         <i class="fa fa-edit"></i>
                         <span>Edit</span>
                     </button>
@@ -197,7 +202,7 @@
                     </button>
                 </div>
                 <div id="clFooter3">
-                    <button class="btn btn-sm btn-primary">
+                    <button id="btnEditSave" class="btn btn-sm btn-primary" data-bind="click: $root.saveEditCL, enable: $root.enableEditSave()">
                         <i class="fa fa-save"></i>
                         <span>Save</span>
                     </button>

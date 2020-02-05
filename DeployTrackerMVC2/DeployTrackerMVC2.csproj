@@ -206,18 +206,15 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
-    <Compile Include="Controllers\Comments\CommentEntitySetController.cs" />
     <Compile Include="Controllers\Comments\CommentsAPIController.cs" />
     <Compile Include="Controllers\Comments\CommentsController.cs" />
     <Compile Include="Controllers\Deploys\DeployAPIController.cs" />
     <Compile Include="Controllers\Deploys\DeploysController.cs" />
-    <Compile Include="Controllers\Deploys\EntitySetControllerWithHub.cs" />
+    <Compile Include="Controllers\EntitySetControllers.cs" />
     <Compile Include="Controllers\Notes\NotesAPIController.cs" />
     <Compile Include="Controllers\Notes\NotesController.cs" />
     <Compile Include="Controllers\PageControllers.cs" />
-    <Compile Include="Controllers\Environments\EnvironmentEntitySetController.cs" />
     <Compile Include="Controllers\Environments\EnvironmentsController.cs" />
-    <Compile Include="Controllers\Features\FeatureEntitySetController.cs" />
     <Compile Include="Controllers\Features\FeaturesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>

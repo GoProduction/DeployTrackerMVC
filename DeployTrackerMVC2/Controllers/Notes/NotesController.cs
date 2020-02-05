@@ -6,13 +6,16 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.ModelBinding;
 using System.Web.Http.OData;
 using System.Web.Http.OData.Routing;
+using DeployTrackerMVC2.Hubs;
 using DeployTrackerMVC2.Models;
+using Microsoft.AspNet.SignalR;
 
-namespace DeployTrackerMVC2.Controllers.Notes
+namespace DeployTrackerMVC2.Controllers
 {
     /*
     The WebApiConfig class may require additional changes to add a route for this controller. Merge these statements into the Register method of the WebApiConfig class as applicable. Note that OData URLs are case sensitive.
@@ -25,133 +28,74 @@ namespace DeployTrackerMVC2.Controllers.Notes
     builder.EntitySet<tblDeploy>("tblDeploys"); 
     config.Routes.MapODataServiceRoute("odata", "odata", builder.GetEdmModel());
     */
-    public class NotesController : ODataController
+    public class NotesController : NotesEntityAccessRule<DeployHub>
     {
         private dbMainEntities db = new dbMainEntities();
 
-        // GET: odata/Notes
-        [EnableQuery]
-        public IQueryable<tblNote> GetNotes()
+
+        public override IQueryable<tblNote> Get()
         {
             return db.tblNotes;
         }
 
-        // GET: odata/Notes(5)
-        [EnableQuery]
-        public SingleResult<tblNote> GettblNote([FromODataUri] int key)
+        protected override tblNote GetEntityByKey(int key)
         {
-            return SingleResult.Create(db.tblNotes.Where(tblNote => tblNote.noteID == key));
+            return db.tblNotes.Find(key);
         }
 
-        // PUT: odata/Notes(5)
-        public IHttpActionResult Put([FromODataUri] int key, Delta<tblNote> patch)
+        [AcceptVerbs("PATCH", "MERGE")]
+        protected override tblNote PatchEntity(int key, Delta<tblNote> patch)
         {
-            Validate(patch.GetEntity());
-
-            if (!ModelState.IsValid)
+            if (patch == null)
             {
-                return BadRequest(ModelState);
+                return null;
             }
-
-            tblNote tblNote = db.tblNotes.Find(key);
-            if (tblNote == null)
-            {
-                return NotFound();
-            }
-
-            patch.Put(tblNote);
-
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!tblNoteExists(key))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return Updated(tblNote);
-        }
-
-        // POST: odata/Notes
-        public IHttpActionResult Post(tblNote tblNote)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            db.tblNotes.Add(tblNote);
+            System.Diagnostics.Debug.WriteLine("The key is: " + key);
+            var noteToPatch = GetEntityByKey(key);
+            patch.Patch(noteToPatch);
+            db.Entry(noteToPatch).State = EntityState.Modified;
             db.SaveChanges();
 
-            return Created(tblNote);
+            //Prepare changed properties to send to all clients
+            var list = patch.GetChangedPropertyNames().ToList();
+            foreach (var changedProperty in list)
+            {
+                object changedPropertyValue;
+                patch.TryGetPropertyValue(changedProperty, out changedPropertyValue);
+                Hub.Clients.All.updateNote(noteToPatch.noteID, changedProperty, changedPropertyValue);
+                System.Diagnostics.Debug.WriteLine("Deploy has been patched: " + noteToPatch.noteID + ", " + changedProperty + ", " + changedPropertyValue);
+
+            }
+
+            return noteToPatch;
         }
 
-        // PATCH: odata/Notes(5)
-        [AcceptVerbs("PATCH", "MERGE")]
-        public IHttpActionResult Patch([FromODataUri] int key, Delta<tblNote> patch)
+        public IHttpActionResult Create(tblNote note)
         {
-            Validate(patch.GetEntity());
-
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
-            tblNote tblNote = db.tblNotes.Find(key);
-            if (tblNote == null)
-            {
-                return NotFound();
-            }
-
-            patch.Patch(tblNote);
-
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!tblNoteExists(key))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return Updated(tblNote);
+            db.tblNotes.Add(note);
+            db.SaveChanges();
+            return Created(note);
         }
 
-        // DELETE: odata/Notes(5)
-        public IHttpActionResult Delete([FromODataUri] int key)
+        [AcceptVerbs("DELETE")]
+
+        public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
-            tblNote tblNote = db.tblNotes.Find(key);
-            if (tblNote == null)
+            tblNote note = db.tblNotes.Find(key);
+            System.Diagnostics.Debug.WriteLine(key);
+            if (note == null)
             {
                 return NotFound();
             }
 
-            db.tblNotes.Remove(tblNote);
+            db.tblNotes.Remove(note);
             db.SaveChanges();
 
             return StatusCode(HttpStatusCode.NoContent);
-        }
-
-        // GET: odata/Notes(5)/tblDeploys
-        [EnableQuery]
-        public IQueryable<tblDeploy> GettblDeploys([FromODataUri] int key)
-        {
-            return db.tblNotes.Where(m => m.noteID == key).SelectMany(m => m.tblDeploys);
         }
 
         protected override void Dispose(bool disposing)
@@ -163,9 +107,9 @@ namespace DeployTrackerMVC2.Controllers.Notes
             base.Dispose(disposing);
         }
 
-        private bool tblNoteExists(int key)
+        private bool tblNotesExists(int id)
         {
-            return db.tblNotes.Count(e => e.noteID == key) > 0;
+            return db.tblNotes.Count(e => e.noteID == id) > 0;
         }
     }
 }

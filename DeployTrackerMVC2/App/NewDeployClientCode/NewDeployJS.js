@@ -62,7 +62,13 @@ var TempDeployViewModel = function (signalR) {
     self.masterCL = ko.observableArray();
     self.mnBody = ko.observable();
     self.mnDateTime = ko.observable();
-    self.editBody = ko.observable();
+
+    //Observable for when enabling edit of a note
+    self.noteBeingEdited = ko.observableArray([{
+        noteID: null,
+        noteBody: ko.observable(0),
+        noteDateTime: ko.observable(0)
+    }]);
 
     //Computed observables(to split up datetime field)
     self.computedDate = ko.computed({
@@ -81,6 +87,9 @@ var TempDeployViewModel = function (signalR) {
             return moment(self.plannedDateTime()).format('HH:mm');
         }
     });
+
+    //Computed function to enable save after edit
+    self.enableEditSave = ko.observable(false);
 
     //Function to determine the display mode of the table
     self.displayMode = function (deploys) {
@@ -232,10 +241,12 @@ var TempDeployViewModel = function (signalR) {
     }
     self.cancelCL = function () {
         console.log("Close");
-        self.editBody(0);
+        self.noteBeingEdited(0);
+        self.enableEditSave(false);
         self.directToFirstPage();
     }
     self.newCL = function () {
+        self.editNoteBody(0);
         self.directToSecondPage();
     }
     self.submitCL = function () {
@@ -269,15 +280,50 @@ var TempDeployViewModel = function (signalR) {
     self.selectCL = function (data) {
         self.selectedCL(data);
         console.log("Selected CL", self.selectedCL().noteID);
-        var noteBody = ko.unwrap(self.selectedCL().noteBody);
-        var preview = document.getElementById("clPreview");
-        $("#clPreview").html(noteBody);
+        //var noteBody = ko.unwrap(self.selectedCL().noteBody);
+        //var preview = document.getElementById("clPreview");
+        //$("#clPreview").html(noteBody);
 
         $(".rowSelect").focus();
 
     }
     self.removeSelection = function () {
         self.masterCL('undefined');
+    }
+    
+    self.editCL = function () {
+        
+        //var content = ko.unwrap(self.selectedCL().noteBody);
+        self.noteBeingEdited(new Note(
+            self.selectedCL().noteID,
+            ko.unwrap(self.selectedCL().noteBody),
+            ko.unwrap(self.selectedCL().noteDateTime)
+        ));
+        initTextEditor(self);
+        self.enableEditSave(false);
+        self.directToEditPage();
+    }
+    self.refreshEditCL = function () {
+        var content = tinymce.activeEditor.getContent({ format: 'html' });
+        self.noteBeingEdited().noteBody(content);
+        
+    }
+    self.saveEditCL = function () {
+        var payload = {};
+        payload["noteBody"] = ko.utils.unwrapObservable(self.noteBeingEdited().noteBody);
+        patchNote(payload, self.selectedCL());
+        var updatedNote = ko.unwrap(self.noteBeingEdited());
+        var noteID = ko.utils.unwrapObservable(updatedNote.noteID);
+        var noteBody = ko.utils.unwrapObservable(updatedNote.noteBody);
+        var noteDateTime = ko.utils.unwrapObservable(updatedNote.noteDateTime);
+
+        self.selectedCL().noteID = noteID;
+        self.selectedCL().noteBody(noteBody);
+        self.selectedCL().noteDateTime(noteDateTime);
+
+        self.noteBeingEdited(0);
+        self.directToFirstPage();
+        
     }
     self.directToFirstPage = function () {
         
@@ -298,16 +344,13 @@ var TempDeployViewModel = function (signalR) {
     }
     self.directToEditPage = function () {
 
-        var content = ko.toJS(self.selectedCL().noteBody);
-        self.editBody(content);
-
         firstPage.style.display = "none";
         secondPage.style.display = "block";
         firstFooter.style.display = "none";
         secondFooter.style.display = "none";
         thirdFooter.style.display = "block";
 
-    }
+    };
 
     //Master open modal function for grabbing parameters
     self.openModalAndEval = function (data, type, index) {
@@ -364,6 +407,7 @@ var TempDeployViewModel = function (signalR) {
             }
         });
     }
+
     //Checks to make sure properties are observable
     self.watchModel = function (model, callback) {
         for (var key in model) {
@@ -380,6 +424,8 @@ var TempDeployViewModel = function (signalR) {
             callback(key, val);
         });
     }
+
+    /*
     self.isDirty = ko.computed(function () {
         for (key in self) {
             if (self.hasOwnProperty(key) && ko.isObservable(self[key]) && typeof self[key].isDirty === 'function' && self[key].isDirty()) {
@@ -387,6 +433,7 @@ var TempDeployViewModel = function (signalR) {
             }
         }
     });
+    */
 
     //Fetching data from tblFeature
     $.getJSON('/odata/Features', function (data) {
@@ -428,24 +475,50 @@ $(function () {
     $("#ctlPlannedDate").datepicker();
     var signalR = $.connection.deploy;
     var viewModel = new TempDeployViewModel(signalR);
-
-    $.connection.hub.start().done(function () {
-        ko.applyBindings(viewModel);
-        
-        console.log('Connected to signalR hub...');
-
-        //Initialize text editor
-        
-        tinymce.init({
-            selector: '#clTextEditor',
-            init_instance_callback: function (editor) {
-                console.log("Editor: " + editor.id + " is now initialized.");
+    var findNote = function (id) {
+        return ko.utils.arrayFirst(viewModel.notes(), function (item) {
+            if (item.noteID == id) {
+                console.log("findNote()", ko.utils.unwrapObservable(item));
+                return item;
             }
         });
-        
-    });
+    }
     
+    signalR.client.updateNote = function (id, key, value) {
+        console.log("id: ", id);
+        console.log("key: ", key);
+        console.log("value: ", value);
+        var note = findNote(id);
+        note[key](value);
+        console.log("updatePatchedNote(): ", note[key](value));
+    };
+    $.connection.hub.start().done(function () {
+        ko.applyBindings(viewModel, document.getElementById("BodyContent"));
+        console.log('Connected to signalR hub...');
+
+    });
 });
+
+function initTextEditor(viewModel) {
+   
+    tinymce.init({
+        selector: '#clTextEditor1',
+        height: 500,
+        
+        plugins: ['link'],
+        toolbar: 'undo redo | bold italic | bullist numlist | link',
+        menubar: false,
+        statusbar: false,
+        init_instance_callback: function (editor) {
+            console.log("Editor: " + editor.id + " is now initialized.");
+            editor.on('input', function () {
+                viewModel.refreshEditCL();
+                viewModel.enableEditSave(true);
+            })
+        }
+    });
+}
+
 //Converts HTML to regular text
 function stripHTML(html) {
     var tmp = document.createElement("div");
@@ -467,3 +540,6 @@ function redirect() {
     location.href = url;
 }
 
+ko.bindingHandlers['wysiwyg'].defaults = {
+    
+};

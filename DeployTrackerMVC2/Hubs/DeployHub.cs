@@ -69,25 +69,6 @@ namespace DeployTrackerMVC2.Hubs
             }
             
         }
-        /*
-        public override System.Threading.Tasks.Task OnDisconnected(bool stopCalled)
-        {
-
-            foreach (var id in _mapping[Context.ConnectionId])
-            {
-                var deployToPatch = db.tblDeploys.Find(id);
-                deployToPatch.depLocked = false;
-                db.Entry(deployToPatch).State = EntityState.Modified;
-                db.SaveChanges();
-                Clients.Others.unlockDeploy(id);
-
-            }
-
-            var list = new List<int>();
-            _mapping.TryRemove(Context.ConnectionId, out list);
-            Console.Write(Context.ConnectionId + " has disconnected");
-            return base.OnDisconnected(stopCalled);
-        }
-        */
+      
     }
 }

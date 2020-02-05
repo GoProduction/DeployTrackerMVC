@@ -119,8 +119,8 @@ var diff = function (obj1, obj2) {
     return diffs;
 
 };
-//PATCH data function using jQuery (default)
-async function patchData(payload, model) {
+//PATCH deploy function using jQuery (default)
+async function patchDeploy(payload, model) {
     let result;
     try {
         result = await $.ajax({
@@ -131,6 +131,25 @@ async function patchData(payload, model) {
             contentType: 'application/json',
             dataType: 'json'
         });
+        return result;
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
+//PATCH note function using jQuery (default)
+async function patchNote(payload, model) {
+    let result;
+    try {
+        result = await $.ajax({
+            url: '/odata/Notes(' + model.noteID + ')',
+            type: 'PATCH',
+            async: true,
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+            dataType: 'json'
+        });
+        
         return result;
     }
     catch (err) {

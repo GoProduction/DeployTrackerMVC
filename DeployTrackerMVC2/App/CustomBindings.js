@@ -1,15 +1,4 @@
-﻿ko.bindingHandlers['wysiwyg'].defaults = {
-    
-    'toolbar': 'undo redo | bold italic | bullist numlist | link',
-    'menubar': false,
-    'statusbar': false,
-    'setup': function (editor) {
-        editor.on('init', function (e) {
-            console.log('text-editor initialised');
-        });
-    }
-};
-
+﻿
 ko.bindingHandlers['modal'] = {
     init: function (element, valueAccessor, allBindingsAccessor) {
         var allBindings = allBindingsAccessor();

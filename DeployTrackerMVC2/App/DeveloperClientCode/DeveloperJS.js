@@ -156,7 +156,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var payload = diff(oldDeploy, newDeploy);
         console.log("Change payload: ", payload);
         //Send the PATCH request
-        patchData(payload, self.originalDeploy());
+        patchDeploy(payload, self.originalDeploy());
 
         //Assign changes to variables
         var updatedDeploy = ko.utils.unwrapObservable(self.deployBeingEdited());
@@ -526,7 +526,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 
                 console.log(payload);
                 //Call the PATCH request
-                patchData(payload, mainItem);
+                patchDeploy(payload, mainItem);
                 //deploySignalR.server.updateAll();
             }
 

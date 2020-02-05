@@ -346,7 +346,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 //Prep variables for PATCH
                 var payload = {};
                 payload["depSmoke"] = ko.utils.unwrapObservable(mainItem.depSmoke);
-                patchData(payload, mainItem);
+                patchDeploy(payload, mainItem);
             }
 
         });
