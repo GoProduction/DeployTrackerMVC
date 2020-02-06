@@ -1,4 +1,12 @@
 ﻿TODO:
+
+ChangeLog/Index.html and ChangeLogJS
+-Have the text editor bind to an observable array
+*-Display the text preview as HTML value, and binded to observable array property (noteBody)
+-Add an "Edit" button AND functionality
+-Remove some tools from the text editor
+-Keep table header static when scrolling
+
 NewDeploy/Index.html and NewDeployJS
 *-Add functionality to select master change log to apply to seperate deploys by default; once a master deploy has been selected,
 	a "Selected Change Log" field should appear, and the "Select Change Log" button should change to "Select a Different Change Log"
@@ -14,6 +22,7 @@ NewDeploy/Index.html and NewDeployJS
 *-Add a "Remove CL" button in deploys table
 *-Add an "Edit" button AND function in the change log modal
 *-Refresh UI after new change log
+-Add a few more formatting tools to text editor
 -Implement empty table template (low priority)
 -Change focus to selected row when opening modal(low priority)
 

@@ -70,6 +70,16 @@ var TempDeployViewModel = function (signalR) {
         noteDateTime: ko.observable(0)
     }]);
 
+    //Note update function
+    self.updateNotesVM = function (payload) {
+        console.log("payload: ", payload);
+        var jvsObject = JSON.parse(payload);
+        var newNote = new Note(jvsObject.noteID, jvsObject.noteBody, jvsObject.noteDateTime);
+        self.notes.push(newNote);
+        self.watchModel(newNote, self.modelChanged);
+        console.log("Updated notes to viewmodel");
+    };
+
     //Computed observables(to split up datetime field)
     self.computedDate = ko.computed({
         write: function (val) {
@@ -425,16 +435,6 @@ var TempDeployViewModel = function (signalR) {
         });
     }
 
-    /*
-    self.isDirty = ko.computed(function () {
-        for (key in self) {
-            if (self.hasOwnProperty(key) && ko.isObservable(self[key]) && typeof self[key].isDirty === 'function' && self[key].isDirty()) {
-                return true;
-            }
-        }
-    });
-    */
-
     //Fetching data from tblFeature
     $.getJSON('/odata/Features', function (data) {
         self.featureList(ko.utils.arrayMap(data.value, function (featureList) {
@@ -475,20 +475,13 @@ $(function () {
     $("#ctlPlannedDate").datepicker();
     var signalR = $.connection.deploy;
     var viewModel = new TempDeployViewModel(signalR);
-    var findNote = function (id) {
-        return ko.utils.arrayFirst(viewModel.notes(), function (item) {
-            if (item.noteID == id) {
-                console.log("findNote()", ko.utils.unwrapObservable(item));
-                return item;
-            }
-        });
-    }
     
-    signalR.client.updateNote = function (id, key, value) {
-        console.log("id: ", id);
-        console.log("key: ", key);
-        console.log("value: ", value);
-        var note = findNote(id);
+    signalR.client.updateNotes = function (payload) {
+        viewModel.updateNotesVM(payload);
+    }
+    signalR.client.updatePatchedNote = function (id, key, value) {
+
+        var note = findNote(id, viewModel.notes());
         note[key](value);
         console.log("updatePatchedNote(): ", note[key](value));
     };

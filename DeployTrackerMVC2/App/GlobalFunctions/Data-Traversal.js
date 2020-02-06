@@ -1,4 +1,191 @@
-﻿//Diff function, used to compare old values with new. Use by passing (OldDeploy, NewDeploy) parameters
+﻿
+//PATCH requests
+async function patchDeploy(payload, model) {
+    let result;
+    try {
+        result = await $.ajax({
+            url: '/odata/Deploys(' + model.depID + ')',
+            type: 'PATCH',
+            async: true,
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+            dataType: 'json'
+        });
+        return result;
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
+async function patchNote(payload, model) {
+    let result;
+    try {
+        result = await $.ajax({
+            url: '/odata/Notes(' + model.noteID + ')',
+            type: 'PATCH',
+            async: true,
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+            dataType: 'json'
+        });
+        
+        return result;
+    }
+    catch (err) {
+        console.error(err);
+    }
+}
+//POST requests
+async function postComment(signalR, payload) {
+    let result;
+    try {
+        result = await $.ajax({
+            url: "/api/CommentAPI",
+            type: "POST",
+            async: true,
+            mimeType: "text/html",
+            data: JSON.stringify(payload),
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                var response = JSON.stringify(payload);
+                signalR.server.updateComments(response);
+                console.log("postComment() ", data);
+                
+            }
+        });
+    }
+    catch (msg) {
+        console.log("error: ", msg.status);
+        console.log(msg.statusText);
+        console.log(msg.responseText);
+        console.log("Ready state: ", msg.readyState);
+    }
+}
+async function postDeploy(signalR, payload) {
+    let result;
+    try {
+        result = await $.ajax({
+            url: "/api/DeployAPI",
+            type: "POST",
+            async: true,
+            mimeType: "text/html",
+            data: JSON.stringify(payload),
+            contentType: "application/json",
+            dataType: "json",
+            success: function (data) {
+                var response = JSON.stringify(data);
+                signalR.server.updateAll(response);
+                console.log("postDeploy() ", data);
+
+            }
+        });
+    }
+    catch (msg) {
+        console.log("error: ", msg.status);
+        console.log(msg.statusText);
+        console.log(msg.responseText);
+        console.log("Ready state: ", msg.readyState);
+    }  
+}
+async function postNote(signalR, payload) {
+    let result;
+    try {
+        result = await $.ajax({
+            url: '/api/NotesAPI',
+            type: 'POST',
+            async: true,
+            mimeType: 'text/html',
+            data: JSON.stringify(payload),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var response = JSON.stringify(data);
+                console.log("response: ", response);
+                signalR.server.updateNotes(response);
+                successToast("Note has been successfully submitted.");
+            }
+        });
+    }
+    catch (msg) {
+        console.log("error: ", msg.status);
+        console.log(msg.statusText);
+        console.log(msg.responseText);
+        console.log("Ready state: ", msg.readyState);
+    }
+};
+//DELETE requests
+async function deleteDeploy(signalR, model) {
+    $.ajax({
+        url: '/api/DeployAPI/' + model.depID,
+        type: 'DELETE',
+        success: function (result) {
+            signalR.server.removeDeploy(model.depID);
+            
+        }
+    });
+}
+//Model for Deploy (when grabbed from DOM node/already binded record)
+var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
+    var self = this;
+    self.depID = depID;
+    self.depFeature = ko.observable(ko.utils.unwrapObservable(depFeature));
+    self.depVersion = ko.observable(ko.utils.unwrapObservable(depVersion));
+    self.depEnvironment = ko.observable(ko.utils.unwrapObservable(depEnvironment));
+    self.depPlannedDateTime = ko.observable(new Date(ko.unwrap(depPlannedDateTime)));
+    self.depStartTime = ko.observable(ko.utils.unwrapObservable(depStartTime));
+    self.depEndTime = ko.observable(ko.utils.unwrapObservable(depEndTime));
+    self.depStatus = ko.observable(ko.utils.unwrapObservable(depStatus));
+    self.depSmoke = ko.observable(ko.utils.unwrapObservable(depSmoke));
+    console.log("Planned time is: ", ko.utils.unwrapObservable(self.depPlannedDateTime));
+}
+//Model for Comment
+var Comment = function (comID, comBody, comDateTime, comUser, depID) {
+    var self = this;
+    self.comID = comID;
+    self.comBody = ko.observable(comBody);
+    self.comDateTime = ko.observable(comDateTime);
+    self.comUser = ko.observable(comUser);
+    self.depID = ko.observable(depID);
+}
+//Model for Deploy when passing from server/newly submitted
+var incomingDeploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
+    var self = this;
+    self.depID = depID;
+    self.depFeature = ko.observable(depFeature);
+    self.depVersion = ko.observable(depVersion);
+    self.depEnvironment = ko.observable(depEnvironment);
+    self.depPlannedDateTime = ko.observable(depPlannedDateTime);
+    self.depStartTime = ko.observable(depStartTime);
+    self.depEndTime = ko.observable(depEndTime);
+    self.depStatus = ko.observable(depStatus);
+    self.depSmoke = ko.observable(depSmoke);
+
+}
+//Model for quick deploy
+var QuickDeploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depStatus, depSmoke) {
+    this.depFeature = depFeature;
+    this.depVersion = depVersion;
+    this.depEnvironment = depEnvironment;
+    this.depPlannedDateTime = depPlannedDateTime;
+    this.depStartTime = depStartTime;
+    this.depStatus = depStatus;
+    this.depSmoke = depSmoke;
+}
+//Note model used for knockout binding
+var Note = function (noteID, noteBody, noteDateTime) {
+    this.noteID = noteID;
+    this.noteBody = ko.observable(noteBody);
+    this.noteDateTime = ko.observable(noteDateTime);
+}
+//Note model used for POST request compatability
+var NewNote = function (noteBody, noteDateTime) {
+    this.noteBody = noteBody;
+    this.noteDateTime = noteDateTime;
+}
+
+//Helper functions
+//Diff function, used to compare old values with new. Use by passing (OldDeploy, NewDeploy) parameters
 var diff = function (obj1, obj2) {
 
     // Make sure an object to compare is provided
@@ -119,190 +306,11 @@ var diff = function (obj1, obj2) {
     return diffs;
 
 };
-//PATCH deploy function using jQuery (default)
-async function patchDeploy(payload, model) {
-    let result;
-    try {
-        result = await $.ajax({
-            url: '/odata/Deploys(' + model.depID + ')',
-            type: 'PATCH',
-            async: true,
-            data: JSON.stringify(payload),
-            contentType: 'application/json',
-            dataType: 'json'
-        });
-        return result;
-    }
-    catch (err) {
-        console.error(err);
-    }
-}
-//PATCH note function using jQuery (default)
-async function patchNote(payload, model) {
-    let result;
-    try {
-        result = await $.ajax({
-            url: '/odata/Notes(' + model.noteID + ')',
-            type: 'PATCH',
-            async: true,
-            data: JSON.stringify(payload),
-            contentType: 'application/json',
-            dataType: 'json'
-        });
-        
-        return result;
-    }
-    catch (err) {
-        console.error(err);
-    }
-}
-//POST request for posting comment
-async function postComment(signalR, payload) {
-    let result;
-    try {
-        result = await $.ajax({
-            url: "/api/CommentAPI",
-            type: "POST",
-            async: true,
-            mimeType: "text/html",
-            data: JSON.stringify(payload),
-            contentType: "application/json",
-            dataType: "json",
-            success: function (data) {
-                var response = JSON.stringify(payload);
-                signalR.server.updateComments(response);
-                console.log("postComment() ", data);
-                
-            }
-        });
-    }
-    catch (msg) {
-        console.log("error: ", msg.status);
-        console.log(msg.statusText);
-        console.log(msg.responseText);
-        console.log("Ready state: ", msg.readyState);
-    }
-}
-//POST request for posting new deploy
-async function postDeploy(signalR, payload) {
-    let result;
-    try {
-        result = await $.ajax({
-            url: "/api/DeployAPI",
-            type: "POST",
-            async: true,
-            mimeType: "text/html",
-            data: JSON.stringify(payload),
-            contentType: "application/json",
-            dataType: "json",
-            success: function (data) {
-                var response = JSON.stringify(data);
-                signalR.server.updateAll(response);
-                console.log("postDeploy() ", data);
-
-            }
-        });
-    }
-    catch (msg) {
-        console.log("error: ", msg.status);
-        console.log(msg.statusText);
-        console.log(msg.responseText);
-        console.log("Ready state: ", msg.readyState);
-    }  
-}
-//POST request for posting new note (change log)
-async function postNote(signalR, payload) {
-    let result;
-    try {
-        result = await $.ajax({
-            url: '/api/NotesAPI',
-            type: 'POST',
-            async: true,
-            mimeType: 'text/html',
-            data: JSON.stringify(payload),
-            contentType: 'application/json',
-            dataType: 'json',
-            success: function (data) {
-                var response = JSON.stringify(data);
-                console.log("response: ", response);
-                signalR.server.updateNotes(response);
-                successToast("Note has been successfully submitted.");
-            }
-        });
-    }
-    catch (msg) {
-        console.log("error: ", msg.status);
-        console.log(msg.statusText);
-        console.log(msg.responseText);
-        console.log("Ready state: ", msg.readyState);
-    }
-};
-//DELETE request for deleting deploy
-async function deleteDeploy(signalR, model) {
-    $.ajax({
-        url: '/api/DeployAPI/' + model.depID,
-        type: 'DELETE',
-        success: function (result) {
-            signalR.server.removeDeploy(model.depID);
-            
+function findNote (id, arrayName) {
+    return ko.utils.arrayFirst(arrayName, function (item) {
+        if (item.noteID == id) {
+            console.log("findNote()", ko.utils.unwrapObservable(item));
+            return item;
         }
     });
-}
-//Model for Deploy (when grabbed from DOM node/already binded record)
-var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
-    var self = this;
-    self.depID = depID;
-    self.depFeature = ko.observable(ko.utils.unwrapObservable(depFeature));
-    self.depVersion = ko.observable(ko.utils.unwrapObservable(depVersion));
-    self.depEnvironment = ko.observable(ko.utils.unwrapObservable(depEnvironment));
-    self.depPlannedDateTime = ko.observable(new Date(ko.unwrap(depPlannedDateTime)));
-    self.depStartTime = ko.observable(ko.utils.unwrapObservable(depStartTime));
-    self.depEndTime = ko.observable(ko.utils.unwrapObservable(depEndTime));
-    self.depStatus = ko.observable(ko.utils.unwrapObservable(depStatus));
-    self.depSmoke = ko.observable(ko.utils.unwrapObservable(depSmoke));
-    console.log("Planned time is: ", ko.utils.unwrapObservable(self.depPlannedDateTime));
-}
-//Model for Comment
-var Comment = function (comID, comBody, comDateTime, comUser, depID) {
-    var self = this;
-    self.comID = comID;
-    self.comBody = ko.observable(comBody);
-    self.comDateTime = ko.observable(comDateTime);
-    self.comUser = ko.observable(comUser);
-    self.depID = ko.observable(depID);
-}
-//Model for Deploy when passing from server/newly submitted
-var incomingDeploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
-    var self = this;
-    self.depID = depID;
-    self.depFeature = ko.observable(depFeature);
-    self.depVersion = ko.observable(depVersion);
-    self.depEnvironment = ko.observable(depEnvironment);
-    self.depPlannedDateTime = ko.observable(depPlannedDateTime);
-    self.depStartTime = ko.observable(depStartTime);
-    self.depEndTime = ko.observable(depEndTime);
-    self.depStatus = ko.observable(depStatus);
-    self.depSmoke = ko.observable(depSmoke);
-
-}
-//Model for quick deploy
-var QuickDeploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depStatus, depSmoke) {
-    this.depFeature = depFeature;
-    this.depVersion = depVersion;
-    this.depEnvironment = depEnvironment;
-    this.depPlannedDateTime = depPlannedDateTime;
-    this.depStartTime = depStartTime;
-    this.depStatus = depStatus;
-    this.depSmoke = depSmoke;
-}
-//Note model used for knockout binding
-var Note = function (noteID, noteBody, noteDateTime) {
-    this.noteID = noteID;
-    this.noteBody = ko.observable(noteBody);
-    this.noteDateTime = ko.observable(noteDateTime);
-}
-//Note model used for POST request compatability
-var NewNote = function (noteBody, noteDateTime) {
-    this.noteBody = noteBody;
-    this.noteDateTime = noteDateTime;
 }

@@ -62,8 +62,8 @@ namespace DeployTrackerMVC2.Controllers
             {
                 object changedPropertyValue;
                 patch.TryGetPropertyValue(changedProperty, out changedPropertyValue);
-                Hub.Clients.All.updateNote(noteToPatch.noteID, changedProperty, changedPropertyValue);
-                System.Diagnostics.Debug.WriteLine("Deploy has been patched: " + noteToPatch.noteID + ", " + changedProperty + ", " + changedPropertyValue);
+                Hub.Clients.All.updatePatchedNote(noteToPatch.noteID, changedProperty, changedPropertyValue);
+                System.Diagnostics.Debug.WriteLine("Note has been patched: " + noteToPatch.noteID + ", " + changedProperty + ", " + changedPropertyValue);
 
             }
 

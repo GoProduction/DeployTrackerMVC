@@ -1,7 +1,13 @@
 ﻿var CLViewModel = function (signalR) {
     var self = this;
+    //Observable arrays
     self.changeLogs = ko.observableArray();
     self.selectedCL = ko.observableArray(self.changeLogs()[0]);
+    self.editorCL = ko.observableArray([{
+        noteID: null,
+        noteBody: ko.observable(0),
+        noteDateTime: ko.observable(0)
+    }]);
 
     //Fetch data
     $.getJSON('/odata/Notes', function (data) {
@@ -51,38 +57,57 @@
     //Regular Functions
     self.select = function (data) {
         self.selectedCL(data);
-        var clBody = ko.unwrap(self.selectedCL().noteBody);
-        $("#previewWindow").html(clBody);
+        
     }
     self.newChangeLog = function () {
-        $("#firstPage").fadeOut("fast");
-        $("#firstFooter").fadeOut("fast");
-        $("#secondPage").fadeIn("fast");
-        $("#secondFooter").fadeIn("fast");
+        self.clearEditor();
+        self.enableEditSave(false);
+        initTextEditor(self);
+        self.directToSecondPage();
+    }
+    self.edit = function () {
+        self.editorCL(new Note(
+            self.selectedCL().noteID,
+            ko.unwrap(self.selectedCL().noteBody),
+            ko.unwrap(self.selectedCL().noteDateTime)
+        ));
+        self.enableEditSave(false);
+        initTextEditor(self);
+        self.directToEditPage();
         
     }
-    self.back = function () {
-        $("#secondPage").fadeOut("fast");
-        $("#secondFooter").fadeOut("fast");
-        $("#firstPage").fadeIn("fast");
-        $("#firstFooter").fadeIn("fast");
-        
+    self.saveEditCL = function () {
+        var payload = {};
+        payload["noteBody"] = ko.utils.unwrapObservable(self.editorCL().noteBody);
+        patchNote(payload, self.selectedCL());
+
+        var updatedNote = ko.unwrap(self.editorCL());
+        var noteID = ko.utils.unwrapObservable(updatedNote.noteID);
+        var noteBody = ko.utils.unwrapObservable(updatedNote.noteBody);
+        var noteDateTime = ko.utils.unwrapObservable(updatedNote.noteDateTime);
+
+        self.selectedCL().noteID = noteID;
+        self.selectedCL().noteBody(noteBody);
+        self.selectedCL().noteDateTime(noteDateTime);
+
+        self.clearEditor();
+        self.directToFirstPage();
+
     }
     self.cancel = function () {
-        var textBody = tinymce.activeEditor.getContent({ format: 'html' });
-        if (textBody != '') {
+        
+        if (self.enableEditSave() == true) {
             var alert = confirm("This will cancel your note submission. Are you sure you want to continue?");
             if (alert == true) {
-                
-                $('textEditor').each(function (k, v) {
-                    tinymce.get(k).setContent('');
-                });
+                self.clearEditor();
+                self.directToFirstPage();
             }
             else {
                 return null;
             }
         }
-        self.back();
+        self.clearEditor();
+        self.directToFirstPage();
     };
     self.submitCL = function () {
         var textBody = tinymce.activeEditor.getContent({ format: 'html' });
@@ -92,13 +117,45 @@
         }
         var newNote = new NewNote(textBody, new Date());
         postNote(signalR, newNote);
-        //Clean text editor
-        $('textEditor').each(function (k, v) {
-            tinymce.get(k).setContent('');
-        });
-        self.back();
+        self.clearEditor();
+        self.directToFirstPage();
+    }
+    self.clearEditor = function () {
+        self.editorCL(new Note(-1, '', ''));
+            
     }
 
+    //Refresh edit cl function
+    self.refreshEditCL = function () {
+        var content = tinymce.activeEditor.getContent({ format: 'html' });
+        self.editorCL().noteBody(content);
+
+    }
+    //Observable used to enable the save button
+    self.enableEditSave = ko.observable(false);
+
+    //Page directions
+    self.directToFirstPage = function () {
+        $("#secondPage").fadeOut("fast");
+        $("#secondFooter").fadeOut("fast");
+        $("#editFooter").fadeOut("fast");
+        $("#firstPage").fadeIn("fast");
+        $("#firstFooter").fadeIn("fast");
+    }
+    self.directToSecondPage = function () {
+        $("#firstPage").fadeOut("fast");
+        $("#firstFooter").fadeOut("fast");
+        $("#editFooter").fadeOut("fast");
+        $("#secondPage").fadeIn("fast");
+        $("#secondFooter").fadeIn("fast");
+    }
+    self.directToEditPage = function () {
+        $("#firstPage").fadeOut("fast");
+        $("#firstFooter").fadeOut("fast");
+        $("#secondFooter").fadeOut("fast");
+        $("#secondPage").fadeIn("fast");
+        $("#editFooter").fadeIn("fast");
+    }
     //Computed Functions
     self.sortedChangeLogs = ko.computed(function () {
         var CLList = self.changeLogs();
@@ -114,32 +171,46 @@ $(function () {
 
     var secondPage = document.getElementById("secondPage");
     var secondFooter = document.getElementById("secondFooter");
+    var editFooter = document.getElementById("editFooter");
 
     signalR.client.updateNotes = function (payload) {
         viewModel.updateViewModel(payload);
     }
+    signalR.client.updatePatchedNote = function (id, key, value) {
+        
+        var note = findNote(id, viewModel.changeLogs());
+        note[key](value);
+        console.log("updatePatchedNote(): ", note[key](value));
+    }
 
     $.connection.hub.start().done(function () {
-        ko.applyBindings(viewModel);
-
+        ko.applyBindings(viewModel, document.getElementById("bodyContent"));
+        console.log("Conected to SignalR server...");
         secondPage.style.display = "none";
         secondFooter.style.display = "none";
+        editFooter.style.display = "none";
 
-        //Initialize text editor
-        tinymce.init({
-            selector: '#textEditor',
-            height: 575,
-            init_instance_callback: function (editor) {
-                console.log("Editor: " + editor.id + " is now initialized.");
-            }
-        });
-        $("#textEditor").each(function (k, v) {
-            tinymce.get(k).setContent('');
-        });
     });
 
 });
+function initTextEditor(viewModel) {
 
+    tinymce.init({
+        selector: '#textEditor',
+        height: 500,
+        plugins: ['link'],
+        toolbar: 'undo redo | bold italic | bullist numlist | link',
+        menubar: false,
+        statusbar: false,
+        init_instance_callback: function (editor) {
+            console.log("Editor: " + editor.id + " is now initialized.");
+            editor.on('input', function () {
+                viewModel.refreshEditCL();
+                viewModel.enableEditSave(true);
+            })
+        }
+    });
+}
 $(document).ready(function () {
     $("#loadingDiv").fadeOut();
 });
