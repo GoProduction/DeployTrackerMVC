@@ -173,18 +173,21 @@ var QuickDeploy = function (depFeature, depVersion, depEnvironment, depPlannedDa
     this.depSmoke = depSmoke;
 }
 //Note model used for knockout binding
-var Note = function (noteID, noteBody, noteDateTime) {
+var Note = function (noteID, noteBody, noteDateTime, noteVisID) {
     this.noteID = noteID;
+    this.noteVisID = noteVisID;
     this.noteBody = ko.observable(noteBody);
     this.noteDateTime = ko.observable(noteDateTime);
 }
 //Note model used for POST request compatability
-var NewNote = function (noteBody, noteDateTime) {
+var NewNote = function (noteBody, noteDateTime, noteVisID) {
     this.noteBody = noteBody;
     this.noteDateTime = noteDateTime;
+    this.noteVisID = noteVisID;
 }
 
 //Helper functions
+
 //Diff function, used to compare old values with new. Use by passing (OldDeploy, NewDeploy) parameters
 var diff = function (obj1, obj2) {
 
@@ -313,4 +316,20 @@ function findNote (id, arrayName) {
             return item;
         }
     });
+}
+//Calculates the difference in hours between two dates
+function dateTimeDifference(date) {
+    var now = new Date();
+    var then = new Date(date);
+    var hours = Math.abs(now.valueOf() - then.valueOf()) / 3600000
+    return hours;
+}
+//Returns today's date
+function dateNow() {
+    var now = new Date();
+    return new Date(now.getTime() + now.getTimezoneOffset());
+}
+//Formats date for timezone-offset
+function dateForTimezone(date) {
+    return moment(new Date(date.getTime() + date.getTimezoneOffset())).format();
 }

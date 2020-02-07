@@ -1,13 +1,19 @@
 ﻿TODO:
 
+db.tblNotes:
+*-Add visID field
+
 ChangeLog/Index.html and ChangeLogJS
--Have the text editor bind to an observable array
+*-Add noteVisID field that auto-increments upon creation of new note
+-Calculate time with timezone included (noteDateTime)
+*-Have the text editor bind to an observable array
 *-Display the text preview as HTML value, and binded to observable array property (noteBody)
--Add an "Edit" button AND functionality
--Remove some tools from the text editor
+*-Add an "Edit" button AND functionality
+*-Remove some tools from the text editor
 -Keep table header static when scrolling
 
 NewDeploy/Index.html and NewDeployJS
+-Calculate time with timezone included (noteDateTime)
 *-Add functionality to select master change log to apply to seperate deploys by default; once a master deploy has been selected,
 	a "Selected Change Log" field should appear, and the "Select Change Log" button should change to "Select a Different Change Log"
 *-Deploy should have a noteID field
@@ -27,6 +33,8 @@ NewDeploy/Index.html and NewDeployJS
 -Change focus to selected row when opening modal(low priority)
 
 Developer/Index.html and DeveloperJS
+*-Calculate timezone on quick deploy
+*-Calculate timezone on record edit
 -OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.
 	-Add a Smoke Status field into the current deploys table.
 	-Inside the deploy status field, add the update status button, with the deploy status text embedded inside.

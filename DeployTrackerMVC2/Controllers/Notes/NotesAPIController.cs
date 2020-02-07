@@ -78,7 +78,7 @@ namespace DeployTrackerMVC2.Controllers.Notes
             {
                 return BadRequest(ModelState);
             }
-
+            
             db.tblNotes.Add(tblNote);
             db.SaveChanges();
 

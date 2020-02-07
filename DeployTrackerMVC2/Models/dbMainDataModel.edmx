@@ -52,6 +52,7 @@
           <Property Name="noteID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
           <Property Name="noteBody" Type="varchar" MaxLength="2000" />
           <Property Name="noteDateTime" Type="datetimeoffset" Precision="7" />
+          <Property Name="noteVisID" Type="int" />
         </EntityType>
         <Association Name="comment-deploy-relationship">
           <End Role="tblDeploy" Type="Self.tblDeploy" Multiplicity="0..1">
@@ -164,6 +165,7 @@
           <Property Name="noteBody" Type="String" MaxLength="2000" FixedLength="false" Unicode="false" />
           <Property Name="noteDateTime" Type="DateTimeOffset" Precision="7" />
           <NavigationProperty Name="tblDeploys" Relationship="dbMainModel.note_deploy_relationship" FromRole="tblNote" ToRole="tblDeploy" />
+          <Property Name="noteVisID" Type="Int32" />
         </EntityType>
         <Association Name="comment_deploy_relationship">
           <End Type="dbMainModel.tblDeploy" Role="tblDeploy" Multiplicity="0..1">
@@ -244,6 +246,7 @@
           <EntitySetMapping Name="tblNotes">
             <EntityTypeMapping TypeName="dbMainModel.tblNote">
               <MappingFragment StoreEntitySet="tblNotes">
+                <ScalarProperty Name="noteVisID" ColumnName="noteVisID" />
                 <ScalarProperty Name="noteDateTime" ColumnName="noteDateTime" />
                 <ScalarProperty Name="noteBody" ColumnName="noteBody" />
                 <ScalarProperty Name="noteID" ColumnName="noteID" />

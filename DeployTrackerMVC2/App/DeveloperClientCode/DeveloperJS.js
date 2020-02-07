@@ -154,6 +154,10 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var oldDeploy = ko.toJS(self.originalDeploy());
         var newDeploy = ko.toJS(self.deployBeingEdited());
         var payload = diff(oldDeploy, newDeploy);
+        if ('depPlannedDateTime' in payload) {
+            console.log("Date change from: ", payload, " to :", moment(payload.depPlannedDateTime).format());
+            payload.depPlannedDateTime = moment(payload.depPlannedDateTime).format();
+        }
         console.log("Change payload: ", payload);
         //Send the PATCH request
         patchDeploy(payload, self.originalDeploy());
@@ -164,7 +168,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var depFeature = ko.utils.unwrapObservable(updatedDeploy.depFeature);
         var depVersion = ko.utils.unwrapObservable(updatedDeploy.depVersion);
         var depEnvironment = ko.utils.unwrapObservable(updatedDeploy.depEnvironment);
-        var depPlannedDateTime = moment(ko.utils.unwrapObservable(updatedDeploy.depPlannedDateTime)).format();
+        var depPlannedDateTime = dateForTimezone(ko.utils.unwrapObservable(updatedDeploy.depPlannedDateTime));
         var depStartTime = ko.utils.unwrapObservable(updatedDeploy.depStartTime);
         var depEndTime = ko.utils.unwrapObservable(updatedDeploy.depEndTime);
         var depStatus = ko.utils.unwrapObservable(updatedDeploy.depStatus);
@@ -600,8 +604,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             ctlFeature.value,
             ctlVersion.value,
             ctlEnvironment.value,
-            dateNow(),
-            dateNow(),
+            dateForTimezone(dateNow()),
+            dateForTimezone(dateNow()),
             "Deploying",
             "Not Ready"
         );
@@ -884,11 +888,7 @@ function browserNotification() {
     // At last, if the user has denied notifications, and you 
     // want to be respectful there is no need to bother them any more.
 }
-//Returns today's date
-function dateNow() {
-    var now = new Date();
-    return new Date(now.getTime() + now.getTimezoneOffset());
-}
+
 //Checks the value of a status field
 function checkStatus() {
     var ctl = document.getElementById("ctlmodalStatus");
@@ -964,10 +964,4 @@ String.prototype.trim = function () {
     return this.replace(/^\s+|\s+$/g, "");
 }
 
-//Calculates the difference in hours between two dates
-function dateTimeDifference(date) {
-    var now = new Date();
-    var then = new Date(date);
-    var hours = Math.abs(now.valueOf() - then.valueOf()) / 3600000
-    return hours;
-}
+

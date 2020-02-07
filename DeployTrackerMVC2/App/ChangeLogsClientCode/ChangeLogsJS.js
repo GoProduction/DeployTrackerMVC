@@ -15,7 +15,8 @@
             var obsChangeLog = {
                 noteID: changeLogs.noteID,
                 noteBody: ko.observable(changeLogs.noteBody),
-                noteDateTime: ko.observable(changeLogs.noteDateTime)
+                noteDateTime: ko.observable(changeLogs.noteDateTime),
+                noteVisID: changeLogs.noteVisID
             }
             return obsChangeLog;
         }))
@@ -25,7 +26,7 @@
     self.updateViewModel = function (payload) {
         console.log("payload: ", payload);
         var jvsObject = JSON.parse(payload);
-        var newNote = new Note(jvsObject.noteID, jvsObject.noteBody, jvsObject.noteDateTime);
+        var newNote = new Note(jvsObject.noteID, jvsObject.noteBody, jvsObject.noteDateTime, jvsObject.noteVisID);
         self.changeLogs.push(newNote);
         self.watchModel(newNote, self.modelChanged);
         console.log("Updated viewmodel");
@@ -69,7 +70,8 @@
         self.editorCL(new Note(
             self.selectedCL().noteID,
             ko.unwrap(self.selectedCL().noteBody),
-            ko.unwrap(self.selectedCL().noteDateTime)
+            ko.unwrap(self.selectedCL().noteDateTime,
+            self.selectedCL().noteVisID)
         ));
         self.enableEditSave(false);
         initTextEditor(self);
@@ -115,7 +117,25 @@
             alert("You cannot enter an empty note.");
             return;
         }
-        var newNote = new NewNote(textBody, new Date());
+
+        //Get latest VisID
+        if (self.changeLogs().length > 0) {
+            var maxObj = ko.utils.arrayFirst(self.changeLogs(), function (cl) {
+                return cl.noteVisID === Math.max.apply(null, ko.utils.arrayMap(self.changeLogs(), function (e) {
+                    return ko.toJS(e.noteVisID);
+                }));
+            });
+        }
+        else {
+            console.log("changeLogs Array is null");
+            var maxObj = [];
+            maxObj["noteVisID"] = 0;
+        }
+        
+        var visID = maxObj.noteVisID;
+        visID++;
+        console.log("New visID: ", visID);
+        var newNote = new NewNote(textBody, dateForTimezone(new Date()), visID);
         postNote(signalR, newNote);
         self.clearEditor();
         self.directToFirstPage();
@@ -156,11 +176,12 @@
         $("#secondPage").fadeIn("fast");
         $("#editFooter").fadeIn("fast");
     }
+
     //Computed Functions
     self.sortedChangeLogs = ko.computed(function () {
         var CLList = self.changeLogs();
         return CLList.sort(function (l, r) {
-            return (l.noteDateTime() < r.noteDateTime() ? 1 : -1);
+            return (l.noteVisID < r.noteVisID ? 1 : -1);
         });
     });
 }

@@ -13,7 +13,6 @@
         <script src="~/Scripts/knockout.mapping-latest.js"></script>
         <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
         <link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
-        
         <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
         <script src="~/signalr/hubs"></script>
         <script src="~/Scripts/moment.min.js"></script>
@@ -83,7 +82,7 @@
                     </button>
                     <button id="btnAssignMasterNote" class="btn btn-sm btn-info" data-bind="click: function(data, type, index){$parent.openModalAndEval($data, 'master', '0', data, type, index)}">
                         <i class="fa fa-clipboard"></i>
-                        <span id="masterNoteText" data-bind="text: $root.masterCL().noteID || 'Select a Change Log'"></span>
+                        <span id="masterNoteText" data-bind="text: $root.masterCL().noteVisID || 'Select a Change Log'"></span>
                     </button>
                     <button class="btn btn-sm btn-dark" data-bind="click: $root.removeSelection, enable: $root.masterCL().noteID >= 0">
                         <i class="fa fa-xing"></i>
@@ -138,11 +137,11 @@
                             <div class="cl-table-div">
                                 <table class="table table-bordered">
                                     <thead>
-                                        <tr><td class="fancy-header">CLID#</td><td class="fancy-header">Date and Time</td></tr>
+                                        <tr><td class="fancy-header">CL#</td><td class="fancy-header">Date and Time</td></tr>
                                     </thead>
                                     <tbody data-bind="foreach: $root.sortedChangeLogs">
                                         <tr class="table table-on-hover" data-bind="click: $root.selectCL, css: { rowSelect: $root.selectedCL() === $data }">
-                                            <td data-bind="text: noteID"></td>
+                                            <td data-bind="text: noteVisID"></td>
                                             <td data-bind="dateFormatted: noteDateTime,
                                                             format: 'LLL'"></td>
                                         </tr>
@@ -187,11 +186,7 @@
                     </button>
                 </div>
                 <div id="clFooter2">
-                    <button class="btn btn-sm btn-info" data-bind="click: $root.directToFirstPage">
-                        <i class="fa fa-arrow-circle-left"></i>
-                        <span>Back</span>
-                    </button>
-                    <button class="btn btn-sm btn-primary" data-bind="click: $root.submitCL">
+                    <button class="btn btn-sm btn-primary" data-bind="click: $root.submitCL, enable: $root.enableEditSave">
                         <i class="fa fa-check-circle"></i>
                         <span>Submit</span>
                     </button>
@@ -225,7 +220,7 @@
         <td class="nd-td t2-td">
             <button class="btn btn-sm btn-dark" disabled>
                 <i class="fa fa-clipboard"></i>
-                <span data-bind="text: noteID"></span>
+                <span data-bind="attr: {text: $root.notes().noteVisID, value: noteID}"></span>
             </button>
         </td>
         <td class="nd-td t2-td">

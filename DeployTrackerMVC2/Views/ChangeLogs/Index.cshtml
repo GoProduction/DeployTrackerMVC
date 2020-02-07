@@ -36,13 +36,13 @@
                 <table id="clTable" class="table table-bordered">
                     <thead>
                         <tr>
-                            <th class="fancy-header">CLID#</th>
+                            <th class="fancy-header">CL#</th>
                             <th class="fancy-header">Date and Time</th>
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: $root.sortedChangeLogs()">
                         <tr class="table-on-hover" data-bind="click: $root.select, css: { rowSelect: $root.selectedCL() === $data }">
-                            <td data-bind="text: noteID"></td>
+                            <td data-bind="text: noteVisID"></td>
                             <td data-bind="fullDateTime: noteDateTime"></td>
                         </tr>
                     </tbody>

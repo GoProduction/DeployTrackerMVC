@@ -11,17 +11,6 @@ var secondFooter = document.getElementById("clFooter2");
 var thirdFooter = document.getElementById("clFooter3");
 
 
-//Note template
-var Note = function (noteID, noteBody, noteDateTime) {
-    this.noteID = ko.observable(noteID);
-    this.noteBody = ko.observable(noteBody);
-    this.noteDateTime = ko.observable(noteDateTime);
-}
-var NewNote = function (noteBody, noteDateTime) {
-    this.noteBody = noteBody;
-    this.noteDateTime = noteDateTime;
-}
-
 //Deploy template
 var Deploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTime, depStatus, depSmoke, noteID, Edit) {
     this.depFeature = ko.observable(depFeature);
@@ -74,7 +63,7 @@ var TempDeployViewModel = function (signalR) {
     self.updateNotesVM = function (payload) {
         console.log("payload: ", payload);
         var jvsObject = JSON.parse(payload);
-        var newNote = new Note(jvsObject.noteID, jvsObject.noteBody, jvsObject.noteDateTime);
+        var newNote = new Note(jvsObject.noteID, jvsObject.noteBody, jvsObject.noteDateTime, jvsObject.noteVisID);
         self.notes.push(newNote);
         self.watchModel(newNote, self.modelChanged);
         console.log("Updated notes to viewmodel");
@@ -256,35 +245,38 @@ var TempDeployViewModel = function (signalR) {
         self.directToFirstPage();
     }
     self.newCL = function () {
-        self.editNoteBody(0);
+        self.noteBeingEdited(new Note(-1, '', '', ''));
+        initTextEditor(self);
+        self.enableEditSave(false);
         self.directToSecondPage();
     }
     self.submitCL = function () {
-        var textBody = tinymce.activeEditor.getContent({format: 'html'});
-        var newNote = new NewNote(textBody, new Date());
+        var textBody = tinymce.activeEditor.getContent({ format: 'html' });
+        if (textBody.length <= 0) {
+            alert("You cannot enter an empty changelog");
+            return;
+        }
+        //Get latest VisID
+        if (self.notes().length > 0) {
+            var maxObj = ko.utils.arrayFirst(self.notes(), function (cl) {
+                return cl.noteVisID === Math.max.apply(null, ko.utils.arrayMap(self.notes(), function (e) {
+                    return ko.toJS(e.noteVisID);
+                }));
+            });
+        }
+        else {
+            console.log("changeLogs Array is null");
+            var maxObj = [];
+            maxObj["noteVisID"] = 0;
+        }
 
-        $.ajax({
-            url: '/api/NotesAPI',
-            type: 'POST',
-            async: true,
-            mimeType: 'text/html',
-            data: JSON.stringify(newNote),
-            contentType: 'application/json',
-            dataType: 'json',
-            success: function (data) {
-                console.log(data);
-                $('textarea').each(function (k, v) {
-                    tinymce.get(k).setContent('');
-                });
-                self.notes.push(data);
-                successToast("Note has been successfully submitted.");
-            },
+        var visID = maxObj.noteVisID;
+        visID++;
+        console.log("New visID: ", visID);
 
-            error: function (msg) {
-                console.log("error: ", msg.status);
-            }
-        });
-
+        var newNote = new NewNote(ko.unwrap(self.noteBeingEdited().noteBody), dateForTimezone(new Date()), visID);
+        postNote(signalR, newNote);
+        
         self.directToFirstPage();
     }
     self.selectCL = function (data) {
@@ -406,7 +398,7 @@ var TempDeployViewModel = function (signalR) {
     self.sortedChangeLogs = ko.computed(function () {
         var CLList = self.notes();
         return CLList.sort(function (l, r) {
-            return (l.noteDateTime() < r.noteDateTime() ? 1 : -1);
+            return (l.noteVisID < r.noteVisID ? 1 : -1);
         });
     });
     self.findNote = function (id) {
@@ -462,6 +454,7 @@ var TempDeployViewModel = function (signalR) {
         self.notes(ko.utils.arrayMap(data.value, function (notes) {
             var obsNote = {
                 noteID: notes.noteID,
+                noteVisID: notes.noteVisID,
                 noteBody: ko.observable(notes.noteBody),
                 noteDateTime: ko.observable(notes.noteDateTime)
             }
