@@ -12,9 +12,18 @@ namespace DeployTrackerMVC2.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class tblEnvironment
+    public partial class DeployEnvironment
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
+        public DeployEnvironment()
+        {
+            this.Deploy = new HashSet<Deploy>();
+        }
+    
         public int envID { get; set; }
         public string envName { get; set; }
+    
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Deploy> Deploy { get; set; }
     }
 }

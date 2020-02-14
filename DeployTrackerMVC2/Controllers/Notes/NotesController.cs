@@ -33,18 +33,18 @@ namespace DeployTrackerMVC2.Controllers
         private dbMainEntities db = new dbMainEntities();
 
 
-        public override IQueryable<tblNote> Get()
+        public override IQueryable<Note> Get()
         {
-            return db.tblNotes;
+            return db.Notes;
         }
 
-        protected override tblNote GetEntityByKey(int key)
+        protected override Note GetEntityByKey(int key)
         {
-            return db.tblNotes.Find(key);
+            return db.Notes.Find(key);
         }
 
         [AcceptVerbs("PATCH", "MERGE")]
-        protected override tblNote PatchEntity(int key, Delta<tblNote> patch)
+        protected override Note PatchEntity(int key, Delta<Note> patch)
         {
             if (patch == null)
             {
@@ -70,13 +70,13 @@ namespace DeployTrackerMVC2.Controllers
             return noteToPatch;
         }
 
-        public IHttpActionResult Create(tblNote note)
+        public IHttpActionResult Create(Note note)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            db.tblNotes.Add(note);
+            db.Notes.Add(note);
             db.SaveChanges();
             return Created(note);
         }
@@ -85,14 +85,14 @@ namespace DeployTrackerMVC2.Controllers
 
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
-            tblNote note = db.tblNotes.Find(key);
+            Note note = db.Notes.Find(key);
             System.Diagnostics.Debug.WriteLine(key);
             if (note == null)
             {
                 return NotFound();
             }
 
-            db.tblNotes.Remove(note);
+            db.Notes.Remove(note);
             db.SaveChanges();
 
             return StatusCode(HttpStatusCode.NoContent);
@@ -109,7 +109,7 @@ namespace DeployTrackerMVC2.Controllers
 
         private bool tblNotesExists(int id)
         {
-            return db.tblNotes.Count(e => e.noteID == id) > 0;
+            return db.Notes.Count(e => e.noteID == id) > 0;
         }
     }
 }

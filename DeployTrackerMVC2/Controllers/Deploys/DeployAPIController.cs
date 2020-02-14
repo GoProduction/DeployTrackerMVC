@@ -34,9 +34,9 @@ namespace DeployTrackerMVC2.Controllers
         private dbMainEntities db = new dbMainEntities();
 
         // GET: api/DeployAPI
-        public IQueryable<tblDeploy> GettblDeploys()
+        public IQueryable<Deploy> GettblDeploys()
         {
-            return db.tblDeploys;
+            return db.Deploys;
         }
         
         
@@ -47,7 +47,7 @@ namespace DeployTrackerMVC2.Controllers
         public IHttpActionResult GetSingleDeploy(int depID)
         {
             
-            tblDeploy deploy = db.tblDeploys.Find(depID);
+            Deploy deploy = db.Deploys.Find(depID);
             if (deploy == null)
             {
                 return NotFound();
@@ -59,11 +59,11 @@ namespace DeployTrackerMVC2.Controllers
 
         [HttpPatch]
         [Route]
-        public HttpResponseMessage PatchDeploy(int id, Delta<tblDeploy> newDeploy)
+        public HttpResponseMessage PatchDeploy(int id, Delta<Deploy> newDeploy)
         {
             using (dbMainEntities objContext = new dbMainEntities())
             {
-                tblDeploy deploy = objContext.tblDeploys.SingleOrDefault(p => p.depID == id);
+                Deploy deploy = objContext.Deploys.SingleOrDefault(p => p.depID == id);
                 if (deploy == null)
                 {
                     throw new HttpResponseException(HttpStatusCode.NotFound);
@@ -76,7 +76,7 @@ namespace DeployTrackerMVC2.Controllers
 
         // PUT: api/DeployAPI/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult PuttblDeploy(int id, tblDeploy tblDeploy)
+        public IHttpActionResult PuttblDeploy(int id, Deploy tblDeploy)
         {
             if (!ModelState.IsValid)
             {
@@ -110,8 +110,8 @@ namespace DeployTrackerMVC2.Controllers
         }
 
         //New POST 3
-        [ResponseType(typeof(tblDeploy))]
-        public IHttpActionResult Post(tblDeploy deploy)
+        [ResponseType(typeof(Deploy))]
+        public IHttpActionResult Post(Deploy deploy)
         {
 
             
@@ -120,7 +120,7 @@ namespace DeployTrackerMVC2.Controllers
                 return BadRequest(ModelState);
             }
             
-            db.tblDeploys.Add(deploy);
+            db.Deploys.Add(deploy);
             
             
             db.SaveChanges();
@@ -129,16 +129,16 @@ namespace DeployTrackerMVC2.Controllers
         }
 
         // DELETE: api/DeployAPI/5
-        [ResponseType(typeof(tblDeploy))]
+        [ResponseType(typeof(Deploy))]
         public IHttpActionResult DeletetblDeploy(int id)
         {
-            tblDeploy tblDeploy = db.tblDeploys.Find(id);
+            Deploy tblDeploy = db.Deploys.Find(id);
             if (tblDeploy == null)
             {
                 return NotFound();
             }
 
-            db.tblDeploys.Remove(tblDeploy);
+            db.Deploys.Remove(tblDeploy);
             db.SaveChanges();
 
             return Ok(tblDeploy);
@@ -155,7 +155,7 @@ namespace DeployTrackerMVC2.Controllers
 
         private bool tblDeployExists(int id)
         {
-            return db.tblDeploys.Count(e => e.depID == id) > 0;
+            return db.Deploys.Count(e => e.depID == id) > 0;
         }
     }
 }

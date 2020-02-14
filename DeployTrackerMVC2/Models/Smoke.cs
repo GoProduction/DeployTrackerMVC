@@ -12,20 +12,18 @@ namespace DeployTrackerMVC2.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class tblNote
+    public partial class Smoke
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public tblNote()
+        public Smoke()
         {
-            this.tblDeploys = new HashSet<tblDeploy>();
+            this.Deploy = new HashSet<Deploy>();
         }
     
-        public int noteID { get; set; }
-        public string noteBody { get; set; }
-        public Nullable<System.DateTimeOffset> noteDateTime { get; set; }
-        public Nullable<int> noteVisID { get; set; }
+        public int smokeID { get; set; }
+        public string smokeName { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tblDeploy> tblDeploys { get; set; }
+        public virtual ICollection<Deploy> Deploy { get; set; }
     }
 }

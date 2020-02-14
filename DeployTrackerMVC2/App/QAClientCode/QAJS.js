@@ -8,30 +8,92 @@ ko.observableArray.fn.find = function (prop, data) {
 
 var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached) {
     var self = this;
-   
+
+    //Loading variable: max variable is currently 6
+    var loadingVar = 0;
+
+    //Css class evaluation for table rows
+    self.rowColor = function (deploy) {
+        if (deploy.statusID() == 2) {
+            return 'css-deploying';
+        }
+        else if (deploy.statusID() == 4) {
+            return 'css-deploy-failed';
+        }
+        else if (deploy.smokeID() == 3) {
+            return 'css-smoke-pass';
+        }
+        else if (deploy.smokeID() == 4) {
+            return 'css-smoke-conditional';
+        }
+        else if (deploy.smokeID() == 5) {
+            return 'css-smoke-failed';
+        }
+        else if (deploy.statusID() == 3 && deploy.smokeID() == 1) {
+            return 'css-deploy-failed';
+        }
+        else {
+            return null;
+        }
+    };
+
+    //Finder functions
+    self.featureFromID = function (id) {
+        return ko.utils.arrayFirst(self.feature(), function (item) {
+            if (item.feaID == id) {
+                //console.log("feaName: ", ko.unwrap(item.feaName));
+                return ko.unwrap(item.feaName);
+            }
+        })
+    };
+    self.environmentFromID = function (id) {
+        return ko.utils.arrayFirst(self.environment(), function (item) {
+            if (item.envID == id) {
+                //console.log("envName: ", ko.unwrap(item.envName));
+                return ko.unwrap(item.envName);
+            }
+        })
+    };
+    self.noteFromID = function (id) {
+        return ko.utils.arrayFirst(self.notes(), function (item) {
+            if (item.noteID == id) {
+                //console.log("envName: ", ko.unwrap(item.noteVisID));
+                return ko.unwrap(item.noteVisID);
+            }
+        })
+    };
+    self.smokeFromID = function (id) {
+        return ko.utils.arrayFirst(self.smoke(), function (item) {
+            if (item.smokeID == id) {
+                //console.log("envName: ", ko.unwrap(item.noteVisID));
+                return ko.unwrap(item.smokeName);
+            }
+        })
+    };
+    self.statusFromID = function (id) {
+        return ko.utils.arrayFirst(self.status(), function (item) {
+            if (item.statusID == id) {
+                //console.log("envName: ", ko.unwrap(item.noteVisID));
+                return ko.unwrap(item.statusName);
+            }
+        })
+    };
+
     //FILTER OBSERVABLES FOR TABLES
     self.typeArray = ko.observableArray([
         { text: 'All Current Deploys', val: 'All' },
-        { text: 'Deploying', val: 'Deploying' },
-        { text: 'Completed', val: 'Completed' },
-        { text: 'Failed', val: 'Failed' }
+        { text: 'Deploying', val: 2 },
+        { text: 'Completed', val: 3 },
+        { text: 'Failed', val: 4 }
     ]) //Used for type filter
     self.timeArray = ko.observableArray([
         { text: 'Past 24 hours', val: '24' },
         { text: 'Past 7 days', val: '168' },
         { text: 'Past month', val: '730' }
     ]); //Used for time filter
-    self.smokeArray = ko.observableArray([
-        { text: 'All smoke statuses', val: 'All' },
-        { text: 'Ready', val: 'Ready' },
-        { text: 'Pass', val: 'Pass' },
-        { text: 'Conditional', val: 'Conditional' },
-        { text: 'Fail', val: 'Fail' }
-    ]);
+
     self.currentSelectedType = ko.observable(self.typeArray.find("val", curTypeCached));
     self.currentSelectedTime = ko.observable(self.timeArray.find("val", curTimeCached));
-    self.smokeSelectedType = ko.observable(self.smokeArray.find("val", smokeTypeCached));
-    self.smokeSelectedTime = ko.observable(self.timeArray.find("val", smokeTimeCached));
     self.checkVMCurrent = function () {
         console.log(self.currentSelectedType);
         console.log(self.currentSelectedTime);
@@ -41,19 +103,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.deploy = ko.observableArray(); // Deploy observable array that will be called through HTML
     self.feature = ko.observableArray(); // Feature observable array that will be used to populate feature drop-down
     self.environment = ko.observableArray(); // Environment observable array that will be used to populate environment drop-down
-    self.status = ko.observableArray([
-        { tmpStatus: "Queued" },
-        { tmpStatus: "Deploying" },
-        { tmpStatus: "Completed" },
-        { tmpStatus: "Failed" }
-
-    ]); // Status observable array
-    self.smoke = ko.observableArray([
-        { tmpSmoke: "Ready" },
-        { tmpSmoke: "Pass" },
-        { tmpSmoke: "Conditional" },
-        { tmpSmoke: "Fail" }
-    ]);
+    self.status = ko.observableArray(); // Status observable array
+    self.smoke = ko.observableArray(); //Smoke observable array
     self.comment = ko.observableArray(); // Comment observable array
     self.selected = ko.observableArray(self.deploy()[0]); //Determines if record is selected
 
@@ -62,14 +113,23 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.loading = ko.observable(true); // Loading function that triggers the loading animation
     self.obsID = ko.observable(''); // Observable that is used to filter any results by ID
     self.searchTime = ko.observable(''); //Used for filtering table data
+    self.selectedFeature = ko.observable(null);
+    self.selectedEnvironment = ko.observable(null);
+    self.selectedStatus = ko.observable(null);
+    self.selectedSmoke = ko.observable(null);
 
     //FUNCTIONS///////////////////////////////////////////////////////////
     self.dateAndUser = function (date, user) {
         return moment(date, 'MMM DD YYYY') + " " + user;
     }
     self.selectRecord = function (data) {
-
+        //Assign variables
         self.selected(data);
+        self.selectedFeature(data.feaID());
+        self.selectedEnvironment(data.envID());
+        self.selectedStatus(data.statusID());
+        self.selectedSmoke(data.smokeID());
+
         selID = self.selected().depID;
         self.obsID(selID);
         console.log("obsID: ");
@@ -79,21 +139,21 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         openNav();
         var statusHeader = document.getElementById("statusHeader");
         var smokeHeader = document.getElementById("smokeHeader");
-        checkModalStatus(data.depStatus(), data.depSmoke(), statusHeader, smokeHeader)
+        checkModalStatus(data.statusID(), data.smokeID(), statusHeader, smokeHeader)
 
     }; // Run when record is selected, and open the record modal
     self.updateViewModel = function (payload) {
         var jvsObject = JSON.parse(payload);
         var newDeploy = new incomingDeploy(
             jvsObject.depID,
-            jvsObject.depFeature,
+            jvsObject.feaID,
             jvsObject.depVersion,
-            jvsObject.depEnvironment,
+            jvsObject.envID,
             jvsObject.depPlannedDateTime,
             jvsObject.depStartTime,
             jvsObject.depEndTime,
-            jvsObject.depStatus,
-            jvsObject.depSmoke);
+            jvsObject.statusID,
+            jvsObject.smokeID);
         console.log("New JS object", jvsObject);
         self.deploy.push(newDeploy);
         self.watchModel(newDeploy, self.modelChanged);
@@ -142,21 +202,22 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.deploy(ko.utils.arrayMap(data.value, function (deploy) {
             var obsDeploy = {
                 depID: deploy.depID,
-                depFeature: ko.observable(deploy.depFeature),
+                feaID: ko.observable(deploy.feaID),
                 depVersion: ko.observable(deploy.depVersion),
-                depEnvironment: ko.observable(deploy.depEnvironment),
+                envID: ko.observable(deploy.envID),
                 depPlannedDateTime: ko.observable(deploy.depPlannedDateTime),
                 depStartTime: ko.observable(deploy.depStartTime),
                 depEndTime: ko.observable(deploy.depEndTime),
-                depStatus: ko.observable(deploy.depStatus),
-                depSmoke: ko.observable(deploy.depSmoke)
+                statusID: ko.observable(deploy.statusID),
+                smokeID: ko.observable(deploy.smokeID)
             }
 
             return obsDeploy;
 
         }));
-        self.loadingVar(self.loadingVar() + 1);
-        if (self.loadingVar() == 4) {
+        loadingVar++;
+        console.log("Loading var: ", loadingVar, " loaded Deploys");
+        if (loadingVar == 6) {
             $(".loading-class").fadeOut("slow");
         }
         else {
@@ -172,6 +233,15 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
             return obsFeature;
         }));
+        loadingVar++;
+        console.log("Loading var: ", loadingVar, " loaded Features");
+        if (loadingVar == 6) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
+
     }); // Fetches data from Features table
     $.getJSON('/odata/Environments', function (data) {
         self.environment(ko.utils.arrayMap(data.value, function (environment) {
@@ -182,7 +252,51 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
             return obsEnvironment;
         }));
+        loadingVar++;
+        console.log("Loading var: ", loadingVar, " loaded Environments");
+        if (loadingVar == 6) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
     }); // Featches data from Environments table
+    $.getJSON('/odata/Status', function (data) {
+        self.status(ko.utils.arrayMap(data.value, function (status) {
+            var obsStatus = {
+                statusID: status.statusID,
+                statusName: ko.observable(status.statusName)
+            };
+
+            return obsStatus;
+        }));
+        loadingVar++;
+        console.log("loading var: ", loadingVar, " loaded Status");
+        if (loadingVar == 6) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
+    }); // Featches data from Status table
+    $.getJSON('/odata/Smokes', function (data) {
+        self.smoke(ko.utils.arrayMap(data.value, function (smoke) {
+            var obsSmoke = {
+                smokeID: smoke.smokeID,
+                smokeName: ko.observable(smoke.smokeName)
+            };
+
+            return obsSmoke;
+        }));
+        loadingVar++;
+        console.log("loading var: ", loadingVar, " loaded Smoke");
+        if (loadingVar == 6) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
+    }); // Featches data from Status table
     $.getJSON('/odata/Comments', function (data) {
         self.comment(ko.utils.arrayMap(data.value, function (comment) {
             var obsComment = {
@@ -195,13 +309,21 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
             return obsComment;
         }));
+        loadingVar++;
+        console.log("Loading var: ", loadingVar, " loaded Comments");
+        if (loadingVar == 6) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
     }); // Featches data from Comments table
 
     ///TABLE FILTERS////////////////////////////////////////////////////
     self.queuedDeploys = ko.computed(function () {
-        var filteredValue = "Queued";
+        var filteredValue = 1;
         var filtered = filteredValue ? ko.utils.arrayFilter(self.deploy(), function (rec) {
-            return rec.depStatus() === "Queued";
+            return rec.statusID() === 1;
         }) : self.deploy();
 
         return filtered.sort(function (l, r) {
@@ -217,29 +339,13 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
             if (val <= self.currentSelectedTime().val) {
                 if (self.currentSelectedType().val != 'All') {
-                    return (rec.depStatus() === self.currentSelectedType().val)
+                    return (rec.statusID() === self.currentSelectedType().val)
                 }
                 else {
-                    return (rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed')
+                    return (rec.statusID() === 2 || rec.statusID() === 3 || rec.statusID() === 4)
                 }
                 
             };
-
-        });
-    }); // Current Deploys table filter
-    self.smokeDeploys = ko.computed(function () {
-        return ko.utils.arrayFilter(self.deploy(), function (rec) {
-
-            var date = rec.depStartTime();
-            var val = dateTimeDifference(date);
-            if (val <= self.smokeSelectedTime().val) {
-                if (self.smokeSelectedType().val != 'All') {
-                    return (rec.depSmoke() === self.smokeSelectedType().val)
-                }
-                else {
-                    return rec.depSmoke() === 'Ready' || rec.depSmoke() === 'Fail' || rec.depSmoke() === 'Pass' || rec.depSmoke() === 'Conditional';
-                }
-            }
 
         });
     }); // Current Deploys table filter
@@ -255,24 +361,20 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var modal = document.getElementById("statusModal");
         var ctl = document.getElementById("ctlmodalStatus");
         var id = document.getElementById("ctlmodalID");
-        var feature = document.getElementById("spFeature");
-        var version = document.getElementById("spVersion");
-        var error = document.getElementById("errorStatusModalChange");
-        var comment = document.getElementById("commentBody");
+        
 
         self.selected(deploy);
+        self.selectedFeature(deploy.feaID());
         modal.style.display = "block";
         $("#commentBody").fadeOut();
         console.log('Status modal triggered');
         console.log('Record: ', self.selected);
 
-        ctl.value = deploy.depSmoke();
-        objstatus = deploy.depSmoke();
+        ctl.value = deploy.smokeID();
+        objstatus = deploy.smokeID();
         console.log(objstatus);
         id.value = deploy.depID;
-        feature.innerText = deploy.depFeature();
-        version.innerText = deploy.depVersion();
-
+        
         window.onclick = function (event) {
             if (event.target == modal) {
                 $("#statusModal").fadeOut();
@@ -288,9 +390,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     } // Close Modal
     self.submitStatus = function () {
         //Selected deploy values
-        var selFeature = ko.utils.unwrapObservable(self.selected().depFeature);
+        var selFeature = ko.utils.unwrapObservable(self.selected().feaID);
         var selVersion = ko.utils.unwrapObservable(self.selected().depVersion);
-        var selEnv = ko.utils.unwrapObservable(self.selected().depEnvironment);
+        var selEnv = ko.utils.unwrapObservable(self.selected().envID);
         console.log("Selected values: ", selFeature, selVersion, selEnv);
 
         //HTML elements
@@ -316,12 +418,12 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             return;
         }
         //Checks if status was set to failed, but comment was NOT entered
-        if (ctl.value == 'Fail' && comment.value.trim() == "") {
+        if (ctl.value == 5 && comment.value.trim() == "") {
             errorMsg.style.display = "block";
             errorMsg.textContent = "You must enter the issues that caused the smoke to fail.";
             return;
         }
-        else if (ctl.value == 'Conditional' && comment.value.trim() == "") {
+        else if (ctl.value == 4 && comment.value.trim() == "") {
             errorMsg.style.display = "block";
             errorMsg.textContent = "You must enter the issues that caused the smoke to conditionally pass.";
             return;
@@ -331,7 +433,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
             if (id.value == mainItem.depID) {
 
-                if (ctl.value == 'Fail' || ctl.value == 'Conditional') {
+                if (ctl.value == 5 || ctl.value == 4) {
                     //Comment JSON string
                     var payload = {};
                     //json["odata.type"] = "DeployTrackerMVC2.tblComment";
@@ -342,10 +444,10 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                     postComment(deploySignalR, payload);
                     
                 }
-                mainItem.depSmoke(ctl.value);
+                mainItem.smokeID(ctl.value);
                 //Prep variables for PATCH
                 var payload = {};
-                payload["depSmoke"] = ko.utils.unwrapObservable(mainItem.depSmoke);
+                payload["smokeID"] = ko.utils.unwrapObservable(mainItem.smokeID);
                 patchDeploy(payload, mainItem);
             }
 
@@ -381,6 +483,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         //Disable the comment field
         cancelComment();
     } //Submit new comment (in RECORD DETAILS modal)
+    
 
     //ANIMATIONS//////////////////////////////////////////////////////
     self.showRow = function (elem) {
@@ -477,7 +580,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         console.log("CurrentOption is loaded as: ");
         console.log(self.CurrentOption);
     }
-   
 
 }; //Main viewmodel
 
@@ -487,7 +589,7 @@ $(function () {
     
     var deploySignalR = $.connection.deploy;
     var viewModel = new DeployViewModel(deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached);
-    ko.applyBindings(viewModel);
+    
     
     var findDeploy = function (id) {
         return ko.utils.arrayFirst(viewModel.deploy(), function (item) {
@@ -558,16 +660,9 @@ $(function () {
 
     //CONNECTION FUNCTIONS/////////////////////////////////////////
     $.connection.hub.start().done(function () {
-        
+        ko.applyBindings(viewModel, document.getElementById('BodyContent'));
         console.log("Connected to SignalR hub");
-        $(".loading-class").fadeOut("slow");
-        if (smokeWindow.style.display == 'block') {
-            smokeState = 1;
-        }
-        else {
-            smokeState = 0;
-        }
-        console.log("Smoke window visibility: " + smokeState);
+        
 
     }); // Connection (to SignalR hub) start function
     $.connection.hub.disconnected = function (deploy) {
@@ -688,13 +783,10 @@ function checkStatus() {
     var ctl = document.getElementById("ctlmodalStatus");
     var cmtBody = document.getElementById("commentBody");
     //console.log("Check status");
-    if (ctl.value == "Fail" || ctl.value == "Conditional") {
+    //If value is set to FAIL or CONDITIONAL
+    if (ctl.value == 5 || ctl.value == 4) {
         $("#commentBody").fadeIn('slow');
         console.log("Set to fail");
-    }
-    else if (ctl.value == "Completed") {
-        $("#smoke-div").fadeIn();
-        $("#commentBody").fadeOut();
     }
     else {
         $("#commentBody").fadeOut();

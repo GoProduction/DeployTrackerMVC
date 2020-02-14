@@ -10,31 +10,71 @@ ko.observableArray.fn.find = function (prop, data) {
 var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached) {
 
     var self = this;
-    self.loadingVar = ko.observable(0);
-    
+    //Current loadingVar max value is 6
+    var loadingVar = 0;
+
+    //Finder functions
+    self.featureFromID = function (id) {
+        return ko.utils.arrayFirst(self.feature(), function (item) {
+            if (item.feaID == id) {
+                //console.log("feaName: ", ko.unwrap(item.feaName));
+                return ko.unwrap(item.feaName);
+            }
+        })
+    };
+    self.environmentFromID = function (id) {
+        return ko.utils.arrayFirst(self.environment(), function (item) {
+            if (item.envID == id) {
+                //console.log("envName: ", ko.unwrap(item.envName));
+                return ko.unwrap(item.envName);
+            }
+        })
+    };
+    self.noteFromID = function (id) {
+        return ko.utils.arrayFirst(self.notes(), function (item) {
+            if (item.noteID == id) {
+                //console.log("envName: ", ko.unwrap(item.noteVisID));
+                return ko.unwrap(item.noteVisID);
+            }
+        })
+    };
+    self.smokeFromID = function (id) {
+        return ko.utils.arrayFirst(self.smoke(), function (item) {
+            if (item.smokeID == id) {
+                //console.log("envName: ", ko.unwrap(item.noteVisID));
+                return ko.unwrap(item.smokeName);
+            }
+        })
+    };
+    self.statusFromID = function (id) {
+        return ko.utils.arrayFirst(self.status(), function (item) {
+            if (item.statusID == id) {
+                //console.log("envName: ", ko.unwrap(item.noteVisID));
+                return ko.unwrap(item.statusName);
+            }
+        })
+    };
+
+    //Dynamic observables for status modal
+    self.statusModalFeature = ko.observable();
+    self.statusModalVersion = ko.observable();
+
     //FILTER OBSERVABLES FOR TABLES
     self.typeArray = ko.observableArray([
         { text: 'All Current Deploys', val: 'All' },
-        { text: 'Deploying', val: 'Deploying' },
-        { text: 'Completed', val: 'Completed' },
-        { text: 'Failed', val: 'Failed' }
+        { text: 'Deploying', val: 2 },
+        { text: 'Completed', val: 3 },
+        { text: 'Failed', val: 4 }
     ]) //Used for type filter
     self.timeArray = ko.observableArray([
         { text: 'Past 24 hours', val: '24' },
         { text: 'Past 7 days', val: '168' },
         { text: 'Past month', val: '730' }
     ]); //Used for time filter
-    self.smokeArray = ko.observableArray([
-        { text: 'All smoke statuses', val: 'All' },
-        { text: 'Ready', val: 'Ready' },
-        { text: 'Pass', val: 'Pass' },
-        { text: 'Conditional', val: 'Conditional' },
-        { text: 'Fail', val: 'Fail' }
-    ]);
+    
     self.currentSelectedType = ko.observable(self.typeArray.find("val", curTypeCached));
     self.currentSelectedTime = ko.observable(self.timeArray.find("val", curTimeCached));
-    self.smokeSelectedType = ko.observable(self.smokeArray.find("val", smokeTypeCached));
-    self.smokeSelectedTime = ko.observable(self.timeArray.find("val", smokeTimeCached));
+    
     self.checkVMCurrent = function () {
         console.log(self.currentSelectedType);
         console.log(self.currentSelectedTime);
@@ -44,20 +84,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.deploy = ko.observableArray(); // Deploy observable array that will be called through HTML
     self.feature = ko.observableArray(); // Feature observable array that will be used to populate feature drop-down
     self.environment = ko.observableArray(); // Environment observable array that will be used to populate environment drop-down
-    self.status = ko.observableArray([
-        { tmpStatus: "Queued" },
-        { tmpStatus: "Deploying" },
-        { tmpStatus: "Completed" },
-        { tmpStatus: "Failed" }
-
-    ]); // Status observable array
-    self.smoke = ko.observableArray([
-        { tmpSmoke: "Ready" },
-        { tmpSmoke: "Not Ready" },
-        { tmpSmoke: "Pass" },
-        { tmpSmoke: "Conditional" },
-        { tmpSmoke: "Fail" }
-    ]);
+    self.status = ko.observableArray(); // Status observable array
+    self.smoke = ko.observableArray(); //Smoke observable array
     self.comment = ko.observableArray(); // Comment observable array
     self.selected = ko.observableArray(self.deploy()[0]); //Determines if record is selected
 
@@ -88,14 +116,14 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var jvsObject = JSON.parse(payload);
         var newDeploy = new incomingDeploy(
             jvsObject.depID,
-            jvsObject.depFeature,
+            jvsObject.feaID,
             jvsObject.depVersion,
-            jvsObject.depEnvironment,
+            jvsObject.envID,
             jvsObject.depPlannedDateTime,
             jvsObject.depStartTime,
             jvsObject.depEndTime,
-            jvsObject.depStatus,
-            jvsObject.depSmoke);
+            jvsObject.statusID,
+            jvsObject.smokeID);
         console.log("New JS object", jvsObject);
         self.deploy.push(newDeploy);
         self.watchModel(newDeploy, self.modelChanged);
@@ -120,31 +148,32 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.originalDeploy(deploy);
         self.deployBeingEdited(new Deploy(
             deploy.depID,
-            deploy.depFeature,
+            deploy.feaID,
             deploy.depVersion,
-            deploy.depEnvironment,
+            deploy.envID,
             deploy.depPlannedDateTime,
             deploy.depStartTime,
             deploy.depEndTime,
-            deploy.depStatus,
-            deploy.depSmoke));
+            deploy.statusID,
+            deploy.smokeID));
 
         self.disableEdit();
-        console.log("Deploy being viewed is: ", self.deployBeingEdited);
+        console.log("Original deploy: ", ko.toJS(self.originalDeploy));
+        console.log("Deploy being viewed is: ", ko.toJS(self.deployBeingEdited));
         
 
     } // Function to enable the edit-template, AND trigger the signalr LOCK event for all other clients
     self.cancelEdit = function () {
         self.deployBeingEdited(new Deploy(
             self.originalDeploy().depID,
-            self.originalDeploy().depFeature,
+            self.originalDeploy().feaID,
             self.originalDeploy().depVersion,
-            self.originalDeploy().depEnvironment,
+            self.originalDeploy().envID,
             self.originalDeploy().depPlannedDateTime,
             self.originalDeploy().depStartTime,
             self.originalDeploy().depEndTime,
-            self.originalDeploy().depStatus,
-            self.originalDeploy().depSmoke
+            self.originalDeploy().statusID,
+            self.originalDeploy().smokeID
         ));
         self.disableEdit();
     }
@@ -165,24 +194,24 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         //Assign changes to variables
         var updatedDeploy = ko.utils.unwrapObservable(self.deployBeingEdited());
         var depID = updatedDeploy.depID;
-        var depFeature = ko.utils.unwrapObservable(updatedDeploy.depFeature);
+        var feaID = ko.utils.unwrapObservable(updatedDeploy.feaID);
         var depVersion = ko.utils.unwrapObservable(updatedDeploy.depVersion);
-        var depEnvironment = ko.utils.unwrapObservable(updatedDeploy.depEnvironment);
+        var envID = ko.utils.unwrapObservable(updatedDeploy.envID);
         var depPlannedDateTime = dateForTimezone(ko.utils.unwrapObservable(updatedDeploy.depPlannedDateTime));
         var depStartTime = ko.utils.unwrapObservable(updatedDeploy.depStartTime);
         var depEndTime = ko.utils.unwrapObservable(updatedDeploy.depEndTime);
-        var depStatus = ko.utils.unwrapObservable(updatedDeploy.depStatus);
-        var depSmoke = ko.utils.unwrapObservable(updatedDeploy.depSmoke);
+        var statusID = ko.utils.unwrapObservable(updatedDeploy.statusID);
+        var smokeID = ko.utils.unwrapObservable(updatedDeploy.smokeID);
         //Update deploy with assigned variables
         self.originalDeploy().depID = depID;
-        self.originalDeploy().depFeature(depFeature);
+        self.originalDeploy().feaID(feaID);
         self.originalDeploy().depVersion(depVersion);
-        self.originalDeploy().depEnvironment(depEnvironment);
+        self.originalDeploy().envID(envID);
         self.originalDeploy().depPlannedDateTime(depPlannedDateTime);
         self.originalDeploy().depStartTime(depStartTime);
         self.originalDeploy().depEndTime(depEndTime);
-        self.originalDeploy().depStatus(depStatus);
-        self.originalDeploy().depSmoke(depSmoke);
+        self.originalDeploy().statusID(statusID);
+        self.originalDeploy().smokeID(smokeID);
 
         //Disable the edit fields
         self.disableEdit();
@@ -260,21 +289,24 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.deploy(ko.utils.arrayMap(data.value, function (deploy) {
             var obsDeploy = {
                 depID: deploy.depID,
-                depFeature: ko.observable(deploy.depFeature),
+                feaID: ko.observable(deploy.feaID),
+                envID: ko.observable(deploy.envID),
+                smokeID: ko.observable(deploy.smokeID),
+                statusID: ko.observable(deploy.statusID),
+                noteID: ko.observable(deploy.noteID),
                 depVersion: ko.observable(deploy.depVersion),
-                depEnvironment: ko.observable(deploy.depEnvironment),
                 depPlannedDateTime: ko.observable(deploy.depPlannedDateTime),
                 depStartTime: ko.observable(deploy.depStartTime),
-                depEndTime: ko.observable(deploy.depEndTime),
-                depStatus: ko.observable(deploy.depStatus),
-                depSmoke: ko.observable(deploy.depSmoke)
+                depEndTime: ko.observable(deploy.depEndTime)
+                
             }
 
             return obsDeploy;
 
         }));
-        self.loadingVar(self.loadingVar() + 1);
-        if (self.loadingVar() == 4) {
+        loadingVar++;
+        console.log("loading var: ", loadingVar, " loaded Deploys");
+        if (loadingVar == 6) {
             $(".loading-class").fadeOut("slow");
         }
         else {
@@ -290,8 +322,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             
             return obsFeature;
         }));
-        self.loadingVar(self.loadingVar() + 1);
-        if (self.loadingVar() == 4) {
+        loadingVar++;
+        console.log("loading var: ", loadingVar, " loaded Features");
+        if (loadingVar == 6) {
             $(".loading-class").fadeOut("slow");
         }
         else {
@@ -307,14 +340,51 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             
             return obsEnvironment;
         }));
-        self.loadingVar(self.loadingVar() + 1);
-        if (self.loadingVar() == 4) {
+        loadingVar++;
+        console.log("loading var: ", loadingVar, "loaded Environments");
+        if (loadingVar == 6) {
             $(".loading-class").fadeOut("slow");
         }
         else {
             return;
         }
     }); // Featches data from Environments table
+    $.getJSON('/odata/Status', function (data) {
+        self.status(ko.utils.arrayMap(data.value, function (status) {
+            var obsStatus = {
+                statusID: status.statusID,
+                statusName: ko.observable(status.statusName)
+            };
+
+            return obsStatus;
+        }));
+        loadingVar++;
+        console.log("loading var: ", loadingVar, " loaded Status");
+        if (loadingVar == 6) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
+    }); // Featches data from Status table
+    $.getJSON('/odata/Smokes', function (data) {
+        self.smoke(ko.utils.arrayMap(data.value, function (smoke) {
+            var obsSmoke = {
+                smokeID: smoke.smokeID,
+                smokeName: ko.observable(smoke.smokeName)
+            };
+
+            return obsSmoke;
+        }));
+        loadingVar++;
+        console.log("loading var: ", loadingVar, " loaded Smoke");
+        if (loadingVar == 6) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
+    }); // Featches data from Status table
     $.getJSON('/odata/Comments', function (data) {
         self.comment(ko.utils.arrayMap(data.value, function (comment) {
             var obsComment = {
@@ -327,8 +397,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             
             return obsComment;
         }));
-        self.loadingVar(self.loadingVar() + 1);
-        if (self.loadingVar() == 4) {
+        loadingVar++;
+        console.log("loading var: ", loadingVar, " loaded Comments");
+        if (loadingVar == 6) {
             $(".loading-class").fadeOut("slow");
         }
         else {
@@ -339,9 +410,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
     ///TABLE FILTERS////////////////////////////////////////////////////
     self.queuedDeploys = ko.computed(function () {
-        var filteredValue = "Queued";
+        var filteredValue = 1;
         var filtered = filteredValue ? ko.utils.arrayFilter(self.deploy(), function (rec) {
-            return rec.depStatus() === "Queued";
+            return rec.statusID() === 1;
         }) : self.deploy();
 
         return filtered.sort(function (l, r) {
@@ -357,29 +428,13 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
             if (val <= self.currentSelectedTime().val) {
                 if (self.currentSelectedType().val != 'All') {
-                    return (rec.depStatus() === self.currentSelectedType().val)
+                    return (rec.statusID() === self.currentSelectedType().val)
                 }
                 else {
-                    return (rec.depStatus() === 'Deploying' || rec.depStatus() === 'Completed' || rec.depStatus() === 'Failed')
+                    return (rec.statusID() === 2 || rec.statusID() === 3 || rec.statusID() === 4)
                 }
 
             };
-
-        });
-    }); // Current Deploys table filter
-    self.smokeDeploys = ko.computed(function () {
-        return ko.utils.arrayFilter(self.deploy(), function (rec) {
-
-            var date = rec.depStartTime();
-            var val = dateTimeDifference(date);
-            if (val <= self.smokeSelectedTime().val) {
-                if (self.smokeSelectedType().val != 'All') {
-                    return (rec.depSmoke() === self.smokeSelectedType().val)
-                }
-                else {
-                    return rec.depSmoke() === 'Ready' || rec.depSmoke() === 'Fail' || rec.depSmoke() === 'Pass' || rec.depSmoke() === 'Conditional';
-                }
-            }
 
         });
     }); // Current Deploys table filter
@@ -395,15 +450,15 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var modal = document.getElementById("statusModal");
         var ctl = document.getElementById("ctlmodalStatus");
         var id = document.getElementById("ctlmodalID");
-        var feature = document.getElementById("spFeature");
-        var version = document.getElementById("spVersion");
-
-        ctl.value = deploy.depStatus();
-        objstatus = deploy.depStatus();
+        
+        ctl.value = deploy.statusID();
+        objstatus = deploy.statusID();
         console.log(objstatus);
         id.value = deploy.depID;
-        feature.innerText = deploy.depFeature();
-        version.innerText = deploy.depVersion();
+        console.log("feaID is :", ko.unwrap(deploy.feaID()));
+        
+        self.statusModalFeature(deploy.feaID());
+        self.statusModalVersion(deploy.depVersion());
 
         modal.style.display = "block";
         console.log('modal triggered');
@@ -430,7 +485,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var errorMsg = document.getElementById("errorStatusModalChange");
         var comment = document.getElementById("commentField");
         var smokeField = document.getElementById("ctlSmokeStatus");
-        var selSmoke = smokeField.options[smokeField.selectedIndex].text;
         var feature = document.getElementById("spFeature").innerText;
         var version = document.getElementById("spVersion").innerText;
 
@@ -450,7 +504,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             return;
         }
         //Checks if status was set to failed, but comment was NOT entered
-        if (ctl.value == 'Failed' && comment.value.trim() == "") {
+        if (ctl.value == 4 && comment.value.trim() == "") {
             errorMsg.style.display = "block";
             errorMsg.textContent = "You must enter a comment before you can submit the status as FAILED.";
             return;
@@ -459,20 +513,22 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         ko.utils.arrayForEach(self.deploy(), function (mainItem) {
 
             if (id.value == mainItem.depID) {
-                if (ctl.value == 'Completed') {
+                //If its marked as Completed
+                if (ctl.value == 3) {
                     //Assign and format properties
-                    mainItem.depStatus(ctl.value);
+                    mainItem.statusID(ctl.value);
                     mainItem.depEndTime(moment(dateNow()).format());
-                    mainItem.depSmoke(selSmoke);
+                    mainItem.smokeID(smokeField.value);
                     //(Test log)
-                    console.log(selSmoke);
+                    console.log(smokeField.value);
                     console.log(mainItem.depEndTime());
                     //Push properties to JSON payload
-                    payload["depStatus"] = ko.utils.unwrapObservable(mainItem.depStatus);
+                    payload["statusID"] = ko.utils.unwrapObservable(mainItem.statusID);
                     payload["depEndTime"] = ko.utils.unwrapObservable(mainItem.depEndTime);
-                    payload["depSmoke"] = ko.utils.unwrapObservable(mainItem.depSmoke);
+                    payload["smokeID"] = ko.utils.unwrapObservable(mainItem.smokeID);
                 }
-                else if (ctl.value == 'Failed') {
+                //If its marked as Failed
+                else if (ctl.value == 4) {
                     //Comment JSON string
                     var json = {};
                     //json["odata.type"] = "DeployTrackerMVC2.tblComment";
@@ -480,52 +536,33 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                     json["comDateTime"] = dateNow();
                     json["depID"] = id.value;
                     console.log(JSON.stringify(json));
+                    postComment(deploySignalR, json);
 
-                    $.ajax({
-                        url: "/api/CommentAPI",
-                        type: "POST",
-                        async: true,
-                        mimeType: "text/html",
-                        data: JSON.stringify(json),
-                        contentType: "application/json",
-                        dataType: "json",
-                        success: function (data) {
-                            console.log(data);
-                            console.log("Successfully posted comment");
-                        },
-
-                        error: function (msg) {
-                            console.log("error: ", msg.status);
-                            console.log(msg.statusText);
-                            console.log(msg.responseText);
-                            console.log("Ready state: ", msg.readyState);
-                        }
-                    });
                     //Assign and format properties
-                    mainItem.depStatus(ctl.value);
+                    mainItem.statusID(ctl.value);
                     mainItem.depEndTime(moment(dateNow()).format());
                     //(Test log)
                     console.log(mainItem.depEndTime());
                     //Push properties to JSON payload
-                    payload["depStatus"] = ko.utils.unwrapObservable(mainItem.depStatus);
+                    payload["statusID"] = ko.utils.unwrapObservable(mainItem.statusID);
                     payload["depEndTime"] = ko.utils.unwrapObservable(mainItem.depEndTime)
-                    //Send signal to update all clients
-                    //deploySignalR.server.updateAll();
-                    self.updateViewModelComment();
+                    
+                    
                 }
-                else if (ctl.value == 'Deploying') {
+                //If its marked as Deploying
+                else if (ctl.value == 2) {
                     //Assign and format properties
-                    mainItem.depStatus(ctl.value);
+                    mainItem.statusID(ctl.value);
                     mainItem.depStartTime(moment(dateNow()).format());
                     //Push properties to JSON payload
-                    payload["depStatus"] = ko.utils.unwrapObservable(mainItem.depStatus);
+                    payload["statusID"] = ko.utils.unwrapObservable(mainItem.statusID);
                     payload["depStartTime"] = ko.utils.unwrapObservable(mainItem.depStartTime);
                     //(Test log)
                     console.log(mainItem.depStartTime());
                 }
                 else {
-                    mainItem.depStatus(ctl.value);
-                    payload["depStatus"] = ko.utils.unwrapObservable(mainItem.depStatus);
+                    mainItem.statusID(ctl.value);
+                    payload["statusID"] = ko.utils.unwrapObservable(mainItem.statusID);
                 }
                 
                 console.log(payload);
@@ -561,7 +598,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var modal = document.getElementById("deleteModal");
         modal.style.display = "block";
         self.selected(deploy);
-        console.log(self.selected().depFeature);
+        console.log(self.selected().feaID);
         window.onclick = function (event) {
             if (event.target == modal) {
                 self.closeDeleteModal();
@@ -694,6 +731,30 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         console.log(self.CurrentOption);
     }
 
+    //Css class evaluation for table rows
+    self.rowColor = function (deploy) {
+        if (deploy.statusID() == 2) {
+            return 'css-deploying';
+        }
+        else if (deploy.statusID() == 4) {
+            return 'css-deploy-failed';
+        }
+        else if (deploy.smokeID() == 3) {
+            return 'css-smoke-pass';
+        }
+        else if (deploy.smokeID() == 4) {
+            return 'css-smoke-conditional';
+        }
+        else if (deploy.smokeID() == 5) {
+            return 'css-smoke-failed';
+        }
+        else if (deploy.statusID() == 3 && deploy.smokeID() == 1) {
+            return 'css-deploy-failed';
+        }
+        else {
+            return null;
+        }
+    };
 }
 
 //SignalR Events
@@ -781,13 +842,6 @@ $(function () {
     $.connection.hub.start().done(function () {
         ko.applyBindings(viewModel, document.getElementById("BodyContent"));
         console.log("Connected to SignalR hub");
-        if (smokeWindow.style.display == 'block') {
-            smokeState = 1;
-        }
-        else {
-            smokeState = 0;
-        }
-        console.log("Smoke window visibility: " + smokeState);
 
     }); // Connection (to SignalR hub) start function
     $.connection.hub.disconnected = function (deploy) {
@@ -894,11 +948,11 @@ function checkStatus() {
     var ctl = document.getElementById("ctlmodalStatus");
     var cmtBody = document.getElementById("commentBody");
     //console.log("Check status");
-    if (ctl.value == "Failed") {
+    if (ctl.value == 4) {
         $("#commentBody").fadeIn('slow');
         console.log("Set to fail");
     }
-    else if (ctl.value == "Completed") {
+    else if (ctl.value == 3) {
         $("#smoke-div").fadeIn();
         $("#commentBody").fadeOut();
     }

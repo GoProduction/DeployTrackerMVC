@@ -14,32 +14,76 @@ namespace DeployTrackerMVC2.Controllers
         private dbMainEntities db = new dbMainEntities();
 
 
-        public override IQueryable<tblDeploy> Get()
+        public override IQueryable<Deploy> Get()
         {
-            return db.tblDeploys;
+            return db.Deploys;
         }
 
         
-        protected override tblDeploy GetEntityByKey(int key)
+        protected override Deploy GetEntityByKey(int key)
         {
-            return db.tblDeploys.Find(key);
+            return db.Deploys.Find(key);
         }
 
         [AcceptVerbs("PATCH", "MERGE")]
-        protected override tblDeploy PatchEntity(int key, Delta<tblDeploy> patch)
+        protected override Deploy PatchEntity(int key, Delta<Deploy> patch)
         {
+            //Check if data is null
             if (patch == null)
             {
                 return null;
             }
-            System.Diagnostics.Debug.WriteLine("The key is: " + key);
+
+            //Initialize deploy object, patch delta into list, and status object
             var deployToPatch = GetEntityByKey(key);
+            var list = patch.GetChangedPropertyNames().ToList();
+            object status = null;
+
+            //Determine if status is being changed
+            foreach (var prop in list)
+            {
+                //If the data includes the field 'statusID'
+                if(prop == "statusID")
+                {
+                    //Instantiate the status object
+                    patch.TryGetPropertyValue(prop, out status);
+                    System.Diagnostics.Debug.WriteLine("Status was set to: " + status);
+                    //Reset the smoke value to "Not Ready" if it's being deployed, and the value is already in the "Ready" state
+                    if (status.Equals(2) && deployToPatch.smokeID != 1)
+                    {
+                        //System.Diagnostics.Debug.WriteLine("Reset the smoke value to 'Not Ready'");
+                        //deployToPatch.smokeID = 1;
+                        //list.Add("smokeID" + 1);
+                    }
+                }
+            }
+
+            //If the status has been changed to DEPLOYING and the end time field is NOT empty,
+            //change the deploy objects end time to null, and add the depEndTime property and null
+            //value to the list
+            if(status.Equals(2) && deployToPatch.depEndTime != null)
+            {
+                deployToPatch.depEndTime = null;
+                list.Add("depEndTime" + null);
+                System.Diagnostics.Debug.WriteLine("Reset the end time.");
+            }
+            //Else, if the status has been changed to QUEUED and the start time field is NOT empty,
+            //change  the deploy objects start time AND end time to null, and add depStartTime and depEndTime
+            //property and null value to the list
+            else if(status.Equals(1) && deployToPatch.depStartTime != null)
+            {
+                deployToPatch.depStartTime = null;
+                deployToPatch.depEndTime = null;
+                list.Add("depStartTime" + null);
+                list.Add("depEndTime" + null);
+                System.Diagnostics.Debug.WriteLine("Reset the start and end time.");
+            }
+            //Patch the deploy on the server-end
             patch.Patch(deployToPatch);
             db.Entry(deployToPatch).State = EntityState.Modified;
             db.SaveChanges();
             
             //Prepare changed properties to send to all clients
-            var list = patch.GetChangedPropertyNames().ToList();
             foreach (var changedProperty in list) {
                 object changedPropertyValue;
                 patch.TryGetPropertyValue(changedProperty, out changedPropertyValue);
@@ -51,13 +95,13 @@ namespace DeployTrackerMVC2.Controllers
             return deployToPatch;
         }
         
-        public IHttpActionResult Create(tblDeploy deploy)
+        public IHttpActionResult Create(Deploy deploy)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            db.tblDeploys.Add(deploy);
+            db.Deploys.Add(deploy);
             db.SaveChanges();
             return Created(deploy);
         }
@@ -65,14 +109,14 @@ namespace DeployTrackerMVC2.Controllers
         
         public async Task<IHttpActionResult> Delete([FromODataUri] int key)
         {
-            tblDeploy deploy = db.tblDeploys.Find(key);
+            Deploy deploy = db.Deploys.Find(key);
             System.Diagnostics.Debug.WriteLine(key);
             if (deploy == null)
             {
                 return NotFound();
             }
 
-            db.tblDeploys.Remove(deploy);
+            db.Deploys.Remove(deploy);
             db.SaveChanges();
 
             return StatusCode(HttpStatusCode.NoContent);
@@ -89,7 +133,7 @@ namespace DeployTrackerMVC2.Controllers
 
         private bool tblDeployExists(int id)
         {
-            return db.tblDeploys.Count(e => e.depID == id) > 0;
+            return db.Deploys.Count(e => e.depID == id) > 0;
         }
     }
 }

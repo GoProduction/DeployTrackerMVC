@@ -11,28 +11,23 @@
 }
 /*Colors for queued and current deploys tables*/
 .css-deploying {
-    background: rgba(255, 255, 0, .5);
+    background: rgba(0, 98, 255, .5);
 }
-
-.css-completed {
-    background: rgba(0, 255, 33, .5);
-}
-
-.css-failed {
-    background: rgba(255, 0, 0, .5);
+.css-deploy-failed{
+    background: rgba(87, 87, 87, .5);
     font-weight: bold;
 }
-/*Colors for smoke table*/
 .css-smoke-pass {
     background: rgba(0, 255, 33, .5);
 }
-.css-smoke-fail {
+.css-smoke-conditional{
+    background: rgba(255, 241, 43, .5);
+}
+.css-smoke-failed {
     background: rgba(255, 0, 0, .5);
     font-weight: bold;
 }
-.css-smoke-conditional {
-    background: rgba(255, 255, 0, .5);
-}
+
 
 @media only screen and (max-width: 990px) {
     .column1 {

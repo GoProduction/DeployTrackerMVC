@@ -9,14 +9,18 @@
         <script src="~/Scripts/moment.min.js"></script>
         <script src="~/Scripts/jquery.signalR-2.4.1.min.js"></script>
         <script src="~/signalr/hubs"></script>
+        <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+        <link href="~/Content/themes/base/jquery-ui.min.css" rel="stylesheet" />
+        <script src="~/Scripts/jquery.timepicker.min.js"></script>
+        <link href="~/Content/jquery.timepicker.css" rel="stylesheet" />
         <link href="~/App/ButtonStyles.css" rel="stylesheet" />
         <link href="~/App/TableStyles.css" rel="stylesheet" />
         <link href="~/App/ModalStyles.css" rel="stylesheet" />
         <link href="~/App/PageStyles.css" rel="stylesheet" />
         <script src="~/App/CustomBindings.js"></script>
         <script src="~/App/QAClientCode/QAJS.js"></script>
-        <script src="~/App/GlobalFunctions/Caching.js"></script>
         <script src="~/App/GlobalFunctions/Data-Traversal.js"></script>
+        <script src="~/App/GlobalFunctions/Caching.js"></script>
         <script src="~/App/GlobalFunctions/Notifications.js"></script>
     }
 </head>
@@ -74,7 +78,8 @@
                                 <th>Environment</th>
                                 <th class="column1">Start Time</th>
                                 <th class="column1">End Time</th>
-                                <th class="column2">Status</th>
+                                <th class="column2">Deploy Status</th>
+                                <th>Smoke Status</th>
                             </tr>
                         </thead>
                         <tbody id="TableCurrentBody" data-bind="foreach: currentDeploys().sort($root.sortByDate)" class="table">
@@ -86,50 +91,52 @@
                                     data-bind="dateFormatted: depStartTime,
                                                format: 'MMMM Do'"></td>
                                 <!--Feature field-->
-                                <td data-bind="text: depFeature,
+                                <td data-bind="with: $root.featureFromID(feaID()),
                                                 event: { click: $root.selectRecord},
-                                                css: { 'css-deploying': depStatus() === 'Deploying',
-                                                        'css-failed': depStatus() === 'Failed',
-                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                                css: $root.rowColor($data)">
+                                    <span data-bind="text: feaName"></span>
+                                </td>
                                 <!--Version field-->
                                 <td class="column3"
                                     data-bind="text: depVersion,
                                                 event: { click: $root.selectRecord},
-                                                css: { 'css-deploying': depStatus() === 'Deploying',
-                                                        'css-failed': depStatus() === 'Failed',
-                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                                css: $root.rowColor($data)"></td>
                                 <!--Environment field-->
-                                <td data-bind="text: depEnvironment,
+                                <td data-bind="with: $root.environmentFromID(envID()),
                                                 event: { click: $root.selectRecord},
-                                                css: { 'css-deploying': depStatus() === 'Deploying',
-                                                        'css-failed': depStatus() === 'Failed',
-                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                                css: $root.rowColor($data)">
+                                    <span data-bind="text: envName"></span>
+                                </td>
                                 <!--Start Time field-->
                                 <td class="column1"
                                     data-bind="timeFormatted: depStartTime,
                                                 format: 'h:mm a',
                                                 event: { click: $root.selectRecord},
-                                                css: { 'css-deploying': depStatus() === 'Deploying',
-                                                        'css-failed': depStatus() === 'Failed',
-                                                        'css-completed': depStatus() === 'Completed'}"></td>
+                                                css: $root.rowColor($data)"></td>
                                 <!--End Time field-->
                                 <td class="column1"
                                     data-bind="timeFormatted: depEndTime,
                                                 format: 'h:mm a',
                                                 event: { click: $root.selectRecord},
-                                                css: { 'css-deploying': depStatus() === 'Deploying',
-                                                        'css-failed': depStatus() === 'Failed',
-                                                        'css-completed': depStatus() === 'Completed'}"></td>
-                                <!--Status field-->
+                                                css: $root.rowColor($data)"></td>
+                                <!--Deploy Status field-->
                                 <td class="column2"
-                                    data-bind='text: depStatus,
+                                    data-bind='with: $root.statusFromID(statusID()),
                                                 event: { click: $root.selectRecord},
-                                                css: { "css-deploying": depStatus() === "Deploying",
-                                                        "css-failed": depStatus() === "Failed",
-                                                        "css-completed": depStatus() === "Completed"}'></td>
+                                                css: $root.rowColor($data)'>
+                                    <span data-bind="text: statusName"></span>
+                                </td>
+                                <!--Smoke Status field-->
+                                <td data-bind="css: $root.rowColor($data)">
+                                    <button data-bind="click: $root.openStatusModal, enable: $data.smokeID() !== 1" class="btn btn-sm btn-primary">
+                                        <i class="fa fa-tasks"></i>
+                                        <span style="font: bold" data-bind="with: $root.smokeFromID(smokeID())">
+                                            <span data-bind="text: smokeName"></span>
+                                        </span>
+                                    </button>
+                                </td>
                             </tr>
                         </tbody>
-
                     </table>
                 </div>
                 <div class="divider"></div>
@@ -147,108 +154,23 @@
                                 <th>Environment</th>
                                 <th class="column1">Planned Date</th>
                                 <th class="column1">Planned Time</th>
-                                <th class="column2">Status</th>
+                                <th class="column2">Deploy Status</th>
                             </tr>
                         </thead>
                         <tbody id="queuedTableBody" data-bind="foreach: queuedDeploys" class="table">
                             <tr class="table table-on-hover">
                                 <td style="display:none" data-bind="text: depID"></td>
-                                <td data-bind="text: depFeature, event: { click: $root.selectRecord}"></td>
+                                <td data-bind="with: $root.featureFromID(feaID()), event: { click: $root.selectRecord}">
+                                    <span data-bind="text: feaName"></span>
+                                </td>
                                 <td class="column3" data-bind="text: depVersion, event: { click: $root.selectRecord}"></td>
-                                <td data-bind="text: depEnvironment, event: { click: $root.selectRecord}"></td>
+                                <td data-bind="with: $root.environmentFromID(envID()), event: { click: $root.selectRecord}">
+                                    <span data-bind="text: envName"></span>
+                                </td>
                                 <td class="column1" data-bind="dateFormatted: depPlannedDateTime, format: 'MMMM DD YYYY', event: { click: $root.selectRecord}"></td>
                                 <td class="column1" data-bind="timeFormatted: depPlannedDateTime, format: 'hh:mm a', event: { click: $root.selectRecord}"></td>
-                                <td class="column2" data-bind="text: depStatus, event: { click: $root.selectRecord}"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <!--Smoke queue TAB-->
-            <div id="smokeTab" class="smoke-panel-tab">
-                <button data-bind="click: toggleSmokeWindow" class="btn btn-sm btn-light">
-                    <i id="smokeToggleButton" class="fa fa-angle-right" style="width:100%"></i>
-                </button>
-            </div>
-            <!--Smoke queue column-->
-            <div id="smokeWindow" class="qa-smoke-panel">
-                <div class="smoke-panel-header main-header">
-                    <h3>Smoke Queue</h3>
-                </div>
-                <br />
-                <!------Filter--------------------------------->
-                <div class="filter-container" style="text-align: left">
-                    <div class="filter-first">
-                        <div style="text-align:left">
-                            <span>Deploy Status: </span>
-                            <select id="ctlSmokeType" data-bind="options: $root.smokeArray,
-                                                                    optionsText: 'text',
-                                                                    value: $root.smokeSelectedType,
-                                                                    event: {change: $root.cacheSmokeType}"></select>
-                        </div>
-                    </div>
-                    <div class="filter-second">
-                        <div>
-                            <span>Timespan: </span>
-                            <select id="ctlSmokeTime" data-bind="options: $root.timeArray,
-                                                                    optionsText: 'text',
-                                                                    value: $root.smokeSelectedTime,
-                                                                    event: {change: $root.cacheSmokeTime}"></select>
-                        </div>
-                    </div>
-                    <div class="filter-third">
-                        <span>Contains: </span>
-                        <input style="height: 25px" />
-                    </div>
-                </div>
-                <!------Table---------------------------------->
-                <div>
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th style="display:none">ID</th>
-                                <th>Feature</th>
-                                <th>Version</th>
-                                <th>Environment</th>
-                                <th>Smoke Status</th>
-                                <th>...</th>
-                            </tr>
-                        </thead>
-                        <tbody data-bind="foreach: smokeDeploys().sort($root.sortByDate)">
-                            <tr class="table table-on-hover">
-                                <td style="display:none" data-bind="text: depID"></td>
-                                <!--Feature field-->
-                                <td data-bind="text: depFeature,
-                                                event: { click: $root.selectRecord},
-                                                css: { 'css-smoke-pass': depSmoke() === 'Pass',
-                                                        'css-smoke-conditional': depSmoke() === 'Conditional',
-                                                        'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-                                <!--Version field-->
-                                <td data-bind="text: depVersion,
-                                                event: { click: $root.selectRecord},
-                                                css: { 'css-smoke-pass': depSmoke() === 'Pass',
-                                                        'css-smoke-conditional': depSmoke() === 'Conditional',
-                                                        'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-                                <!--Environment field-->
-                                <td data-bind="text: depEnvironment,
-                                                event: { click: $root.selectRecord},
-                                                css: { 'css-smoke-pass': depSmoke() === 'Pass',
-                                                        'css-smoke-conditional': depSmoke() === 'Conditional',
-                                                        'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-                                <!--Smoke field-->
-                                <td data-bind="text: depSmoke,
-                                                event: { click: $root.selectRecord},
-                                                css: { 'css-smoke-pass': depSmoke() === 'Pass',
-                                                        'css-smoke-conditional': depSmoke() === 'Conditional',
-                                                        'css-smoke-fail': depSmoke() === 'Fail'}"></td>
-                                <!--Button field-->
-                                <td data-bind="css: { 'css-smoke-pass': depSmoke() === 'Pass',
-                                                        'css-smoke-conditional': depSmoke() === 'Conditional',
-                                                        'css-smoke-fail': depSmoke() === 'Fail'}">
-                                    <button class="btn btn-sm btn-primary" data-bind="click: $root.openStatusModal">
-                                        <i class="fa fa-tasks"></i>
-                                        <span>Update Status</span>
-                                    </button>
+                                <td class="column2" data-bind="with: $root.statusFromID(statusID()), event: { click: $root.selectRecord}">
+                                    <span data-bind="text: statusName"></span>
                                 </td>
                             </tr>
                         </tbody>
@@ -287,20 +209,21 @@
             <div id="mainContent" class="status-modal-body">
                 <p>
                     <span>Change the SMOKE status of </span>
-                    <span id="spFeature" style="text-transform: uppercase; font-weight: bold"></span>
-                    <span></span>
-                    <span id="spVersion" style="text-transform: uppercase; font-weight: bold"></span>
+                    <span>
+                        <span data-bind="with: $root.featureFromID($root.selectedFeature())" id="spFeature" style="text-transform: uppercase; font-weight: bold">
+                            <span data-bind="text: feaName"></span>
+                        </span>
+                    </span>
+                    <span data-bind="text: $root.selected().depVersion" id="spVersion" style="text-transform: uppercase; font-weight: bold"></span>
                 </p>
                 <!--Status Drop-down-->
                 <select id="ctlmodalStatus"
-                        data-bind="options: $root.smoke, optionsText: 'tmpSmoke', optionsValue: 'tmpSmoke'"
+                        data-bind="options: $root.smoke, optionsText: 'smokeName', optionsValue: 'smokeID', value: 'smokeID'"
                         onchange="checkStatus()"></select>
-
                 <!--depID Field-->
                 <p style="display: none">ID<input type="text" id="ctlmodalID" /></p>
                 <!--ERROR status field-->
                 <span id="errorStatusModalChange" style="text-align: center; color: red; display: none;"></span>
-
             </div>
             <!--Comment DIV(to become visible when status == 'Failed')-->
             <div id="commentBody" class="status-modal-comment">
@@ -315,21 +238,28 @@
     </div>
     <!--Record Details Modal-->
     <div class="modal fade right" id="DetailsView" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <!--Main Header-->
                 <div class="record-modal-header" id="recordModalHeader">
-                    <span data-bind="text: selected().depFeature"></span>
+                    <span data-bind="with: $root.featureFromID($root.selectedFeature())">
+                        <span data-bind="text: feaName"></span>
+                    </span>
                     <span data-bind="text: selected().depVersion"></span>
                 </div> 
+                <!--Deploy Status Header-->
                 <div id="statusHeader" class="record-modal-header">
                     <span>Deploy Status: </span>
-                    <span data-bind="text: selected().depStatus" class="status-text"></span>
+                    <span data-bind="with: $root.statusFromID($root.selectedStatus())" class="status-text">
+                        <span data-bind="text: statusName"></span>
+                    </span>
                 </div>
                 <!--Smoke Status Header-->
                 <div id="smokeHeader" class="record-modal-header">
                     <span>Smoke Status: </span>
-                    <span data-bind="text: selected().depSmoke" class="status-text"></span>
+                    <span data-bind="with: $root.smokeFromID($root.selectedSmoke())" class="status-text">
+                        <span data-bind="text: smokeName"></span>
+                    </span>
                 </div>
                 <!-- Overlay content -->
                 <div class="modal-body">
@@ -343,7 +273,9 @@
                                 </tr>
                                 <tr>
                                     <td><span class="record-label">Feature: </span></td>
-                                    <td><span data-bind="text: selected().depFeature"></span></td>
+                                    <td data-bind="with: $root.featureFromID($root.selectedFeature())">
+                                        <span data-bind="text: feaName"></span>
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><span class="record-label">Version: </span></td>
@@ -351,7 +283,9 @@
                                 </tr>
                                 <tr>
                                     <td><span class="record-label">Environment: </span></td>
-                                    <td><span id="ctlEnvironment" data-bind="text: selected().depEnvironment" /></td>
+                                    <td data-bind="with: $root.environmentFromID($root.selectedEnvironment())">
+                                        <span id="ctlEnvironment" data-bind="text: envName" />
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><span class="record-label">Planned Date: </span></td>
@@ -368,14 +302,6 @@
                                 <tr>
                                     <td><span class="record-label">End Time: </span></td>
                                     <td><span id="ctlEndTime" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" /></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="record-label" style="padding-right: 20px">Deploy Status: </span></td>
-                                    <td><span id="ctlStatus" data-bind="text: selected().depStatus" /></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="record-label">Smoke Status: </span></td>
-                                    <td><span data-bind="text: selected().depSmoke"></span></td>
                                 </tr>
                             </table>
                         </div>

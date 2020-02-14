@@ -216,10 +216,15 @@
     <Compile Include="Controllers\PageControllers.cs" />
     <Compile Include="Controllers\Environments\EnvironmentsController.cs" />
     <Compile Include="Controllers\Features\FeaturesController.cs" />
+    <Compile Include="Controllers\Smokes\SmokesController.cs" />
+    <Compile Include="Controllers\Status\StatusController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Hubs\DeployHub.cs" />
+    <Compile Include="Models\Comment.cs">
+      <DependentUpon>dbMainDataModel.tt</DependentUpon>
+    </Compile>
     <Compile Include="Models\dbMainDataModel.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -235,19 +240,31 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>dbMainDataModel.edmx</DependentUpon>
     </Compile>
-    <Compile Include="Models\tblComment.cs">
+    <Compile Include="Models\Deploy.cs">
       <DependentUpon>dbMainDataModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\tblDeploy.cs">
+    <Compile Include="Models\DeployEnvironment.cs">
       <DependentUpon>dbMainDataModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\tblEnvironment.cs">
+    <Compile Include="Models\Feature.cs">
       <DependentUpon>dbMainDataModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\tblFeature.cs">
+    <Compile Include="Models\Note.cs">
       <DependentUpon>dbMainDataModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="Models\tblNote.cs">
+    <Compile Include="Models\Smoke.cs">
+      <DependentUpon>dbMainDataModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\sp_helpdiagramdefinition_Result.cs">
+      <DependentUpon>dbMainDataModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\sp_helpdiagrams_Result.cs">
+      <DependentUpon>dbMainDataModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\sysdiagram.cs">
+      <DependentUpon>dbMainDataModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\Status.cs">
       <DependentUpon>dbMainDataModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -407,8 +424,8 @@
     <Content Include="Images\static_pass.jpg" />
     <Content Include="Models\dbMainDataModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>dbMainDataModel.Context.cs</LastGenOutput>
       <DependentUpon>dbMainDataModel.edmx</DependentUpon>
+      <LastGenOutput>dbMainDataModel.Context.cs</LastGenOutput>
     </Content>
     <Content Include="Models\dbMainDataModel.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -454,13 +471,6 @@
     <Content Include="obj\Debug\DeployTrackerMVC2.csproj.CoreCompileInputs.cache" />
     <Content Include="obj\Debug\DeployTrackerMVC2.csprojAssemblyReference.cache" />
     <Content Include="obj\Debug\DesignTimeResolveAssemblyReferencesInput.cache" />
-    <EntityDeploy Include="Models\dbMainDataModel.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>dbMainDataModel.Designer.cs</LastGenOutput>
-    </EntityDeploy>
-    <Content Include="Models\dbMainDataModel.edmx.diagram">
-      <DependentUpon>dbMainDataModel.edmx</DependentUpon>
-    </Content>
     <Content Include="Content\fonts\glyphicons-halflings-regular.woff2" />
     <Content Include="Content\fonts\glyphicons-halflings-regular.woff" />
     <Content Include="Content\fonts\glyphicons-halflings-regular.ttf" />
@@ -580,6 +590,13 @@
     <Content Include="Scripts\esm\popper.js.map" />
     <Content Include="Scripts\esm\popper-utils.min.js.map" />
     <Content Include="Scripts\esm\popper-utils.js.map" />
+    <EntityDeploy Include="Models\dbMainDataModel.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>dbMainDataModel.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <Content Include="Models\dbMainDataModel.edmx.diagram">
+      <DependentUpon>dbMainDataModel.edmx</DependentUpon>
+    </Content>
     <None Include="Scripts\jquery-3.4.1.intellisense.js" />
     <Content Include="Scripts\jquery-3.4.1.js" />
     <Content Include="Scripts\jquery-3.4.1.min.js" />

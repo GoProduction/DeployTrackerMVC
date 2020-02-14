@@ -1,5 +1,63 @@
 ﻿TODO:
 
+DeploysController:
+-Fully implement the deploying logic, including setting a deploy to "Not Ready" if the deploy is set to Deploying
+
+db:
+*-Make depFeature and depEnvironment foreign keys, and create relationship with Environments table
+*-Create Smoke and Status tables
+*-Remake SQL generation script
+
+Global:
+
+-Have all depFeature and depEnvironment write as the Feature and Environment KEY. This needs to be applied via the tables, as well as the drop-down menus
+	Page List:
+		Homepage:
+			-Calendar
+			-GET for tblSmoke
+			-GET for tblStatus
+			-Rename attributes: 
+				-depFeature -> feaID
+				-depEnvironment -> envID
+				-depSmoke -> smokeID
+				-depStatus -> statusID
+			
+		QA:
+			*-Current Table
+			*-Queue Table
+			*-Status Modal
+			*-Record Modal
+			*-GET for tblSmoke
+			*-GET for tblStatus
+			*-Rename attributes: 
+				-depFeature -> feaID
+				-depEnvironment -> envID
+				-depSmoke -> smokeID
+				-depStatus -> statusID
+		Developer:
+			*-Current Table
+			*-Queue Table
+			*-Status Modal
+			-Record Modal
+			-Quick Deploy Modal
+			*-GET for tblSmoke
+			*-GET for tblStatus
+			*-Rename attributes: 
+				-depFeature -> feaID
+				-depEnvironment -> envID
+				-depSmoke -> smokeID
+				-depStatus -> statusID
+		New Deploy:
+			*-Feature drop-down
+			*-Environment drop-down
+			*-Edit Template (table)
+			*-Read Template (table)
+			*-Rename attributes: 
+				-depFeature -> feaID
+				-depEnvironment -> envID
+				-depSmoke -> smokeID
+				-depStatus -> statusID
+
 db.tblNotes:
 *-Add visID field
 
@@ -35,7 +93,7 @@ NewDeploy/Index.html and NewDeployJS
 Developer/Index.html and DeveloperJS
 *-Calculate timezone on quick deploy
 *-Calculate timezone on record edit
--OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.
+*-OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.
 	-Add a Smoke Status field into the current deploys table.
 	-Inside the deploy status field, add the update status button, with the deploy status text embedded inside.
 *-Update table headers with black background/white text with global class (.fancy-header?)
@@ -44,7 +102,7 @@ Developer/Index.html and DeveloperJS
 -Add a change log button to deploy modal
 -Copy/Paste change log modal and functionality from NewDeployJS and html file
 -Have deploy details modal transition to change log modal on request
--Remove green from color-scheme when deploy has FINISHED deploying
+*-Remove green from color-scheme when deploy has FINISHED deploying
 
 QA/Index.html and QAJS
 *-FIX: Planned date and time in details modals

@@ -126,64 +126,64 @@ async function deleteDeploy(signalR, model) {
     });
 }
 //Model for Deploy (when grabbed from DOM node/already binded record)
-var Deploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
+var Deploy = function (id, feature, version, environment, plannedDateTime, startTime, endTime, status, smoke) {
     var self = this;
-    self.depID = depID;
-    self.depFeature = ko.observable(ko.utils.unwrapObservable(depFeature));
-    self.depVersion = ko.observable(ko.utils.unwrapObservable(depVersion));
-    self.depEnvironment = ko.observable(ko.utils.unwrapObservable(depEnvironment));
-    self.depPlannedDateTime = ko.observable(new Date(ko.unwrap(depPlannedDateTime)));
-    self.depStartTime = ko.observable(ko.utils.unwrapObservable(depStartTime));
-    self.depEndTime = ko.observable(ko.utils.unwrapObservable(depEndTime));
-    self.depStatus = ko.observable(ko.utils.unwrapObservable(depStatus));
-    self.depSmoke = ko.observable(ko.utils.unwrapObservable(depSmoke));
+    self.depID = id;
+    self.feaID = ko.observable(ko.utils.unwrapObservable(feature));
+    self.depVersion = ko.observable(ko.utils.unwrapObservable(version));
+    self.envID = ko.observable(ko.utils.unwrapObservable(environment));
+    self.depPlannedDateTime = ko.observable(new Date(ko.unwrap(plannedDateTime)));
+    self.depStartTime = ko.observable(ko.utils.unwrapObservable(startTime));
+    self.depEndTime = ko.observable(ko.utils.unwrapObservable(endTime));
+    self.statusID = ko.observable(ko.utils.unwrapObservable(status));
+    self.smokeID = ko.observable(ko.utils.unwrapObservable(smoke));
     console.log("Planned time is: ", ko.utils.unwrapObservable(self.depPlannedDateTime));
 }
 //Model for Comment
-var Comment = function (comID, comBody, comDateTime, comUser, depID) {
+var Comment = function (id, body, dateTime, user, depID) {
     var self = this;
-    self.comID = comID;
-    self.comBody = ko.observable(comBody);
-    self.comDateTime = ko.observable(comDateTime);
-    self.comUser = ko.observable(comUser);
+    self.comID = id;
+    self.comBody = ko.observable(body);
+    self.comDateTime = ko.observable(dateTime);
+    self.comUser = ko.observable(user);
     self.depID = ko.observable(depID);
 }
 //Model for Deploy when passing from server/newly submitted
-var incomingDeploy = function (depID, depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depEndTime, depStatus, depSmoke) {
+var incomingDeploy = function (id, feature, version, environment, plannedDateTime, startTime, endTime, status, smoke) {
     var self = this;
-    self.depID = depID;
-    self.depFeature = ko.observable(depFeature);
-    self.depVersion = ko.observable(depVersion);
-    self.depEnvironment = ko.observable(depEnvironment);
-    self.depPlannedDateTime = ko.observable(depPlannedDateTime);
-    self.depStartTime = ko.observable(depStartTime);
-    self.depEndTime = ko.observable(depEndTime);
-    self.depStatus = ko.observable(depStatus);
-    self.depSmoke = ko.observable(depSmoke);
+    self.depID = id;
+    self.feaID = ko.observable(feature);
+    self.depVersion = ko.observable(version);
+    self.envID = ko.observable(environment);
+    self.depPlannedDateTime = ko.observable(plannedDateTime);
+    self.depStartTime = ko.observable(startTime);
+    self.depEndTime = ko.observable(endTime);
+    self.statusID = ko.observable(status);
+    self.smokeID = ko.observable(smoke);
 
 }
 //Model for quick deploy
-var QuickDeploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTime, depStartTime, depStatus, depSmoke) {
-    this.depFeature = depFeature;
-    this.depVersion = depVersion;
-    this.depEnvironment = depEnvironment;
-    this.depPlannedDateTime = depPlannedDateTime;
-    this.depStartTime = depStartTime;
-    this.depStatus = depStatus;
-    this.depSmoke = depSmoke;
+var QuickDeploy = function (id, version, environment, plannedDateTime, startTime, status, smoke) {
+    this.feaID = id;
+    this.depVersion = version;
+    this.envID = environment;
+    this.depPlannedDateTime = plannedDateTime;
+    this.depStartTime = startTime;
+    this.statusID = status;
+    this.smokeID = smoke;
 }
 //Note model used for knockout binding
-var Note = function (noteID, noteBody, noteDateTime, noteVisID) {
-    this.noteID = noteID;
-    this.noteVisID = noteVisID;
-    this.noteBody = ko.observable(noteBody);
-    this.noteDateTime = ko.observable(noteDateTime);
+var Note = function (id, body, dateTime, visID) {
+    this.noteID = id;
+    this.noteVisID = visID;
+    this.noteBody = ko.observable(body);
+    this.noteDateTime = ko.observable(dateTime);
 }
 //Note model used for POST request compatability
-var NewNote = function (noteBody, noteDateTime, noteVisID) {
-    this.noteBody = noteBody;
-    this.noteDateTime = noteDateTime;
-    this.noteVisID = noteVisID;
+var NewNote = function (body, dateTime, visID) {
+    this.noteBody = body;
+    this.noteDateTime = dateTime;
+    this.noteVisID = visID;
 }
 
 //Helper functions

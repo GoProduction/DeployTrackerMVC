@@ -35,11 +35,13 @@ namespace DeployTrackerMVC2
             );
 
             ODataConventionModelBuilder modelBuilder = new ODataConventionModelBuilder();
-            modelBuilder.EntitySet<tblDeploy>("Deploys");
-            modelBuilder.EntitySet<tblFeature>("Features");
-            modelBuilder.EntitySet<tblEnvironment>("Environments");
-            modelBuilder.EntitySet<tblNote>("Notes");
-            modelBuilder.EntitySet<tblComment>("Comments");
+            modelBuilder.EntitySet<Deploy>("Deploys");
+            modelBuilder.EntitySet<Feature>("Features");
+            modelBuilder.EntitySet<DeployEnvironment>("Environments");
+            modelBuilder.EntitySet<Status>("Status");
+            modelBuilder.EntitySet<Smoke>("Smokes");
+            modelBuilder.EntitySet<Note>("Notes");
+            modelBuilder.EntitySet<Comment>("Comments");
             var model = modelBuilder.GetEdmModel();
 
             config.Routes.MapODataServiceRoute("OData", "odata", model);

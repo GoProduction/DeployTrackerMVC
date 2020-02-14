@@ -18,9 +18,9 @@ namespace DeployTrackerMVC2.Controllers.Comments
 
         // GET: api/CommentAPI
 
-        public IQueryable<tblComment> GettblComments()
+        public IQueryable<Comment> GettblComments()
         {
-            return db.tblComments;
+            return db.Comments;
         }
 
         // GET: api/CommentAPI
@@ -28,8 +28,8 @@ namespace DeployTrackerMVC2.Controllers.Comments
         [Route("{commentByID}")]
         public IHttpActionResult GetCommentByID(int depID)
         {
-            List<tblComment> list = new List<tblComment>();
-            foreach(tblComment com in db.tblComments)
+            List<Comment> list = new List<Comment>();
+            foreach(Comment com in db.Comments)
             {
                 if(com.depID == depID)
                 {
@@ -50,7 +50,7 @@ namespace DeployTrackerMVC2.Controllers.Comments
         
         // PUT: api/CommentAPI/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult PuttblComment(int id, tblComment tblComment)
+        public IHttpActionResult PuttblComment(int id, Comment tblComment)
         {
             if (!ModelState.IsValid)
             {
@@ -84,31 +84,31 @@ namespace DeployTrackerMVC2.Controllers.Comments
         }
 
         // POST: api/CommentAPI
-        [ResponseType(typeof(tblComment))]
-        public IHttpActionResult Post(tblComment tblComment)
+        [ResponseType(typeof(Comment))]
+        public IHttpActionResult Post(Comment tblComment)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            db.tblComments.Add(tblComment);
+            db.Comments.Add(tblComment);
             db.SaveChanges();
             System.Diagnostics.Debug.WriteLine("Comment posted: " + tblComment.comBody);
             return CreatedAtRoute("DefaultApi", new { id = tblComment.comID }, tblComment);
         }
 
         // DELETE: api/CommentAPI/5
-        [ResponseType(typeof(tblComment))]
+        [ResponseType(typeof(Comment))]
         public IHttpActionResult DeletetblComment(int id)
         {
-            tblComment tblComment = db.tblComments.Find(id);
+            Comment tblComment = db.Comments.Find(id);
             if (tblComment == null)
             {
                 return NotFound();
             }
 
-            db.tblComments.Remove(tblComment);
+            db.Comments.Remove(tblComment);
             db.SaveChanges();
 
             return Ok(tblComment);
@@ -125,7 +125,7 @@ namespace DeployTrackerMVC2.Controllers.Comments
 
         private bool tblCommentExists(int id)
         {
-            return db.tblComments.Count(e => e.comID == id) > 0;
+            return db.Comments.Count(e => e.comID == id) > 0;
         }
     }
 }

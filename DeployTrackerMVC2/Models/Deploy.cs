@@ -11,29 +11,35 @@ namespace DeployTrackerMVC2.Models
 {
     using System;
     using System.Collections.Generic;
-    
-    public partial class tblDeploy
+
+    public partial class Deploy
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public tblDeploy()
+        public Deploy()
         {
-            this.tblComments = new HashSet<tblComment>();
+            this.Comment = new HashSet<Comment>();
         }
-    
+        
+
         public int depID { get; set; }
-        public string depFeature { get; set; }
+        public Nullable<int> feaID { get; set; }
+        public Nullable<int> envID { get; set; }
+        public Nullable<int> smokeID { get; set; }
+        public Nullable<int> statusID { get; set; }
+        public Nullable<int> noteID { get; set; }
         public string depVersion { get; set; }
         public Nullable<System.DateTimeOffset> depPlannedDateTime { get; set; }
         public Nullable<System.DateTimeOffset> depStartTime { get; set; }
         public Nullable<System.DateTimeOffset> depEndTime { get; set; }
-        public string depStatus { get; set; }
-        public string depEnvironment { get; set; }
-        public Nullable<int> noteID { get; set; }
-        public string depSmoke { get; set; }
         public Nullable<int> depTimeDiff { get; set; }
-    
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<tblComment> tblComments { get; set; }
-        public virtual tblNote tblNote { get; set; }
+        public virtual ICollection<Comment> Comment { get; set; }
+        public virtual DeployEnvironment DeployEnvironment { get; set; }
+        public virtual Feature Feature { get; set; }
+        public virtual Note Note { get; set; }
+        public virtual Smoke Smoke { get; set; }
+        public virtual Status Status { get; set; }
     }
+    
 }

@@ -12,14 +12,12 @@ namespace DeployTrackerMVC2.Models
     using System;
     using System.Collections.Generic;
     
-    public partial class tblComment
+    public partial class sysdiagram
     {
-        public int comID { get; set; }
-        public string comBody { get; set; }
-        public System.DateTimeOffset comDateTime { get; set; }
-        public string comUser { get; set; }
-        public Nullable<int> depID { get; set; }
-    
-        public virtual tblDeploy tblDeploy { get; set; }
+        public string name { get; set; }
+        public int principal_id { get; set; }
+        public int diagram_id { get; set; }
+        public Nullable<int> version { get; set; }
+        public byte[] definition { get; set; }
     }
 }

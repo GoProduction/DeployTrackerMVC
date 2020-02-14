@@ -219,7 +219,9 @@ rightRibbon {
 .css-white{
     background: white;
 }
-
+.css-blue {
+    background: rgba(0, 98, 255, .5);
+}
 /*Delete Modal*/
 .delete-modal {
     display: none; /* Hidden by default */

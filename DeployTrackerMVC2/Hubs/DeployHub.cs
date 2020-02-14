@@ -26,7 +26,7 @@ namespace DeployTrackerMVC2.Hubs
 
         public void FeatureChange(int id)
         {
-            var deployToPatch = db.tblDeploys.Find(id);
+            var deployToPatch = db.Deploys.Find(id);
             db.Entry(deployToPatch).State = EntityState.Modified;
             db.SaveChanges();
             System.Diagnostics.Debug.WriteLine("FeatureChange(id = " + id + ")");

@@ -19,18 +19,18 @@ namespace DeployTrackerMVC2.Controllers
         private dbMainEntities db = new dbMainEntities();
 
         // GET: api/Features
-        public override IQueryable<tblFeature> Get()
+        public override IQueryable<Feature> Get()
         {
-            return db.tblFeatures;
+            return db.Features;
         }
 
 
-        protected override tblFeature GetEntityByKey(int key)
+        protected override Feature GetEntityByKey(int key)
         {
-            return db.tblFeatures.Find(key);
+            return db.Features.Find(key);
         }
 
-        protected override tblFeature PatchEntity(int key, Delta<tblFeature> patch)
+        protected override Feature PatchEntity(int key, Delta<Feature> patch)
         {
             if (patch == null)
             {
@@ -60,7 +60,7 @@ namespace DeployTrackerMVC2.Controllers
 
         private bool tblFeatureExists(int id)
         {
-            return db.tblFeatures.Count(e => e.feaID == id) > 0;
+            return db.Features.Count(e => e.feaID == id) > 0;
         }
     }
 }

@@ -10,11 +10,10 @@
 namespace DeployTrackerMVC2.Models
 {
     using System;
-    using System.Collections.Generic;
     
-    public partial class tblFeature
+    public partial class sp_helpdiagramdefinition_Result
     {
-        public int feaID { get; set; }
-        public string feaName { get; set; }
+        public Nullable<int> version { get; set; }
+        public byte[] definition { get; set; }
     }
 }

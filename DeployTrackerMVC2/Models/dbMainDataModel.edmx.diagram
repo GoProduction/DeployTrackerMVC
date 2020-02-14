@@ -4,14 +4,21 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="905dbdd9eaaa4910bf2055078614b076" Name="Diagram1">
-        <EntityTypeShape EntityType="dbMainModel.tblEnvironment" Width="1.5" PointX="3.375" PointY="2.375" IsExpanded="true" />
-        <EntityTypeShape EntityType="dbMainModel.tblFeature" Width="1.5" PointX="3.375" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="dbMainModel.tblComment" Width="1.5" PointX="9.875" PointY="2.875" />
-        <EntityTypeShape EntityType="dbMainModel.tblDeploy" Width="1.5" PointX="7.625" PointY="2.125" />
-        <EntityTypeShape EntityType="dbMainModel.tblNote" Width="1.5" PointX="5.375" PointY="3.125" />
-        <AssociationConnector Association="dbMainModel.comment_deploy_relationship" />
-        <AssociationConnector Association="dbMainModel.note_deploy_relationship" />
+      <Diagram DiagramId="34ad12858e24494fbeee57432ff55124" Name="Diagram1">
+        <EntityTypeShape EntityType="dbMainDataModel.sysdiagram" Width="1.5" PointX="5.75" PointY="5.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="dbMainDataModel.Comment" Width="1.5" PointX="5.25" PointY="2.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="dbMainDataModel.Deploy" Width="1.5" PointX="3" PointY="1" IsExpanded="true" />
+        <EntityTypeShape EntityType="dbMainDataModel.DeployEnvironment" Width="1.5" PointX="0.75" PointY="2.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="dbMainDataModel.Feature" Width="1.5" PointX="0.75" PointY="5.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="dbMainDataModel.Note" Width="1.5" PointX="0.75" PointY="7.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="dbMainDataModel.Smoke" Width="1.5" PointX="0.75" PointY="10.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="dbMainDataModel.Status" Width="1.5" PointX="0.75" PointY="13" IsExpanded="true" />
+        <AssociationConnector Association="dbMainDataModel.comment_to_deploy" ManuallyRouted="false" />
+        <AssociationConnector Association="dbMainDataModel.environment_to_deploy" ManuallyRouted="false" />
+        <AssociationConnector Association="dbMainDataModel.feature_to_deploy" ManuallyRouted="false" />
+        <AssociationConnector Association="dbMainDataModel.note_to_deploy" ManuallyRouted="false" />
+        <AssociationConnector Association="dbMainDataModel.smoke_to_deploy" ManuallyRouted="false" />
+        <AssociationConnector Association="dbMainDataModel.status_to_deploy" ManuallyRouted="false" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

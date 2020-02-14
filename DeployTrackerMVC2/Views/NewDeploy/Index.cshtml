@@ -50,16 +50,19 @@
                     <tbody class="nd-tbody">
                         <tr class="nd-tr">
                             <td class="nd-td t1-td" data-title="Feature">
-                                <select class="table" style="max-width: 100%" id="txtFeature" name="txtFeature" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName', value: $root.feature"></select>
+                                <select class="table" style="max-width: 100%" id="txtFeature" name="txtFeature" data-bind="options: $root.featureList, 
+                                                                                                                            optionsText: 'feaName', 
+                                                                                                                            optionsValue: 'feaID', 
+                                                                                                                            value: $root.feature"></select>
                             </td>
                             <td class="nd-td t1-td">
                                 <input data-bind="value: $root.version" type="text" id="txtVersion" name="txtVersion" class="table" />
                             </td>
                             <td class="nd-td t1-td">
                                 <select id="txtEnvironment" name="txtEnvironment" class="table" data-bind="options: $root.environmentList,
-                                                                                            optionsText: 'envName',
-                                                                                            optionsValue: 'envName',
-                                                                                            value: $root.environment"></select>
+                                                                                                            optionsText: 'envName',
+                                                                                                            optionsValue: 'envID',
+                                                                                                            value: $root.environment"></select>
                             </td>
                             <td class="nd-td t1-td">
                                 <input data-bind="datepicker: $root.plannedDateTime, datepickerOptions: { minDate: new Date() }" id="txtPlannedDate" name="txtPlannedDate" class="table" />
@@ -211,16 +214,22 @@
 
     <!--Read template for table-->
     <script id="read-template" type="text/html">
-        <td class="nd-td t2-td" data-bind="text: depFeature"></td>
+        <td class="nd-td t2-td" data-bind="with: $root.featureFromID(feaID())">
+            <span data-bind="text: feaName"></span>
+        </td>
         <td class="nd-td t2-td" data-bind="text: depVersion"></td>
-        <td class="nd-td t2-td" data-bind="text: depEnvironment"></td>
+        <td class="nd-td t2-td" data-bind="with: $root.environmentFromID(envID())">
+            <span data-bind="text: envName"></span>
+        </td>
         <td class="nd-td t2-td" data-bind="dateFormatted: depPlannedDateTime, format: 'MMMM DD YYYY'"></td>
         <td class="nd-td t2-td" data-bind="timeFormatted: depPlannedDateTime, format: 'LT'"></td>
-        <td class="nd-td t2-td" data-bind="text: depStatus"></td>
         <td class="nd-td t2-td">
+            <span>Queued</span>
+        </td>
+        <td class="nd-td t2-td" data-bind="with: $root.noteFromID(noteID())">
             <button class="btn btn-sm btn-dark" disabled>
                 <i class="fa fa-clipboard"></i>
-                <span data-bind="attr: {text: $root.notes().noteVisID, value: noteID}"></span>
+                <span data-bind="text: noteVisID"></span>
             </button>
         </td>
         <td class="nd-td t2-td">
@@ -237,13 +246,13 @@
     <!--Edit template for table-->
     <script id="edit-template" type="text/html">
         <td class="nd-td t2-td">
-            <select id="ctlFeature" name="ctlFeature" style="max-width: 90%" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaName', value: depFeature"></select>
+            <select id="ctlFeature" name="ctlFeature" style="max-width: 90%" data-bind="options: $root.featureList, optionsText: 'feaName', optionsValue: 'feaID', value: feaID"></select>
         </td>
         <td class="nd-td t2-td">
             <input type="text" style="max-width: 90%" data-bind="value: depVersion" />
         </td>
         <td class="nd-td t2-td">
-            <select id="ctlEnvironment" style="max-width: 90%" name="ctlEnvironment" data-bind="options: $root.environmentList, optionsText: 'envName', optionsValue: 'envName', value: depEnvironment"></select>
+            <select id="ctlEnvironment" style="max-width: 90%" name="ctlEnvironment" data-bind="options: $root.environmentList, optionsText: 'envName', optionsValue: 'envID', value: envID"></select>
         </td>
         <td class="nd-td t2-td">
             <input id="ctlPlannedDate" style="max-width: 90%" type="text" data-bind="datepicker: depPlannedDateTime" />
@@ -252,12 +261,14 @@
             <input type="time" style="max-width: 90%" data-bind="timepickerInput: depPlannedDateTime" />
         </td>
         <td class="nd-td t2-td">
-            <input type="text" style="max-width: 90%" data-bind="value: depStatus" disabled />
+            <span>Queued</span>
         </td>
         <td class="nd-td t2-td">
             <button class="btn btn-sm btn-info" data-bind="click: function(data, type, index){$root.openModalAndEval($data, 'edit', $parentContext.$index(), data, type, index)}">
                 <i class="fa fa-clipboard"></i>
-                <span data-bind="text: noteID"></span>
+                <span data-bind="with: $root.noteFromID(noteID())">
+                    <span data-bind="text: noteVisID"></span>
+                </span>
             </button>
             <button class="btn btn-sm btn-danger" data-bind="click: $root.removeCL, enable: $data.noteID() >= 0">
                 <i class="fa fa-times"></i>

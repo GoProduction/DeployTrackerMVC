@@ -18,19 +18,19 @@ namespace DeployTrackerMVC2.Controllers
         private dbMainEntities db = new dbMainEntities();
 
 
-        public override IQueryable<tblEnvironment> Get()
+        public override IQueryable<DeployEnvironment> Get()
         {
-            return db.tblEnvironments;
+            return db.DeployEnvironments;
         }
 
-        protected override tblEnvironment GetEntityByKey(int key)
+        protected override DeployEnvironment GetEntityByKey(int key)
         {
-            return db.tblEnvironments.Find(key);
+            return db.DeployEnvironments.Find(key);
         }
 
         // PUT: api/Environments/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult PuttblEnvironment(int id, tblEnvironment tblEnvironment)
+        public IHttpActionResult PuttblEnvironment(int id, DeployEnvironment tblEnvironment)
         {
             if (!ModelState.IsValid)
             {
@@ -64,31 +64,31 @@ namespace DeployTrackerMVC2.Controllers
         }
 
         // POST: api/Environments
-        [ResponseType(typeof(tblEnvironment))]
-        public IHttpActionResult PosttblEnvironment(tblEnvironment tblEnvironment)
+        [ResponseType(typeof(DeployEnvironment))]
+        public IHttpActionResult PosttblEnvironment(DeployEnvironment tblEnvironment)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            db.tblEnvironments.Add(tblEnvironment);
+            db.DeployEnvironments.Add(tblEnvironment);
             db.SaveChanges();
 
             return CreatedAtRoute("DefaultApi", new { id = tblEnvironment.envID }, tblEnvironment);
         }
 
         // DELETE: api/Environments/5
-        [ResponseType(typeof(tblEnvironment))]
+        [ResponseType(typeof(DeployEnvironment))]
         public IHttpActionResult DeletetblEnvironment(int id)
         {
-            tblEnvironment tblEnvironment = db.tblEnvironments.Find(id);
+            DeployEnvironment tblEnvironment = db.DeployEnvironments.Find(id);
             if (tblEnvironment == null)
             {
                 return NotFound();
             }
 
-            db.tblEnvironments.Remove(tblEnvironment);
+            db.DeployEnvironments.Remove(tblEnvironment);
             db.SaveChanges();
 
             return Ok(tblEnvironment);
@@ -105,7 +105,7 @@ namespace DeployTrackerMVC2.Controllers
 
         private bool tblEnvironmentExists(int id)
         {
-            return db.tblEnvironments.Count(e => e.envID == id) > 0;
+            return db.DeployEnvironments.Count(e => e.envID == id) > 0;
         }
     }
 }

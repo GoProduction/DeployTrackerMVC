@@ -19,17 +19,17 @@ namespace DeployTrackerMVC2.Controllers.Comments
     {
         private dbMainEntities db = new dbMainEntities();
 
-        public override IQueryable<tblComment> Get()
+        public override IQueryable<Comment> Get()
         {
-            return db.tblComments;
+            return db.Comments;
         }
 
-        protected override tblComment GetEntityByKey(int key)
+        protected override Comment GetEntityByKey(int key)
         {
-            return db.tblComments.Find(key);
+            return db.Comments.Find(key);
         }
 
-        protected override tblComment PatchEntity(int key, Delta<tblComment> patch)
+        protected override Comment PatchEntity(int key, Delta<Comment> patch)
         {
             if (patch == null)
             {
@@ -64,14 +64,14 @@ namespace DeployTrackerMVC2.Controllers.Comments
 
         // POST2: odata/tblComments
         [System.Web.Mvc.HttpPost]
-        public IHttpActionResult Create(tblComment tblComment)
+        public IHttpActionResult Create(Comment tblComment)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            db.tblComments.Add(tblComment);
+            db.Comments.Add(tblComment);
 
             try
             {
@@ -103,7 +103,7 @@ namespace DeployTrackerMVC2.Controllers.Comments
 
         private bool tblCommentExists(int id)
         {
-            return db.tblComments.Count(e => e.comID == id) > 0;
+            return db.Comments.Count(e => e.comID == id) > 0;
         }
     }
 }

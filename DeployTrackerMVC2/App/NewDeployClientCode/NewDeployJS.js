@@ -12,14 +12,14 @@ var thirdFooter = document.getElementById("clFooter3");
 
 
 //Deploy template
-var Deploy = function (depFeature, depVersion, depEnvironment, depPlannedDateTime, depStatus, depSmoke, noteID, Edit) {
-    this.depFeature = ko.observable(depFeature);
+var DeployModel = function (feaID, envID, statusID, smokeID, noteID, depVersion, depPlannedDateTime, Edit) {
+    this.feaID = ko.observable(feaID);
+    this.envID = ko.observable(envID);
+    this.statusID = statusID;
+    this.smokeID = smokeID;
+    this.noteID = ko.observable(noteID);
     this.depVersion = ko.observable(depVersion);
     this.depPlannedDateTime = ko.observable(depPlannedDateTime);
-    this.depStatus = ko.observable(depStatus);
-    this.depSmoke = ko.observable(depSmoke);
-    this.depEnvironment = ko.observable(depEnvironment);
-    this.noteID = ko.observable(noteID);
     this.Edit = ko.observable(Edit);
 };
 //Deploy viewmodel
@@ -44,6 +44,7 @@ var TempDeployViewModel = function (signalR) {
     self.feature = ko.observable();
     self.version = ko.observable();
     self.environment = ko.observable();
+    
     self.plannedDateTime = ko.observable(new Date());
 
     //Observables for MASTER note
@@ -113,13 +114,13 @@ var TempDeployViewModel = function (signalR) {
 
         var newRecord = [{
 
-            depFeature: self.feature(),
+            feaID: self.feature(),
+            envID: self.environment(),
+            statusID: 1,
+            smokeID: 1,
+            noteID: self.masterCL().noteID,
             depVersion: self.version(),
             depPlannedDateTime: moment(self.plannedDateTime()).format(),
-            depStatus: 'Queued',
-            depSmoke: "Not Ready",
-            depEnvironment: self.environment(),
-            noteID: self.masterCL().noteID,
             Edit: false
 
         }];
@@ -130,7 +131,7 @@ var TempDeployViewModel = function (signalR) {
         }
         else {
             var newDeploy = ko.utils.arrayMap(newRecord, function (data) {
-                return new Deploy(data.depFeature, data.depVersion, data.depEnvironment, data.depPlannedDateTime, data.depStatus, data.depSmoke, data.noteID, data.Edit)
+                return new DeployModel(data.feaID, data.envID, data.statusID, data.smokeID, data.noteID, data.depVersion, data.depPlannedDateTime, data.Edit)
             });
 
             //Push the new record to the temp table
@@ -427,7 +428,33 @@ var TempDeployViewModel = function (signalR) {
         });
     }
 
-    //Fetching data from tblFeature
+    //Finder functions
+    self.featureFromID = function (id) {
+        return ko.utils.arrayFirst(self.featureList(), function (item) {
+            if (item.feaID == id) {
+                //console.log("feaName: ", ko.unwrap(item.feaName));
+                return ko.unwrap(item.feaName);
+            }
+        })
+    };
+    self.environmentFromID = function (id) {
+        return ko.utils.arrayFirst(self.environmentList(), function (item) {
+            if (item.envID == id) {
+                //console.log("envName: ", ko.unwrap(item.envName));
+                return ko.unwrap(item.envName);
+            }
+        })
+    };
+    self.noteFromID = function (id) {
+        return ko.utils.arrayFirst(self.notes(), function (item) {
+            if (item.noteID == id) {
+                //console.log("envName: ", ko.unwrap(item.noteVisID));
+                return ko.unwrap(item.noteVisID);
+            }
+        })
+    };
+
+    //Fetching data from tables
     $.getJSON('/odata/Features', function (data) {
         self.featureList(ko.utils.arrayMap(data.value, function (featureList) {
             var obsFeature = {
@@ -438,7 +465,6 @@ var TempDeployViewModel = function (signalR) {
             return obsFeature;
         }));
     });
-    //Fetching data from tblEnvironment
     $.getJSON('/odata/Environments', function (data) {
         self.environmentList(ko.utils.arrayMap(data.value, function (environmentList) {
             var obsEnvironment = {
@@ -449,7 +475,6 @@ var TempDeployViewModel = function (signalR) {
             return obsEnvironment;
         }));
     });
-    //Fetching data from tblNotes
     $.getJSON('/odata/Notes', function (data) {
         self.notes(ko.utils.arrayMap(data.value, function (notes) {
             var obsNote = {

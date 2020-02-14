@@ -17,16 +17,16 @@ namespace DeployTrackerMVC2.Controllers.Notes
         private dbMainEntities db = new dbMainEntities();
 
         // GET: api/NotesAPI
-        public IQueryable<tblNote> GettblNotes()
+        public IQueryable<Note> GettblNotes()
         {
-            return db.tblNotes;
+            return db.Notes;
         }
 
         // GET: api/NotesAPI/5
-        [ResponseType(typeof(tblNote))]
+        [ResponseType(typeof(Note))]
         public IHttpActionResult GettblNote(int id)
         {
-            tblNote tblNote = db.tblNotes.Find(id);
+            Note tblNote = db.Notes.Find(id);
             if (tblNote == null)
             {
                 return NotFound();
@@ -37,7 +37,7 @@ namespace DeployTrackerMVC2.Controllers.Notes
 
         // PUT: api/NotesAPI/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult PuttblNote(int id, tblNote tblNote)
+        public IHttpActionResult PuttblNote(int id, Note tblNote)
         {
             if (!ModelState.IsValid)
             {
@@ -71,31 +71,31 @@ namespace DeployTrackerMVC2.Controllers.Notes
         }
 
         // POST: api/NotesAPI
-        [ResponseType(typeof(tblNote))]
-        public IHttpActionResult PosttblNote(tblNote tblNote)
+        [ResponseType(typeof(Note))]
+        public IHttpActionResult PosttblNote(Note tblNote)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             
-            db.tblNotes.Add(tblNote);
+            db.Notes.Add(tblNote);
             db.SaveChanges();
 
             return CreatedAtRoute("DefaultApi", new { id = tblNote.noteID }, tblNote);
         }
 
         // DELETE: api/NotesAPI/5
-        [ResponseType(typeof(tblNote))]
+        [ResponseType(typeof(Note))]
         public IHttpActionResult DeletetblNote(int id)
         {
-            tblNote tblNote = db.tblNotes.Find(id);
+            Note tblNote = db.Notes.Find(id);
             if (tblNote == null)
             {
                 return NotFound();
             }
 
-            db.tblNotes.Remove(tblNote);
+            db.Notes.Remove(tblNote);
             db.SaveChanges();
 
             return Ok(tblNote);
@@ -112,7 +112,7 @@ namespace DeployTrackerMVC2.Controllers.Notes
 
         private bool tblNoteExists(int id)
         {
-            return db.tblNotes.Count(e => e.noteID == id) > 0;
+            return db.Notes.Count(e => e.noteID == id) > 0;
         }
     }
 }
