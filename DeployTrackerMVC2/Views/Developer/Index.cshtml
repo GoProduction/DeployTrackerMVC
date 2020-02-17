@@ -283,10 +283,12 @@
                             <div class="col record-modal-col">
                                 <table>
                                     <tr>
+                                        <!--ID-->
                                         <td style="padding-right: 3px"><label class="record-label">ID</label></td>
                                         <td><input id="editID" type="text" data-bind="value: deployBeingEdited().depID" disabled /></td>
                                     </tr>
                                     <tr>
+                                        <!--Feature-->
                                         <td style="padding-right: 3px"><label class="record-label">Feature</label></td>
                                         <td><select id="editFeature" data-bind="options: $root.feature,
                                                                                 optionsText: 'feaName',
@@ -294,10 +296,12 @@
                                                                                 value: deployBeingEdited().feaID"></select></td>
                                     </tr>
                                     <tr>
+                                        <!--Version-->
                                         <td style="padding-right: 3px"><label class="record-label">Version</label></td>
                                         <td><input id="editVersion" type="text" data-bind="value: deployBeingEdited().depVersion, valueUpdate: 'afterkeydown'" /></td>
                                     </tr>
                                     <tr>
+                                        <!--Environment-->
                                         <td style="padding-right: 3px"><label class="record-label">Environment</label></td>
                                         <td><select id="editEnvironment" data-bind="options: $root.environment,
                                                                                     optionsText: 'envName',
@@ -305,22 +309,27 @@
                                                                                     value: deployBeingEdited().envID"></select></td>
                                     </tr>
                                     <tr>
+                                        <!--Planned Date-->
                                         <td style="padding-right: 3px"><label class="record-label">Planned Date</label></td>
                                         <td><input id="editPlannedDate" type="text" data-bind="datepicker: deployBeingEdited().depPlannedDateTime" /></td>
                                     </tr>
                                     <tr>
+                                        <!--Planned Time-->
                                         <td style="padding-right: 20px"><label class="record-label">Planned Time</label></td>
                                         <td><input id="editPlannedTime" type="time" data-bind="timepickerInput: deployBeingEdited().depPlannedDateTime" /></td>
                                     </tr>
                                     <tr>
+                                        <!--Start Time-->
                                         <td style="padding-right: 3px"><label class="record-label">Start Time</label></td>
                                         <td><input type="time" data-bind="timeFormatted: deployBeingEdited().depStartTime, format: 'HH:mm'" disabled /></td>
                                     </tr>
                                     <tr>
+                                        <!--End Time-->
                                         <td style="padding-right: 3px"><label class="record-label">End Time</label></td>
                                         <td><input type="time" data-bind="timeFormatted: deployBeingEdited().depEndTime, format: 'HH:mm'" disabled /></td>
                                     </tr>
                                     <tr>
+                                        <!--Deploy Status-->
                                         <td style="padding-right: 3px"><label class="record-label">Deploy Status</label></td>
                                         <td><select data-bind="options: $root.status,
                                                                 optionsText: 'statusName',
@@ -328,6 +337,7 @@
                                                                 value: deployBeingEdited().statusID" disabled></select></td>
                                     </tr>
                                     <tr>
+                                        <!--Smoke Status-->
                                         <td style="padding-right: 3px"><label class="record-label">Smoke Status</label></td>
                                         <td><select id="editSmoke" data-bind="options: $root.smoke, 
                                                                optionsText: 'smokeName', 

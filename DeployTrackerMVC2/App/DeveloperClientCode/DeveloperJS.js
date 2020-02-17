@@ -71,14 +71,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         { text: 'Past 7 days', val: '168' },
         { text: 'Past month', val: '730' }
     ]); //Used for time filter
-    
     self.currentSelectedType = ko.observable(self.typeArray.find("val", curTypeCached));
     self.currentSelectedTime = ko.observable(self.timeArray.find("val", curTimeCached));
-    
-    self.checkVMCurrent = function () {
-        console.log(self.currentSelectedType);
-        console.log(self.currentSelectedTime);
-    }
 
     //OBSERVABLE ARRAYS////////////////////////////////////////////////////////
     self.deploy = ko.observableArray(); // Deploy observable array that will be called through HTML
