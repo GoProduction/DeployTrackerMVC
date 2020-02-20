@@ -1,4 +1,12 @@
-﻿/*Change Log Modal*/
+﻿.overflow-at-600 {
+    text-align: left;
+    height: 600px;
+    border: thin;
+    padding: 2px 10px 0px 10px;
+    overflow-y: scroll;
+}
+
+/*Change Log Modal*/
 .change-log-modal {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */

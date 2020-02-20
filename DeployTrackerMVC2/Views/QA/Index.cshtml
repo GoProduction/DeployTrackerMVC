@@ -72,14 +72,14 @@
                         <thead>
                             <tr>
                                 <th style="display:none">ID</th>
-                                <th>Date</th>
-                                <th>Feature</th>
-                                <th class="column3">Version</th>
-                                <th>Environment</th>
-                                <th class="column1">Start Time</th>
-                                <th class="column1">End Time</th>
-                                <th class="column2">Deploy Status</th>
-                                <th>Smoke Status</th>
+                                <th class="fancy-header">Date</th>
+                                <th class="fancy-header">Feature</th>
+                                <th class="column3 fancy-header">Version</th>
+                                <th class="fancy-header">Environment</th>
+                                <th class="column1 fancy-header">Start Time</th>
+                                <th class="column1 fancy-header">End Time</th>
+                                <th class="column2 fancy-header">Deploy Status</th>
+                                <th class="fancy-header">Smoke Status</th>
                             </tr>
                         </thead>
                         <tbody id="TableCurrentBody" data-bind="foreach: currentDeploys().sort($root.sortByDate)" class="table">
@@ -120,17 +120,17 @@
                                                 event: { click: $root.selectRecord},
                                                 css: $root.rowColor($data)"></td>
                                 <!--Deploy Status field-->
-                                <td class="column2"
-                                    data-bind='with: $root.statusFromID(statusID()),
-                                                event: { click: $root.selectRecord},
-                                                css: $root.rowColor($data)'>
-                                    <span data-bind="text: statusName"></span>
+                                <td class="column2" data-bind='event: { click: $root.selectRecord}, css: $root.rowColor($data)'>
+                                    <i data-bind="css: $root.statusIcon($data)"></i>
+                                    <span data-bind="with: $root.statusFromID(statusID())">
+                                        <span data-bind="text: statusName"></span>
+                                    </span>
                                 </td>
                                 <!--Smoke Status field-->
                                 <td data-bind="css: $root.rowColor($data)">
-                                    <button data-bind="click: $root.openStatusModal, enable: $data.smokeID() !== 1" class="btn btn-sm btn-primary">
-                                        <i class="fa fa-tasks"></i>
-                                        <span style="font: bold" data-bind="with: $root.smokeFromID(smokeID())">
+                                    <button style="font-weight: bold" data-bind="click: $root.openStatusModal, enable: $data.smokeID() !== 1" class="btn btn-sm btn-outline-dark">
+                                        <i data-bind="css: $root.smokeIcon($data)"></i>
+                                        <span data-bind="with: $root.smokeFromID(smokeID())">
                                             <span data-bind="text: smokeName"></span>
                                         </span>
                                     </button>
@@ -148,13 +148,13 @@
                     <table class="table" id="DevTable">
                         <thead>
                             <tr>
-                                <th style="display:none">ID</th>
-                                <th>Feature</th>
-                                <th class="column3">Version</th>
-                                <th>Environment</th>
-                                <th class="column1">Planned Date</th>
-                                <th class="column1">Planned Time</th>
-                                <th class="column2">Deploy Status</th>
+                                <th class="fancy-header" style="display:none">ID</th>
+                                <th class="fancy-header">Feature</th>
+                                <th class="column3 fancy-header">Version</th>
+                                <th class="fancy-header">Environment</th>
+                                <th class="column1 fancy-header">Planned Date</th>
+                                <th class="column1 fancy-header">Planned Time</th>
+                                <th class="column2 fancy-header">Deploy Status</th>
                             </tr>
                         </thead>
                         <tbody id="queuedTableBody" data-bind="foreach: queuedDeploys" class="table">

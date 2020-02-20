@@ -11,6 +11,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
     //Loading variable: max variable is currently 6
     var loadingVar = 0;
+    var loadingVarMax = 7;
 
     //Css class evaluation for table rows
     self.rowColor = function (deploy) {
@@ -36,6 +37,40 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             return null;
         }
     };
+    self.statusIcon = function (deploy) {
+        //Deploying
+        if (deploy.statusID() == 2) {
+            return 'fa fa-spinner';
+        }
+        //Completed
+        else if (deploy.statusID() == 3) {
+            return 'fa fa-check';
+        }
+        //Failed
+        else if (deploy.statusID() == 4) {
+            return 'fa fa-times';
+        }
+        else {
+            return null;
+        }
+    }
+    self.smokeIcon = function (deploy) {
+        //Pass
+        if (deploy.smokeID() == 3) {
+            return 'fa fa-check';
+        }
+        //Conditional
+        else if (deploy.smokeID() == 4) {
+            return 'fa fa-wrench';
+        }
+        //Fail
+        else if (deploy.smokeID() == 5) {
+            return 'fa fa-times';
+        }
+        else {
+            return null;
+        }
+    }
 
     //Finder functions
     self.featureFromID = function (id) {
@@ -106,6 +141,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.status = ko.observableArray(); // Status observable array
     self.smoke = ko.observableArray(); //Smoke observable array
     self.comment = ko.observableArray(); // Comment observable array
+    self.note = ko.observableArray();
     self.selected = ko.observableArray(self.deploy()[0]); //Determines if record is selected
 
     //ObSERVABLES///////////////////////////////////////////////////////////
@@ -153,7 +189,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             jvsObject.depStartTime,
             jvsObject.depEndTime,
             jvsObject.statusID,
-            jvsObject.smokeID);
+            jvsObject.smokeID,
+            jvsObject.noteID);
         console.log("New JS object", jvsObject);
         self.deploy.push(newDeploy);
         self.watchModel(newDeploy, self.modelChanged);
@@ -217,7 +254,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         }));
         loadingVar++;
         console.log("Loading var: ", loadingVar, " loaded Deploys");
-        if (loadingVar == 6) {
+        if (loadingVar == loadingVarMax) {
             $(".loading-class").fadeOut("slow");
         }
         else {
@@ -235,7 +272,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         }));
         loadingVar++;
         console.log("Loading var: ", loadingVar, " loaded Features");
-        if (loadingVar == 6) {
+        if (loadingVar == loadingVarMax) {
             $(".loading-class").fadeOut("slow");
         }
         else {
@@ -254,7 +291,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         }));
         loadingVar++;
         console.log("Loading var: ", loadingVar, " loaded Environments");
-        if (loadingVar == 6) {
+        if (loadingVar == loadingVarMax) {
             $(".loading-class").fadeOut("slow");
         }
         else {
@@ -272,7 +309,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         }));
         loadingVar++;
         console.log("loading var: ", loadingVar, " loaded Status");
-        if (loadingVar == 6) {
+        if (loadingVar == loadingVarMax) {
             $(".loading-class").fadeOut("slow");
         }
         else {
@@ -290,7 +327,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         }));
         loadingVar++;
         console.log("loading var: ", loadingVar, " loaded Smoke");
-        if (loadingVar == 6) {
+        if (loadingVar == loadingVarMax) {
             $(".loading-class").fadeOut("slow");
         }
         else {
@@ -311,13 +348,34 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         }));
         loadingVar++;
         console.log("Loading var: ", loadingVar, " loaded Comments");
-        if (loadingVar == 6) {
+        if (loadingVar == loadingVarMax) {
             $(".loading-class").fadeOut("slow");
         }
         else {
             return;
         }
     }); // Featches data from Comments table
+    $.getJSON('/odata/Notes', function (data) {
+        self.note(ko.utils.arrayMap(data.value, function (data) {
+            var obsNote = {
+                noteID: data.noteID,
+                noteBody: ko.observable(data.noteBody),
+                noteDateTime: ko.observable(new Date(data.noteDateTime)),
+                noteVisID: ko.observable(data.noteVisID),
+                depID: ko.observable(data.depID)
+            }
+
+            return obsNote;
+        }));
+        loadingVar++;
+        console.log("loading var: ", loadingVar, " loaded Notes");
+        if (loadingVar == loadingVarMax) {
+            $(".loading-class").fadeOut("slow");
+        }
+        else {
+            return;
+        }
+    }); // Featches data from Notes table
 
     ///TABLE FILTERS////////////////////////////////////////////////////
     self.queuedDeploys = ko.computed(function () {

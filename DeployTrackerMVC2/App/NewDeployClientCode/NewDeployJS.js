@@ -494,7 +494,7 @@ $(function () {
     var signalR = $.connection.deploy;
     var viewModel = new TempDeployViewModel(signalR);
     
-    signalR.client.updateNotes = function (payload) {
+    signalR.client.updateNewNote = function (payload) {
         viewModel.updateNotesVM(payload);
     }
     signalR.client.updatePatchedNote = function (id, key, value) {

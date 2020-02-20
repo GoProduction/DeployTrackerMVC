@@ -194,7 +194,7 @@ $(function () {
     var secondFooter = document.getElementById("secondFooter");
     var editFooter = document.getElementById("editFooter");
 
-    signalR.client.updateNotes = function (payload) {
+    signalR.client.updateNewNote = function (payload) {
         viewModel.updateViewModel(payload);
     }
     signalR.client.updatePatchedNote = function (id, key, value) {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -74,15 +75,32 @@ namespace DeployTrackerMVC2.Controllers.Notes
         [ResponseType(typeof(Note))]
         public IHttpActionResult PosttblNote(Note tblNote)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
-            
-            db.Notes.Add(tblNote);
-            db.SaveChanges();
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
 
-            return CreatedAtRoute("DefaultApi", new { id = tblNote.noteID }, tblNote);
+                db.Notes.Add(tblNote);
+                db.SaveChanges();
+
+                return CreatedAtRoute("DefaultApi", new { id = tblNote.noteID }, tblNote);
+            }
+            catch(DbEntityValidationException e)
+            {
+                foreach (var eve in e.EntityValidationErrors)
+                {
+                    Console.WriteLine("Entity of type \"{0}\" in state \"{1}\" has the following validation errors:",
+                        eve.Entry.Entity.GetType().Name, eve.Entry.State);
+                    foreach (var ve in eve.ValidationErrors)
+                    {
+                        Console.WriteLine("- Property: \"{0}\", Error: \"{1}\"",
+                            ve.PropertyName, ve.ErrorMessage);
+                    }
+                }
+                throw;
+            }
         }
 
         // DELETE: api/NotesAPI/5

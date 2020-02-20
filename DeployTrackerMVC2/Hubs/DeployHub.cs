@@ -50,7 +50,7 @@ namespace DeployTrackerMVC2.Hubs
 
         public void updateNotes(String response)
         {
-            Clients.All.updateNotes(response);
+            Clients.All.updateNewNote(response);
         }
 
         public void Notification(string type, string message, string icon)

@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="dbMainDataModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="dbMainDataModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="sysdiagrams">
           <Key>
             <PropertyRef Name="diagram_id" />
@@ -60,7 +60,7 @@
             <PropertyRef Name="noteID" />
           </Key>
           <Property Name="noteID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
-          <Property Name="noteBody" Type="varchar" MaxLength="2000" />
+          <Property Name="noteBody" Type="varchar(max)" />
           <Property Name="noteDateTime" Type="datetimeoffset" Precision="7" />
           <Property Name="noteVisID" Type="int" />
         </EntityType>
@@ -215,8 +215,7 @@
             <End Role="tblDeploy" EntitySet="tblDeploy" />
           </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="dbMainDataModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -284,7 +283,7 @@
             <PropertyRef Name="noteID" />
           </Key>
           <Property Name="noteID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-          <Property Name="noteBody" Type="String" MaxLength="2000" FixedLength="false" Unicode="false" />
+          <Property Name="noteBody" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
           <Property Name="noteDateTime" Type="DateTimeOffset" Precision="7" />
           <Property Name="noteVisID" Type="Int32" />
           <NavigationProperty Name="Deploy" Relationship="Self.note_to_deploy" FromRole="tblNotes" ToRole="tblDeploy" />

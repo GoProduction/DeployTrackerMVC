@@ -126,7 +126,7 @@ async function deleteDeploy(signalR, model) {
     });
 }
 //Model for Deploy (when grabbed from DOM node/already binded record)
-var Deploy = function (id, feature, version, environment, plannedDateTime, startTime, endTime, status, smoke) {
+var Deploy = function (id, feature, version, environment, plannedDateTime, startTime, endTime, status, smoke, note) {
     var self = this;
     self.depID = id;
     self.feaID = ko.observable(ko.utils.unwrapObservable(feature));
@@ -137,6 +137,7 @@ var Deploy = function (id, feature, version, environment, plannedDateTime, start
     self.depEndTime = ko.observable(ko.utils.unwrapObservable(endTime));
     self.statusID = ko.observable(ko.utils.unwrapObservable(status));
     self.smokeID = ko.observable(ko.utils.unwrapObservable(smoke));
+    self.noteID = ko.observable(ko.utils.unwrapObservable(note));
     console.log("Planned time is: ", ko.utils.unwrapObservable(self.depPlannedDateTime));
 }
 //Model for Comment
@@ -149,7 +150,7 @@ var Comment = function (id, body, dateTime, user, depID) {
     self.depID = ko.observable(depID);
 }
 //Model for Deploy when passing from server/newly submitted
-var incomingDeploy = function (id, feature, version, environment, plannedDateTime, startTime, endTime, status, smoke) {
+var incomingDeploy = function (id, feature, version, environment, plannedDateTime, startTime, endTime, status, smoke, note) {
     var self = this;
     self.depID = id;
     self.feaID = ko.observable(feature);
@@ -160,6 +161,7 @@ var incomingDeploy = function (id, feature, version, environment, plannedDateTim
     self.depEndTime = ko.observable(endTime);
     self.statusID = ko.observable(status);
     self.smokeID = ko.observable(smoke);
+    self.noteID = ko.observable(note);
 
 }
 //Model for quick deploy

@@ -282,6 +282,7 @@
     <Content Include="App\HomeClientCode\HomeJS.js" />
     <Content Include="App\HomeModal.css" />
     <Content Include="App\monthcalendartheme.css" />
+    <Content Include="App\NavbarStyles.css" />
     <Content Include="App\NewDeployClientCode\NewDeployCSS.css" />
     <Content Include="App\NewDeployClientCode\NewDeployJS.js" />
     <Content Include="App\ModalStyles.css" />

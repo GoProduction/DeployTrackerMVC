@@ -113,16 +113,19 @@
                                 <td class="column1" data-bind="timeFormatted: depEndTime, format: 'h:mm a', event: { click: $root.edit}, css: $root.rowColor($data)"></td>
                                 <!--Status field w/ button-->
                                 <td class="column2" data-bind="css: $root.rowColor($data)">
-                                    <button id="btnStatusCurrent" class="btn btn-sm btn-primary" type="button" data-toggle="modal" data-bind="click: $root.openModal">
-                                        <i class="fa fa-tasks"></i>
+                                    <button id="btnStatusCurrent" class="btn btn-sm btn-outline-dark" style="font-weight: bold" type="button" data-toggle="modal" data-bind="click: $root.openModal">
+                                        <i data-bind="css: $root.statusIcon($data)"></i>
                                         <span data-bind="with: $root.statusFromID(statusID())">
                                             <span data-bind="text: statusName" class="button-text"></span>
                                         </span>
                                     </button>
                                 </td>
                                 <!--Smoke Status field-->
-                                <td data-bind="with: $root.smokeFromID(smokeID()), event: { click: $root.edit}, css: $root.rowColor($data)">
-                                    <span data-bind="text: smokeName"></span>
+                                <td data-bind="event: { click: $root.edit}, css: $root.rowColor($data)">
+                                    <i data-bind="css: $root.smokeIcon($data)"></i>
+                                    <span data-bind="with: $root.smokeFromID(smokeID())">
+                                        <span data-bind="text: smokeName"></span>
+                                    </span>
                                 </td>
                             </tr>
                         </tbody>
@@ -224,7 +227,6 @@
                 <p style="display: none">ID<input type="text" id="ctlmodalID" /></p>
                 <!--ERROR status field-->
                 <span id="errorStatusModalChange" style="text-align: center; color: red; display: none;"></span>
-
                 <!--Smoke Drop-down-->
                 <div id="smoke-div" style="display:none" class="status-modal-body">
                     <br />
@@ -248,152 +250,194 @@
     <div data-bind="modal: deployBeingEdited" class="modal fade right" role="dialog" tabindex="-1">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content" data-bind="if: $root.deployBeingEdited()">
-                <!--Main Header-->
-                <div class="record-modal-header" id="recordModalHeader">
-                    <span data-bind="with: $root.featureFromID(deployBeingEdited().feaID())">
-                        <span data-bind="text: feaName"></span>
-                    </span>
-                    <span data-bind="text: deployBeingEdited().depVersion"></span>
-                </div>
-                <div class="record-modal-header" data-bind="css: {'css-white': deployBeingEdited().statusID() === 3,
+                <!--Record Page-->
+                <div id="recordPage">
+                    <!--Main Header-->
+                    <div class="record-modal-header" id="recordModalHeader">
+                        <span data-bind="with: $root.featureFromID(deployBeingEdited().feaID())">
+                            <span data-bind="text: feaName"></span>
+                        </span>
+                        <span data-bind="text: deployBeingEdited().depVersion"></span>
+                    </div>
+                    <div class="record-modal-header" data-bind="css: {'css-white': deployBeingEdited().statusID() === 3,
                                             'css-deploying': deployBeingEdited().statusID() === 2,
                                             'css-deploy-failed': deployBeingEdited().statusID() === 4,
                                             'css-white': deployBeingEdited().statusID() === 1}">
-                    <span>Deploy Status: </span>
-                    <span data-bind="with: $root.statusFromID(deployBeingEdited().statusID())" class="status-text">
-                        <span data-bind="text: statusName"></span>
-                    </span>
-                </div>
-                <!--Smoke Status Header-->
-                <div class="record-modal-header" id="smokeHeader" data-bind="css: {'css-green': deployBeingEdited().smokeID() === 3,
+                        <span>Deploy Status: </span>
+                        <span data-bind="with: $root.statusFromID(deployBeingEdited().statusID())" class="status-text">
+                            <span data-bind="text: statusName"></span>
+                        </span>
+                    </div>
+                    <!--Smoke Status Header-->
+                    <div class="record-modal-header" id="smokeHeader" data-bind="css: {'css-green': deployBeingEdited().smokeID() === 3,
                                                                                     'css-yellow': deployBeingEdited().smokeID() === 4,
                                                                                     'css-red': deployBeingEdited().smokeID() === 5,
                                                                                     'css-white': deployBeingEdited().smokeID() === 2,
                                                                                     'css-white': deployBeingEdited().smokeID() === 1}">
-                    <span>Smoke Status: </span>
-                    <span data-bind="with: smokeFromID(deployBeingEdited().smokeID())" class="status-text">
-                        <span data-bind="text: smokeName"></span>
-                    </span>
-                </div>
-                <!--Modal Container Body-->
-                <form data-bind="submit: $root.done">
-                    <div class="modal-body">
-                        <div class="row">
-                            <!--Details Body-->
-                            <div class="col record-modal-col">
-                                <table>
-                                    <tr>
-                                        <!--ID-->
-                                        <td style="padding-right: 3px"><label class="record-label">ID</label></td>
-                                        <td><input id="editID" type="text" data-bind="value: deployBeingEdited().depID" disabled /></td>
-                                    </tr>
-                                    <tr>
-                                        <!--Feature-->
-                                        <td style="padding-right: 3px"><label class="record-label">Feature</label></td>
-                                        <td><select id="editFeature" data-bind="options: $root.feature,
+                        <span>Smoke Status: </span>
+                        <span data-bind="with: smokeFromID(deployBeingEdited().smokeID())" class="status-text">
+                            <span data-bind="text: smokeName"></span>
+                        </span>
+                    </div>
+                    <!--Modal Container Body-->
+                    <form data-bind="submit: $root.done">
+                        <div class="modal-body">
+                            <div class="row">
+                                <!--Details Body-->
+                                <div class="col record-modal-col">
+                                    <table>
+                                        <tr>
+                                            <!--ID-->
+                                            <td style="padding-right: 3px"><label class="record-label">ID</label></td>
+                                            <td><input id="editID" type="text" data-bind="value: deployBeingEdited().depID" disabled /></td>
+                                        </tr>
+                                        <tr>
+                                            <!--Feature-->
+                                            <td style="padding-right: 3px"><label class="record-label">Feature</label></td>
+                                            <td>
+                                                <select id="editFeature" data-bind="options: $root.feature,
                                                                                 optionsText: 'feaName',
                                                                                 optionsValue: 'feaID',
-                                                                                value: deployBeingEdited().feaID"></select></td>
-                                    </tr>
-                                    <tr>
-                                        <!--Version-->
-                                        <td style="padding-right: 3px"><label class="record-label">Version</label></td>
-                                        <td><input id="editVersion" type="text" data-bind="value: deployBeingEdited().depVersion, valueUpdate: 'afterkeydown'" /></td>
-                                    </tr>
-                                    <tr>
-                                        <!--Environment-->
-                                        <td style="padding-right: 3px"><label class="record-label">Environment</label></td>
-                                        <td><select id="editEnvironment" data-bind="options: $root.environment,
-                                                                                    optionsText: 'envName',
-                                                                                    optionsValue: 'envID',
-                                                                                    value: deployBeingEdited().envID"></select></td>
-                                    </tr>
-                                    <tr>
-                                        <!--Planned Date-->
-                                        <td style="padding-right: 3px"><label class="record-label">Planned Date</label></td>
-                                        <td><input id="editPlannedDate" type="text" data-bind="datepicker: deployBeingEdited().depPlannedDateTime" /></td>
-                                    </tr>
-                                    <tr>
-                                        <!--Planned Time-->
-                                        <td style="padding-right: 20px"><label class="record-label">Planned Time</label></td>
-                                        <td><input id="editPlannedTime" type="time" data-bind="timepickerInput: deployBeingEdited().depPlannedDateTime" /></td>
-                                    </tr>
-                                    <tr>
-                                        <!--Start Time-->
-                                        <td style="padding-right: 3px"><label class="record-label">Start Time</label></td>
-                                        <td><input type="time" data-bind="timeFormatted: deployBeingEdited().depStartTime, format: 'HH:mm'" disabled /></td>
-                                    </tr>
-                                    <tr>
-                                        <!--End Time-->
-                                        <td style="padding-right: 3px"><label class="record-label">End Time</label></td>
-                                        <td><input type="time" data-bind="timeFormatted: deployBeingEdited().depEndTime, format: 'HH:mm'" disabled /></td>
-                                    </tr>
-                                    <tr>
-                                        <!--Deploy Status-->
-                                        <td style="padding-right: 3px"><label class="record-label">Deploy Status</label></td>
-                                        <td><select data-bind="options: $root.status,
-                                                                optionsText: 'statusName',
-                                                                optionsValue: 'statusID',
-                                                                value: deployBeingEdited().statusID" disabled></select></td>
-                                    </tr>
-                                    <tr>
-                                        <!--Smoke Status-->
-                                        <td style="padding-right: 3px"><label class="record-label">Smoke Status</label></td>
-                                        <td><select id="editSmoke" data-bind="options: $root.smoke, 
-                                                               optionsText: 'smokeName', 
-                                                                optionsValue: 'smokeID',
-                                                                value: deployBeingEdited().smokeID" disabled /></td>
-                                    </tr>
-                                </table>
-                                
-                            </div>
-                            <!--Comments Body-->
-                            <div class="col record-modal-col">
-                                <h4 style="text-align: center">Comments:</h4>
-                                <table class="table-comments">
-                                    <tbody data-bind="foreach: commentsFiltered">
-                                        <tr class="date-time-header">
-                                            <td data-bind="fullDateTime: comDateTime" style="height: 2px">
-                                                <span>by User: </span>
+                                                                                value: deployBeingEdited().feaID"></select>
                                             </td>
                                         </tr>
                                         <tr>
+                                            <!--Version-->
+                                            <td style="padding-right: 3px"><label class="record-label">Version</label></td>
+                                            <td><input id="editVersion" type="text" data-bind="value: deployBeingEdited().depVersion, valueUpdate: 'afterkeydown'" /></td>
+                                        </tr>
+                                        <tr>
+                                            <!--Environment-->
+                                            <td style="padding-right: 3px"><label class="record-label">Environment</label></td>
                                             <td>
-                                                <span data-bind="text: comBody"></span>
+                                                <select id="editEnvironment" data-bind="options: $root.environment,
+                                                                                    optionsText: 'envName',
+                                                                                    optionsValue: 'envID',
+                                                                                    value: deployBeingEdited().envID"></select>
                                             </td>
                                         </tr>
-                                    </tbody>
-                                </table>
-                                <div id="comment-button-div-1">
-                                    <button class="btn btn-info btn-sm" style="text-align:center; width:100%" data-bind="click: newComment">
-                                        <i class="fa fa-comment"></i>
-                                        <span>New Comment</span>
-                                    </button>
+                                        <tr>
+                                            <!--Planned Date-->
+                                            <td style="padding-right: 3px"><label class="record-label">Planned Date</label></td>
+                                            <td><input id="editPlannedDate" type="text" data-bind="datepicker: deployBeingEdited().depPlannedDateTime" /></td>
+                                        </tr>
+                                        <tr>
+                                            <!--Planned Time-->
+                                            <td style="padding-right: 20px"><label class="record-label">Planned Time</label></td>
+                                            <td><input id="editPlannedTime" type="time" data-bind="timepickerInput: deployBeingEdited().depPlannedDateTime" /></td>
+                                        </tr>
+                                        <tr>
+                                            <!--Start Time-->
+                                            <td style="padding-right: 3px"><label class="record-label">Start Time</label></td>
+                                            <td><input type="time" data-bind="timeFormatted: deployBeingEdited().depStartTime, format: 'HH:mm'" disabled /></td>
+                                        </tr>
+                                        <tr>
+                                            <!--End Time-->
+                                            <td style="padding-right: 3px"><label class="record-label">End Time</label></td>
+                                            <td><input type="time" data-bind="timeFormatted: deployBeingEdited().depEndTime, format: 'HH:mm'" disabled /></td>
+                                        </tr>
+                                        <tr>
+                                            <!--Deploy Status-->
+                                            <td style="padding-right: 3px"><label class="record-label">Deploy Status</label></td>
+                                            <td>
+                                                <select data-bind="options: $root.status,
+                                                                optionsText: 'statusName',
+                                                                optionsValue: 'statusID',
+                                                                value: deployBeingEdited().statusID" disabled></select>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <!--Smoke Status-->
+                                            <td style="padding-right: 3px"><label class="record-label">Smoke Status</label></td>
+                                            <td>
+                                                <select id="editSmoke" data-bind="options: $root.smoke,
+                                                               optionsText: 'smokeName',
+                                                                optionsValue: 'smokeID',
+                                                                value: deployBeingEdited().smokeID" disabled />
+                                            </td>
+                                        </tr>
+                                        <!--Change Log-->
+                                        <tr>
+                                            <td><label class="record-label">Change-log: </label></td>
+                                            <td>
+                                                <button data-bind="click: $root.directToNotePage, enable: deployBeingEdited().noteID() != null" class="btn btn-sm btn-info">
+                                                    <i class="fa fa-clipboard"></i>
+                                                    <span data-bind="with: $root.noteFromID($root.deployBeingEdited().noteID())">
+                                                        <span data-bind="text: noteVisID"></span>
+                                                    </span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </table>
                                 </div>
-                                <div id="record-comment-text-field" style="display:none; width:100%; text-align:center">
-                                    <textarea id="recordCommentField" rows="10" cols="10" style="width:100%; -moz-box-sizing:border-box; box-sizing: border-box"></textarea>
-                                </div>
-                                <div id="comment-button-div-2" class="status-modal-footer" style="display:none">
-                                    <button class="btn btn-primary btn-sm" style="text-align:center; width:40%" data-bind="click: $root.submitComment">
-                                        <i class="fa fa-cloud"></i>
-                                        <span>Submit</span>
-                                    </button>
-                                    <button class="btn btn-warning btn-sm" style="text-align:center; width:40%" data-bind="click: cancelComment">Cancel</button>
+                                <!--Comments Body-->
+                                <div class="col record-modal-col">
+                                    <h4 style="text-align: center">Comments:</h4>
+                                    <table class="table-comments">
+                                        <tbody data-bind="foreach: commentsFiltered">
+                                            <tr class="date-time-header">
+                                                <td data-bind="fullDateTime: comDateTime" style="height: 2px">
+                                                    <span>by User: </span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <span data-bind="text: comBody"></span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <div id="comment-button-div-1">
+                                        <button class="btn btn-info btn-sm" style="text-align:center; width:100%" data-bind="click: newComment">
+                                            <i class="fa fa-comment"></i>
+                                            <span>New Comment</span>
+                                        </button>
+                                    </div>
+                                    <div id="record-comment-text-field" style="display:none; width:100%; text-align:center">
+                                        <textarea id="recordCommentField" rows="10" cols="10" style="width:100%; -moz-box-sizing:border-box; box-sizing: border-box"></textarea>
+                                    </div>
+                                    <div id="comment-button-div-2" class="status-modal-footer" style="display:none">
+                                        <button class="btn btn-primary btn-sm" style="text-align:center; width:40%" data-bind="click: $root.submitComment">
+                                            <i class="fa fa-cloud"></i>
+                                            <span>Submit</span>
+                                        </button>
+                                        <button class="btn btn-warning btn-sm" style="text-align:center; width:40%" data-bind="click: cancelComment">Cancel</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="modal-footer">
+                            <div id="footerEditDisabled">
+                                <button class="btn btn-warning btn-sm" data-bind="click: $root.enableEdit">Edit</button>
+                                <button class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
+                            </div>
+                            <div id="footerEditEnabled">
+                                <button type="button" data-bind="click: $root.cancelEdit" class="btn btn-danger btn-sm">Cancel</button>
+                                <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!--Note page-->
+                <div id="notePage">
+                    <div class="modal-header">
+                        <span data-bind="with:$root.noteFromID(deployBeingEdited().noteID())">
+                            <label>CL# </label>
+                            <span data-bind="text: noteVisID"></span>
+                        </span>
+                    </div>
+                    <div class="overflow-at-600">
+                        <div data-bind="with: $root.noteBodyFromID(deployBeingEdited().noteID())" class="modal-body">
+                            <span data-bind="html: noteBody" style="text-align: center"></span>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <div id="footerEditDisabled">
-                            <button class="btn btn-warning btn-sm" data-bind="click: $root.enableEdit">Edit</button>
-                            <button class="btn btn-secondary btn-sm" data-dismiss="modal">Close</button>
-                        </div>
-                        <div id="footerEditEnabled">
-                            <button type="button" data-bind="click: $root.cancelEdit" class="btn btn-danger btn-sm">Cancel</button>
-                            <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
-                        </div>
+                        <button data-bind="click: $root.directToRecordPage" class="btn btn-sm btn-light">
+                            <i class="fa fa-arrow-circle-left"></i>
+                            <span>Back</span>
+                        </button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
@@ -431,13 +475,13 @@
                         <td><label>Feature: </label></td>
                         <td><select id="qdFeature" data-bind="options: $root.feature, 
                                                                 optionsText: 'feaName', 
-                                                                optionsValue: 'feaName'"></select></td>
+                                                                optionsValue: 'feaID'"></select></td>
                         <td><label>Version: </label></td>
                         <td><input id="qdVersion"/></td>
                         <td><label>Environment: </label></td>
                         <td><select id="qdEnvironment" data-bind="options: $root.environment, 
                                                                     optionsText: 'envName', 
-                                                                    optionsValue: 'envName'"></select></td>
+                                                                    optionsValue: 'envID'"></select></td>
                     </tr>
                 </table>
             </div>

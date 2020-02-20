@@ -11,7 +11,7 @@ namespace DeployTrackerMVC2.Models
 {
     using System;
     using System.Collections.Generic;
-
+    
     public partial class Deploy
     {
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
@@ -19,8 +19,7 @@ namespace DeployTrackerMVC2.Models
         {
             this.Comment = new HashSet<Comment>();
         }
-        
-
+    
         public int depID { get; set; }
         public Nullable<int> feaID { get; set; }
         public Nullable<int> envID { get; set; }
@@ -32,7 +31,7 @@ namespace DeployTrackerMVC2.Models
         public Nullable<System.DateTimeOffset> depStartTime { get; set; }
         public Nullable<System.DateTimeOffset> depEndTime { get; set; }
         public Nullable<int> depTimeDiff { get; set; }
-
+    
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Comment> Comment { get; set; }
         public virtual DeployEnvironment DeployEnvironment { get; set; }
@@ -41,5 +40,4 @@ namespace DeployTrackerMVC2.Models
         public virtual Smoke Smoke { get; set; }
         public virtual Status Status { get; set; }
     }
-    
 }
