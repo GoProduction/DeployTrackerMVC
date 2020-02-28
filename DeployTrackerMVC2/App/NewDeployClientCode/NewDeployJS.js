@@ -27,6 +27,11 @@ var TempDeployViewModel = function (signalR) {
 
     var self = this;
 
+    //Loading variables
+    var loadingVar = 0;
+    var loadingVarMax = 3;
+    self.loading = ko.observable(true);
+
     //Deploys array
     self.deploys = ko.observableArray(0);
     self.featureList = ko.observableArray();
@@ -464,7 +469,16 @@ var TempDeployViewModel = function (signalR) {
 
             return obsFeature;
         }));
-    });
+    })
+        .done(function () {
+            loadingVar++;
+            if (loadingVar == loadingVarMax) {
+                self.loading(false);
+            }
+            else {
+                return;
+            }
+        });
     $.getJSON('/odata/Environments', function (data) {
         self.environmentList(ko.utils.arrayMap(data.value, function (environmentList) {
             var obsEnvironment = {
@@ -474,7 +488,16 @@ var TempDeployViewModel = function (signalR) {
 
             return obsEnvironment;
         }));
-    });
+    })
+        .done(function () {
+            loadingVar++;
+            if (loadingVar == loadingVarMax) {
+                self.loading(false);
+            }
+            else {
+                return;
+            }
+        });
     $.getJSON('/odata/Notes', function (data) {
         self.notes(ko.utils.arrayMap(data.value, function (notes) {
             var obsNote = {
@@ -486,7 +509,16 @@ var TempDeployViewModel = function (signalR) {
 
             return obsNote;
         }));
-    });
+    })
+        .done(function () {
+            loadingVar++;
+            if (loadingVar == loadingVarMax) {
+                self.loading(false);
+            }
+            else {
+                return;
+            }
+        });
 }
 $(function () {
     $("#txtPlannedDate").datepicker();

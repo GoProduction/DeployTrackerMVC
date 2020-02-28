@@ -102,7 +102,7 @@
                                     </span>
                                 </td>
                                 <!--Version field-->
-                                <td class="column3" data-bind="text: depVersion, event: { click: $root.edit}, css: $root.rowColor($data)"></td>
+                                <td class="column3" data-bind="text: depVersion, event: { click: $root.edit}, css: $root.rowColor($data)" style="word-wrap: break-word; max-width: 100px;"></td>
                                 <!--Environment field-->
                                 <td data-bind="with: $root.environmentFromID(envID()), event: { click: $root.edit}, css: $root.rowColor($data)">
                                     <span data-bind="text: envName"></span>
@@ -155,7 +155,7 @@
                                 <td data-bind="with: $root.featureFromID(feaID()), event: { click: $root.edit}">
                                     <span data-bind="text: feaName"></span>
                                 </td>
-                                <td class="column3" data-bind="text: depVersion, event: { click: $root.edit}"></td>
+                                <td class="column3" data-bind="text: depVersion, event: { click: $root.edit}" style="word-wrap: break-word; max-width: 100px;"></td>
                                 <td data-bind="with: $root.environmentFromID(envID()), event: { click: $root.edit}">
                                     <span data-bind="text: envName"></span>
                                 </td>

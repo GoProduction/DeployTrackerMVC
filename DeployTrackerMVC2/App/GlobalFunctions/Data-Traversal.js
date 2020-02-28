@@ -1,4 +1,5 @@
-﻿
+﻿//GET requests
+
 //PATCH requests
 async function patchDeploy(payload, model) {
     let result;
@@ -21,7 +22,7 @@ async function patchNote(payload, model) {
     let result;
     try {
         result = await $.ajax({
-            url: '/odata/Notes(' + model.noteID + ')',
+            url: '/odata/NoteBodies(' + model.id + ')',
             type: 'PATCH',
             async: true,
             data: JSON.stringify(payload),
@@ -88,8 +89,10 @@ async function postDeploy(signalR, payload) {
         console.log("Ready state: ", msg.readyState);
     }  
 }
-async function postNote(signalR, payload) {
+async function postNote(signalR, payload, noteBody) {
     let result;
+    var noteID = null;
+    //Post note info
     try {
         result = await $.ajax({
             url: '/api/NotesAPI',
@@ -101,7 +104,8 @@ async function postNote(signalR, payload) {
             dataType: 'json',
             success: function (data) {
                 var response = JSON.stringify(data);
-                console.log("response: ", response);
+                noteID = data.noteID;
+                console.log("response for tblNotes: ", response);
                 signalR.server.updateNotes(response);
                 successToast("Note has been successfully submitted.");
             }
@@ -113,7 +117,34 @@ async function postNote(signalR, payload) {
         console.log(msg.responseText);
         console.log("Ready state: ", msg.readyState);
     }
+    //Post note body
+    try {
+        var payloadBody = {};
+        payloadBody['noteID'] = noteID;
+        payloadBody['body'] = noteBody;
+        //console.log("NoteBody payload is: ", JSON.stringify(payload));
+        result = await $.ajax({
+            url: '/api/NoteBodiesAPI',
+            type: 'POST',
+            async: true,
+            mimeType: 'text/html',
+            data: JSON.stringify(payloadBody),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: function (data) {
+                var response = JSON.stringify(data);
+                console.log("Note body: ", response);
+            }
+        });
+    }
+    catch (msg) {
+        console.log("error: ", msg.status);
+        console.log(msg.statusText);
+        console.log(msg.responseText);
+        console.log("Ready state: ", msg.readyState);
+    }
 };
+
 //DELETE requests
 async function deleteDeploy(signalR, model) {
     $.ajax({
@@ -178,14 +209,16 @@ var QuickDeploy = function (id, version, environment, plannedDateTime, startTime
 var Note = function (id, body, dateTime, visID) {
     this.noteID = id;
     this.noteVisID = visID;
-    this.noteBody = ko.observable(body);
     this.noteDateTime = ko.observable(dateTime);
 }
 //Note model used for POST request compatability
-var NewNote = function (body, dateTime, visID) {
-    this.noteBody = body;
+var NewNote = function (dateTime, visID) {
     this.noteDateTime = dateTime;
     this.noteVisID = visID;
+}
+var NoteBody = function (id, body) {
+    this.id = id;
+    this.body = ko.observable(body);
 }
 
 //Helper functions

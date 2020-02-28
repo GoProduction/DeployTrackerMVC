@@ -211,6 +211,8 @@
     <Compile Include="Controllers\Deploys\DeployAPIController.cs" />
     <Compile Include="Controllers\Deploys\DeploysController.cs" />
     <Compile Include="Controllers\EntitySetControllers.cs" />
+    <Compile Include="Controllers\NoteBodies\NoteBodiesAPIController.cs" />
+    <Compile Include="Controllers\NoteBodies\NoteBodiesController.cs" />
     <Compile Include="Controllers\Notes\NotesAPIController.cs" />
     <Compile Include="Controllers\Notes\NotesController.cs" />
     <Compile Include="Controllers\PageControllers.cs" />
@@ -250,6 +252,9 @@
       <DependentUpon>dbMainDataModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\Note.cs">
+      <DependentUpon>dbMainDataModel.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Models\NoteBody.cs">
       <DependentUpon>dbMainDataModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Models\Smoke.cs">

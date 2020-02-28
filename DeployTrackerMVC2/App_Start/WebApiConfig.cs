@@ -41,6 +41,7 @@ namespace DeployTrackerMVC2
             modelBuilder.EntitySet<Status>("Status");
             modelBuilder.EntitySet<Smoke>("Smokes");
             modelBuilder.EntitySet<Note>("Notes");
+            modelBuilder.EntitySet<NoteBody>("NoteBodies");
             modelBuilder.EntitySet<Comment>("Comments");
             var model = modelBuilder.GetEdmModel();
 

@@ -1,32 +1,49 @@
 ﻿var CLViewModel = function (signalR) {
     var self = this;
+    //Loading observable for note body window and page
+    self.loadingBody = ko.observable(false);
+    self.loadingPage = ko.observable(true);
+
+    //Loading text var
+    var loadingText = document.getElementById("loadingText");
+
     //Observable arrays
     self.changeLogs = ko.observableArray();
     self.selectedCL = ko.observableArray(self.changeLogs()[0]);
     self.editorCL = ko.observableArray([{
-        noteID: null,
-        noteBody: ko.observable(0),
-        noteDateTime: ko.observable(0)
+        id: null,
+        body: ko.observable()
+    }]);
+
+    //Change log body observable
+    self.changeLogBody = ko.observableArray([{
+        id: null,
+        body: ko.observable(0)
     }]);
 
     //Fetch data
     $.getJSON('/odata/Notes', function (data) {
+        loadingText.innerText = "Loading notes..."
         self.changeLogs(ko.utils.arrayMap(data.value, function (changeLogs) {
             var obsChangeLog = {
                 noteID: changeLogs.noteID,
-                noteBody: ko.observable(changeLogs.noteBody),
                 noteDateTime: ko.observable(changeLogs.noteDateTime),
                 noteVisID: changeLogs.noteVisID
             }
             return obsChangeLog;
         }))
-    });
+    })
+        .done(function () {
+            console.log("Finished loading");
+            self.loadingPage(false);
+        });
+        
 
     //Update Function
     self.updateViewModel = function (payload) {
         console.log("payload: ", payload);
         var jvsObject = JSON.parse(payload);
-        var newNote = new Note(jvsObject.noteID, jvsObject.noteBody, jvsObject.noteDateTime, jvsObject.noteVisID);
+        var newNote = new Note(jvsObject.noteID, jvsObject.noteDateTime, jvsObject.noteVisID);
         self.changeLogs.push(newNote);
         self.watchModel(newNote, self.modelChanged);
         console.log("Updated viewmodel");
@@ -57,8 +74,39 @@
 
     //Regular Functions
     self.select = function (data) {
-        self.selectedCL(data);
         
+        if (self.selectedCL().noteID == data.noteID) {
+            self.loadingBody(false);
+            content.style.display = 'block';
+            return;
+        }
+        else {
+            self.loadingBody(true);
+            self.selectedCL(data);
+            $.ajax({
+                url: '/api/NoteBodiesAPI?noteID=' + data.noteID,
+                type: 'GET',
+                contentType: 'application/json',
+                dataType: 'json',
+                async: true,
+                success: function (response) {
+                    response = response[0];
+                    var noteBody = response.body;
+                    //console.log("value.body: ", noteBody);
+                    self.changeLogBody(new NoteBody(response.id, response.body));
+                    console.log("self.changeLogBody(): ", self.changeLogBody);
+                },
+                fail: function (err) {
+                    console.log(err);
+                },
+                complete: function () {
+                    self.loadingBody(false);
+                }
+            })
+            
+        }
+       
+        $("#paneLoadingDiv").fadeOut('fast');
     }
     self.newChangeLog = function () {
         self.clearEditor();
@@ -67,30 +115,22 @@
         self.directToSecondPage();
     }
     self.edit = function () {
-        self.editorCL(new Note(
-            self.selectedCL().noteID,
-            ko.unwrap(self.selectedCL().noteBody),
-            ko.unwrap(self.selectedCL().noteDateTime,
-            self.selectedCL().noteVisID)
-        ));
+        console.log('edit');
         self.enableEditSave(false);
+        self.editorCL(new NoteBody(
+            ko.unwrap(self.changeLogBody().id),
+            ko.unwrap(self.changeLogBody().body)
+        ));
         initTextEditor(self);
         self.directToEditPage();
         
     }
     self.saveEditCL = function () {
         var payload = {};
-        payload["noteBody"] = ko.utils.unwrapObservable(self.editorCL().noteBody);
-        patchNote(payload, self.selectedCL());
+        payload["body"] = ko.utils.unwrapObservable(self.editorCL().body);
+        patchNote(payload, self.changeLogBody());
 
-        var updatedNote = ko.unwrap(self.editorCL());
-        var noteID = ko.utils.unwrapObservable(updatedNote.noteID);
-        var noteBody = ko.utils.unwrapObservable(updatedNote.noteBody);
-        var noteDateTime = ko.utils.unwrapObservable(updatedNote.noteDateTime);
-
-        self.selectedCL().noteID = noteID;
-        self.selectedCL().noteBody(noteBody);
-        self.selectedCL().noteDateTime(noteDateTime);
+        self.changeLogBody().body(ko.unwrap(self.editorCL().body));
 
         self.clearEditor();
         self.directToFirstPage();
@@ -135,20 +175,21 @@
         var visID = maxObj.noteVisID;
         visID++;
         console.log("New visID: ", visID);
-        var newNote = new NewNote(textBody, dateForTimezone(new Date()), visID);
-        postNote(signalR, newNote);
+        var newNote = new NewNote(dateForTimezone(new Date()), visID);
+        postNote(signalR, newNote, textBody);
+
         self.clearEditor();
         self.directToFirstPage();
     }
     self.clearEditor = function () {
-        self.editorCL(new Note(-1, '', ''));
+        self.editorCL(new NoteBody(-1, '', ''));
             
     }
 
     //Refresh edit cl function
     self.refreshEditCL = function () {
         var content = tinymce.activeEditor.getContent({ format: 'html' });
-        self.editorCL().noteBody(content);
+        self.editorCL().body(content);
 
     }
     //Observable used to enable the save button
@@ -232,6 +273,3 @@ function initTextEditor(viewModel) {
         }
     });
 }
-$(document).ready(function () {
-    $("#loadingDiv").fadeOut();
-});

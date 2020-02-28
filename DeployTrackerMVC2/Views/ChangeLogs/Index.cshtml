@@ -26,7 +26,10 @@
     }
 </head>
 <body id="bodyContent">
+    <!--ko if: loadingPage-->
+    <div id="loadingText"></div>
     <div id="loadingDiv" class="loading-class"></div>
+    <!-- /ko-->
     <div id="header" style="text-align: center">
         <h3>Change Logs</h3>
     </div>
@@ -48,13 +51,18 @@
                     </tbody>
                 </table>
             </div>
-            <div class="clPage-right-pane" data-bind="foreach: $root.selectedCL">
-                <content id="previewWindow" data-bind="html: noteBody"></content>
+            <!-- ko if: loadingBody -->
+            <div id="paneLoadingDiv" class="loading-class-for-pane clPage-right-pane"></div>
+            <!-- /ko -->
+            <!--ko ifnot: loadingBody -->
+            <div class="clPage-right-pane" data-bind="if: $root.changeLogBody">
+                <content id="previewWindow" data-bind="html: changeLogBody().body"></content>
             </div>
+            <!-- /ko-->
         </div>
         <div id="secondPage" class="row" data-bind="foreach: $root.editorCL">
             <h4>New change log...</h4>
-            <textarea id="textEditor" data-bind="wysiwyg: noteBody" style="width: 100%"></textarea>
+            <textarea id="textEditor" data-bind="wysiwyg: body" style="width: 100%"></textarea>
         </div>
     </div>
     <div id="pageFooter" class="clPage-footer">

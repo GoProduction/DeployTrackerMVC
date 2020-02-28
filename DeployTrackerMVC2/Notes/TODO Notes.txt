@@ -1,7 +1,18 @@
 ﻿TODO:
 
+Remove noteBody from tblNotes, and create new table, tblNoteBody, that stores the note body. This
+will be used for the client to ONLY load notes details on load of page. The user will get the note body
+on request.
+
+Loading change logs: Implement a GET request, and loading sequence, for displaying the note body from the tblNoteBody table.
+	-Change Logs page
+	-New Deploy page
+	-Developers page
+	-QA page
+
+
 DeploysController:
--Fully implement the deploying logic, including setting a deploy to "Not Ready" if the deploy is set to Deploying
+*-Fully implement the deploying logic, including setting a deploy to "Not Ready" if the deploy is set to Deploying
 
 db:
 *-Make depFeature and depEnvironment foreign keys, and create relationship with Environments table

@@ -18,14 +18,16 @@ namespace DeployTrackerMVC2.Models
         public Note()
         {
             this.Deploy = new HashSet<Deploy>();
+            this.NoteBody = new HashSet<NoteBody>();
         }
     
         public int noteID { get; set; }
-        public string noteBody { get; set; }
         public Nullable<System.DateTimeOffset> noteDateTime { get; set; }
         public Nullable<int> noteVisID { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Deploy> Deploy { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<NoteBody> NoteBody { get; set; }
     }
 }
