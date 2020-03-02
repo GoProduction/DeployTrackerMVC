@@ -6,16 +6,14 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.ModelBinding;
 using System.Web.Http.OData;
 using System.Web.Http.OData.Routing;
 using DeployTrackerMVC2.Hubs;
 using DeployTrackerMVC2.Models;
-using Microsoft.AspNet.SignalR;
 
-namespace DeployTrackerMVC2.Controllers
+namespace DeployTrackerMVC2.Controllers.Notes
 {
     /*
     The WebApiConfig class may require additional changes to add a route for this controller. Merge these statements into the Register method of the WebApiConfig class as applicable. Note that OData URLs are case sensitive.
@@ -24,25 +22,81 @@ namespace DeployTrackerMVC2.Controllers
     using System.Web.Http.OData.Extensions;
     using DeployTrackerMVC2.Models;
     ODataConventionModelBuilder builder = new ODataConventionModelBuilder();
-    builder.EntitySet<tblNote>("Notes");
-    builder.EntitySet<tblDeploy>("tblDeploys"); 
+    builder.EntitySet<Note>("Notes");
+    builder.EntitySet<Deploy>("Deploys"); 
+    builder.EntitySet<NoteBody>("NoteBodies"); 
     config.Routes.MapODataServiceRoute("odata", "odata", builder.GetEdmModel());
     */
     public class NotesController : NotesEntityAccessRule<DeployHub>
     {
         private dbMainEntities db = new dbMainEntities();
 
-
-        public override IQueryable<Note> Get()
+        // GET: odata/Notes
+        [EnableQuery]
+        public IQueryable<Note> GetNotes()
         {
             return db.Notes;
         }
 
-        protected override Note GetEntityByKey(int key)
+        // GET: odata/Notes(5)
+        [EnableQuery]
+        public SingleResult<Note> GetNote([FromODataUri] int key)
         {
-            return db.Notes.Find(key);
+            return SingleResult.Create(db.Notes.Where(note => note.noteID == key));
         }
 
+        // PUT: odata/Notes(5)
+        public IHttpActionResult Put([FromODataUri] int key, Delta<Note> patch)
+        {
+            Validate(patch.GetEntity());
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            Note note = db.Notes.Find(key);
+            if (note == null)
+            {
+                return NotFound();
+            }
+
+            patch.Put(note);
+
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!NoteExists(key))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Updated(note);
+        }
+
+        // POST: odata/Notes
+        public IHttpActionResult Post(Note note)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            db.Notes.Add(note);
+            db.SaveChanges();
+
+            return Created(note);
+        }
+
+        // PATCH: odata/Notes(5)
         [AcceptVerbs("PATCH", "MERGE")]
         protected override Note PatchEntity(int key, Delta<Note> patch)
         {
@@ -70,23 +124,10 @@ namespace DeployTrackerMVC2.Controllers
             return noteToPatch;
         }
 
-        public IHttpActionResult Create(Note note)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            db.Notes.Add(note);
-            db.SaveChanges();
-            return Created(note);
-        }
-
-        [AcceptVerbs("DELETE")]
-
-        public async Task<IHttpActionResult> Delete([FromODataUri] int key)
+        // DELETE: odata/Notes(5)
+        public IHttpActionResult Delete([FromODataUri] int key)
         {
             Note note = db.Notes.Find(key);
-            System.Diagnostics.Debug.WriteLine(key);
             if (note == null)
             {
                 return NotFound();
@@ -98,6 +139,20 @@ namespace DeployTrackerMVC2.Controllers
             return StatusCode(HttpStatusCode.NoContent);
         }
 
+        // GET: odata/Notes(5)/Deploy
+        [EnableQuery]
+        public IQueryable<Deploy> GetDeploy([FromODataUri] int key)
+        {
+            return db.Notes.Where(m => m.noteID == key).SelectMany(m => m.Deploy);
+        }
+
+        // GET: odata/Notes(5)/NoteBody
+        [EnableQuery]
+        public IQueryable<NoteBody> GetNoteBody([FromODataUri] int key)
+        {
+            return db.Notes.Where(m => m.noteID == key).SelectMany(m => m.NoteBody);
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -107,9 +162,9 @@ namespace DeployTrackerMVC2.Controllers
             base.Dispose(disposing);
         }
 
-        private bool tblNotesExists(int id)
+        private bool NoteExists(int key)
         {
-            return db.Notes.Count(e => e.noteID == id) > 0;
+            return db.Notes.Count(e => e.noteID == key) > 0;
         }
     }
 }

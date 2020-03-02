@@ -1,4 +1,4 @@
-﻿// T4 code generation is enabled for model 'C:\Users\erick.mccoy\source\repos\DeployTrackerMVCGit\DeployTrackerMVC2\Models\dbMainDataModel.edmx'. 
+﻿// T4 code generation is enabled for model 'C:\Users\goshe\source\repos\DeployTrackerMVC2\DeployTrackerMVC2\Models\dbMainDataModel.edmx'. 
 // To enable legacy code generation, change the value of the 'Code Generation Strategy' designer
 // property to 'Legacy ObjectContext'. This property is available in the Properties Window when the model
 // is open in the designer.

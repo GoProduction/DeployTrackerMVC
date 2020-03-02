@@ -206,7 +206,7 @@ var QuickDeploy = function (id, version, environment, plannedDateTime, startTime
     this.smokeID = smoke;
 }
 //Note model used for knockout binding
-var Note = function (id, body, dateTime, visID) {
+var Note = function (id, dateTime, visID) {
     this.noteID = id;
     this.noteVisID = visID;
     this.noteDateTime = ko.observable(dateTime);

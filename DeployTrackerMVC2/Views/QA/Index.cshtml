@@ -72,13 +72,13 @@
                         <thead>
                             <tr>
                                 <th style="display:none">ID</th>
-                                <th class="fancy-header">Date</th>
+                                <th class="column3 fancy-header">Date</th>
                                 <th class="fancy-header">Feature</th>
-                                <th class="column3 fancy-header">Version</th>
+                                <th class="column2 fancy-header">Version</th>
                                 <th class="fancy-header">Environment</th>
                                 <th class="column1 fancy-header">Start Time</th>
                                 <th class="column1 fancy-header">End Time</th>
-                                <th class="column2 fancy-header">Deploy Status</th>
+                                <th class="fancy-header">Deploy Status</th>
                                 <th class="fancy-header">Smoke Status</th>
                             </tr>
                         </thead>
@@ -87,7 +87,7 @@
                                 <!--ID field-->
                                 <td style="display:none" data-bind="text: depID"></td>
                                 <!--Date Field-->
-                                <td style="font-weight:bold"
+                                <td class="column3" style="font-weight:bold"
                                     data-bind="dateFormatted: depStartTime,
                                                format: 'MMMM Do'"></td>
                                 <!--Feature field-->
@@ -97,7 +97,7 @@
                                     <span data-bind="text: feaName"></span>
                                 </td>
                                 <!--Version field-->
-                                <td class="column3"
+                                <td class="column2"
                                     data-bind="text: depVersion,
                                                 event: { click: $root.selectRecord},
                                                 css: $root.rowColor($data)"></td>
@@ -120,7 +120,7 @@
                                                 event: { click: $root.selectRecord},
                                                 css: $root.rowColor($data)"></td>
                                 <!--Deploy Status field-->
-                                <td class="column2" data-bind='event: { click: $root.selectRecord}, css: $root.rowColor($data)'>
+                                <td data-bind='event: { click: $root.selectRecord}, css: $root.rowColor($data)'>
                                     <i data-bind="css: $root.statusIcon($data)"></i>
                                     <span data-bind="with: $root.statusFromID(statusID())">
                                         <span data-bind="text: statusName"></span>

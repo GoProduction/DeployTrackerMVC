@@ -31,7 +31,7 @@ var TempDeployViewModel = function (signalR) {
     var loadingVar = 0;
     var loadingVarMax = 3;
     self.loading = ko.observable(true);
-
+    self.loadingBody = ko.observable(false);
     //Deploys array
     self.deploys = ko.observableArray(0);
     self.featureList = ko.observableArray();
@@ -183,7 +183,6 @@ var TempDeployViewModel = function (signalR) {
                             signalR.server.updateAll(response);
                             successToast("Deploys have been successfully submitted.");
                         },
-
                         error: function (msg) {
                             console.log("error: ", msg.status);
                         }
@@ -227,6 +226,10 @@ var TempDeployViewModel = function (signalR) {
     };
 
     //Change Log modal functions
+    self.changeLogBody = ko.observableArray([{
+        id: null,
+        body: ko.observable(0)
+    }]);
     self.openCLModal = function () {
         
         var modal = document.getElementById("clModal");
@@ -286,14 +289,37 @@ var TempDeployViewModel = function (signalR) {
         self.directToFirstPage();
     }
     self.selectCL = function (data) {
-        self.selectedCL(data);
-        console.log("Selected CL", self.selectedCL().noteID);
-        //var noteBody = ko.unwrap(self.selectedCL().noteBody);
-        //var preview = document.getElementById("clPreview");
-        //$("#clPreview").html(noteBody);
+        
+        if (self.selectedCL().noteID == data.noteID) {
+            self.loadingBody(false);
+            return;
+        }
+        else {
+            self.loadingBody(true);
+            self.selectedCL(data);
+            $.ajax({
+                url: '/odata/Notes(' + data.noteID + ')/NoteBody',
+                type: 'GET',
+                contentType: 'application/json',
+                dataType: 'json',
+                async: true,
+                success: function (response) {
+                    var value = response.value;
+                    var clID = value[0].id;
+                    var clBody = value[0].body;
+                    //console.log("response body: ", clBody);
+                    self.changeLogBody(new NoteBody(clID, clBody));
+                    console.log("self.changeLogBody(): ", self.changeLogBody);
+                },
+                fail: function (err) {
+                    console.log(err);
+                },
+                complete: function () {
+                    self.loadingBody(false);
+                }
+            })
 
-        $(".rowSelect").focus();
-
+        }
     }
     self.removeSelection = function () {
         self.masterCL('undefined');
@@ -503,7 +529,6 @@ var TempDeployViewModel = function (signalR) {
             var obsNote = {
                 noteID: notes.noteID,
                 noteVisID: notes.noteVisID,
-                noteBody: ko.observable(notes.noteBody),
                 noteDateTime: ko.observable(notes.noteDateTime)
             }
 

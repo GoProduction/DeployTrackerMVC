@@ -84,16 +84,17 @@
             self.loadingBody(true);
             self.selectedCL(data);
             $.ajax({
-                url: '/api/NoteBodiesAPI?noteID=' + data.noteID,
+                url: '/odata/Notes(' + data.noteID + ')/NoteBody',
                 type: 'GET',
                 contentType: 'application/json',
                 dataType: 'json',
                 async: true,
                 success: function (response) {
-                    response = response[0];
-                    var noteBody = response.body;
-                    //console.log("value.body: ", noteBody);
-                    self.changeLogBody(new NoteBody(response.id, response.body));
+                    var value = response.value;
+                    var clID = value[0].id;
+                    var clBody = value[0].body;
+                    //console.log("response body: ", clBody);
+                    self.changeLogBody(new NoteBody(clID, clBody));
                     console.log("self.changeLogBody(): ", self.changeLogBody);
                 },
                 fail: function (err) {

@@ -156,9 +156,12 @@
                             </div>
                         </div>
                         <div class="cl-modal-right-div">
-                            <h4 class="fancy-header" style="text-align: center" data-bind="text: $root.selectedCL().noteID"></h4>
-                            <content class="cl-modal-right-preview">
-                                <span id="clPreview" data-bind="html: $root.selectedCL().noteBody"></span>
+                            <h4 class="fancy-header" style="text-align: center" data-bind="text: $root.selectedCL().visID"></h4>
+                            <content class="cl-modal-right-preview" data-bind="if: $root.changeLogBody">
+                                <!--ko if: loadingBody-->
+                                <div class="loading-class-for-pane"></div>
+                                <!--/ko-->
+                                <span id="clPreview" data-bind="html: $root.changeLogBody().body"></span>
                             </content>
                         </div>
                     </div>

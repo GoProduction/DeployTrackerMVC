@@ -511,7 +511,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             }
 
         });
-        checkForNotification(ctl.value, feature, version, deploySignalR);
+        var lookup = self.statusFromID(ctl.value);
+        var notifValue = String(lookup);
+        checkForNotification(notifValue, feature, version, deploySignalR);
         comment.value = "";
         self.closeModal();
     } // Submit new status
@@ -1031,33 +1033,7 @@ function checkForNotification(value, feature, version, signalR) {
     }
     var message = "User has updated " + feature + " " + version + " to " + value;
     deploySignalR.server.notification("Status", message, icon);
-}
-//Browser notification
-function browserNotification() {
-    // Let's check if the browser supports notifications
-    if (!("Notification" in window)) {
-        alert("This browser does not support desktop notification");
-    }
-
-    // Let's check whether notification permissions have already been granted
-    else if (Notification.permission === "granted") {
-        // If it's okay let's create a notification
-        var notification = new Notification("Hi there!");
-    }
-
-    // Otherwise, we need to ask the user for permission
-    else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then(function (permission) {
-            // If the user accepts, let's create a notification
-            if (permission === "granted") {
-                var notification = new Notification("Hi there!");
-            }
-        });
-    }
-
-    // At last, if the user has denied notifications, and you 
-    // want to be respectful there is no need to bother them any more.
-}
+};
 
 //Checks the value of a status field
 function checkStatus() {

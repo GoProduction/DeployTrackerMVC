@@ -20,14 +20,17 @@ namespace DeployTrackerMVC2.Controllers.NoteBodies
         // GET: api/NoteBodiesAPI
         public IQueryable<NoteBody> GetNoteBodies()
         {
+            System.Diagnostics.Debug.WriteLine("Get all note bodies");
             return db.NoteBodies;
         }
-        
+
         // GET: api/NoteBodiesAPI/5
-        [ResponseType(typeof(NoteBody))]
-        public async Task<IHttpActionResult> GetNoteBody(int id)
+        [HttpGet]
+        [Route("{noteBodyByNoteID}")]
+        public async Task<IHttpActionResult> GetNoteBody(string data)
         {
-            NoteBody noteBody = await db.NoteBodies.FindAsync(id);
+            NoteBody noteBody = await db.NoteBodies.FindAsync(data);
+            System.Diagnostics.Debug.WriteLine("Found: " + noteBody);
             if (noteBody == null)
             {
                 return NotFound();

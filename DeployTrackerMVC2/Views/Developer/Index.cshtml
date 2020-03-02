@@ -79,13 +79,13 @@
                         <thead>
                             <tr>
                                 <th style="display:none">ID</th>
-                                <th class="fancy-header">Date</th>
+                                <th class="column3 fancy-header">Date</th>
                                 <th class="fancy-header">Feature</th>
-                                <th class="column3 fancy-header">Version</th>
+                                <th class="column2 fancy-header">Version</th>
                                 <th class="fancy-header">Environment</th>
                                 <th class="column1 fancy-header">Start Time</th>
                                 <th class="column1 fancy-header">End Time</th>
-                                <th class="column2 fancy-header">Deploy Status</th>
+                                <th class="fancy-header">Deploy Status</th>
                                 <th class="fancy-header">Smoke Status</th>
                             </tr>
                         </thead>
@@ -94,7 +94,7 @@
                                 <!--ID field-->
                                 <td style="display:none" data-bind="text: depID"></td>
                                 <!--Date Field-->
-                                <td style="font-weight:bold" data-bind="event: { click: $root.edit}, dateFormatted: depStartTime, format: 'MMMM Do'"></td>
+                                <td class="column3" style="font-weight:bold" data-bind="event: { click: $root.edit}, dateFormatted: depStartTime, format: 'MMMM Do'"></td>
                                 <!--Feature field-->
                                 <td data-bind="event: { click: $root.edit}, css: $root.rowColor($data)">
                                     <span data-bind="with: $root.featureFromID(feaID())">
@@ -102,7 +102,7 @@
                                     </span>
                                 </td>
                                 <!--Version field-->
-                                <td class="column3" data-bind="text: depVersion, event: { click: $root.edit}, css: $root.rowColor($data)" style="word-wrap: break-word; max-width: 100px;"></td>
+                                <td class="column2" data-bind="text: depVersion, event: { click: $root.edit}, css: $root.rowColor($data)" style="word-wrap: break-word; max-width: 100px;"></td>
                                 <!--Environment field-->
                                 <td data-bind="with: $root.environmentFromID(envID()), event: { click: $root.edit}, css: $root.rowColor($data)">
                                     <span data-bind="text: envName"></span>
@@ -112,7 +112,7 @@
                                 <!--End Time field-->
                                 <td class="column1" data-bind="timeFormatted: depEndTime, format: 'h:mm a', event: { click: $root.edit}, css: $root.rowColor($data)"></td>
                                 <!--Status field w/ button-->
-                                <td class="column2" data-bind="css: $root.rowColor($data)">
+                                <td data-bind="css: $root.rowColor($data)">
                                     <button id="btnStatusCurrent" class="btn btn-sm btn-outline-dark" style="font-weight: bold" type="button" data-toggle="modal" data-bind="click: $root.openModal">
                                         <i data-bind="css: $root.statusIcon($data)"></i>
                                         <span data-bind="with: $root.statusFromID(statusID())">
