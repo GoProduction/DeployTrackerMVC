@@ -72,6 +72,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     //Dynamic observables for status modal
     self.statusModalFeature = ko.observable();
     self.statusModalVersion = ko.observable();
+    self.statusModalStatus = ko.observable();
 
     //FILTER OBSERVABLES FOR TABLES
     self.typeArray = ko.observableArray([
@@ -323,7 +324,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.note(ko.utils.arrayMap(data.value, function (data) {
             var obsNote = {
                 noteID: data.noteID,
-                noteBody: ko.observable(data.noteBody),
                 noteDateTime: ko.observable(new Date(data.noteDateTime)),
                 noteVisID: ko.observable(data.noteVisID),
                 depID: ko.observable(data.depID)
@@ -381,7 +381,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.openModal = function (deploy) {
 
         var modal = document.getElementById("statusModal");
-        var ctl = document.getElementById("ctlmodalStatus");
         var id = document.getElementById("ctlmodalID");
         var smokeMenu = document.getElementById("ctlSmokeStatus");
 
@@ -389,13 +388,14 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         smokeMenu.options[3].disabled = true;
         smokeMenu.options[4].disabled = true;
 
-        ctl.value = deploy.statusID();
         objstatus = deploy.statusID();
         smokeMenu.value = deploy.smokeID();
         console.log(objstatus);
         id.value = deploy.depID;
         console.log("feaID is :", ko.unwrap(deploy.feaID()));
-        
+
+        //Assign values to observables (status, feature, version) from selected deploy
+        self.statusModalStatus(deploy.statusID());
         self.statusModalFeature(deploy.feaID());
         self.statusModalVersion(deploy.depVersion());
 
