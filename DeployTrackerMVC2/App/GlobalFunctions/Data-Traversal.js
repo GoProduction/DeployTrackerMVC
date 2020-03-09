@@ -228,7 +228,65 @@ var StatusVariables = function (id, feature, version, status, smoke) {
     this.status = status;
     this.smoke = smoke;
 }
+
+//Calculates the difference in hours between two dates
+function dateTimeDifference(date) {
+    var now = new Date();
+    var then = new Date(date);
+    var hours = Math.abs(now.valueOf() - then.valueOf()) / 3600000
+    return hours;
+}
+//Returns today's date
+function dateNow() {
+    var now = new Date();
+    return new Date(now.getTime() + now.getTimezoneOffset());
+}
+//Formats date for timezone-offset
+function dateForTimezone(date) {
+    return moment(new Date(date.getTime() + date.getTimezoneOffset())).format();
+}
+
 //Helper functions
+var featureFromID = function (id, observableArray) {
+    return ko.utils.arrayFirst(observableArray, function (item) {
+        if (item.feaID == id) {
+            //console.log("feaName: ", ko.unwrap(item.feaName));
+            return ko.unwrap(item.feaName);
+        }
+    })
+};
+var environmentFromID = function (id, observableArray) {
+    return ko.utils.arrayFirst(observableArray, function (item) {
+        if (item.envID == id) {
+            //console.log("envName: ", ko.unwrap(item.envName));
+            return ko.unwrap(item.envName);
+        }
+    })
+};
+var noteFromID = function (id, observableArray) {
+    return ko.utils.arrayFirst(observableArray, function (item) {
+        if (item.noteID == id) {
+            //console.log("envName: ", ko.unwrap(item.noteVisID));
+            return ko.unwrap(item.noteVisID);
+        }
+    })
+};
+var statusFromID = function (id, observableArray) {
+    return ko.utils.arrayFirst(observableArray, function (item) {
+        if (item.statusID == id) {
+            //console.log("envName: ", ko.unwrap(item.noteVisID));
+            return ko.unwrap(item.statusName);
+        }
+    })
+};
+var smokeFromID = function (id, observableArray) {
+    return ko.utils.arrayFirst(observableArray, function (item) {
+        if (item.smokeID == id) {
+            //console.log("envName: ", ko.unwrap(item.noteVisID));
+            return ko.unwrap(item.smokeName);
+        }
+    })
+};
 
 //Diff function, used to compare old values with new. Use by passing (OldDeploy, NewDeploy) parameters
 var diff = function (obj1, obj2) {
@@ -351,27 +409,11 @@ var diff = function (obj1, obj2) {
     return diffs;
 
 };
-function findNote (id, arrayName) {
+function findNote(id, arrayName) {
     return ko.utils.arrayFirst(arrayName, function (item) {
         if (item.noteID == id) {
             console.log("findNote()", ko.utils.unwrapObservable(item));
             return item;
         }
     });
-}
-//Calculates the difference in hours between two dates
-function dateTimeDifference(date) {
-    var now = new Date();
-    var then = new Date(date);
-    var hours = Math.abs(now.valueOf() - then.valueOf()) / 3600000
-    return hours;
-}
-//Returns today's date
-function dateNow() {
-    var now = new Date();
-    return new Date(now.getTime() + now.getTimezoneOffset());
-}
-//Formats date for timezone-offset
-function dateForTimezone(date) {
-    return moment(new Date(date.getTime() + date.getTimezoneOffset())).format();
 }

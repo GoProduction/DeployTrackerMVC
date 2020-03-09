@@ -91,7 +91,7 @@
                                     data-bind="dateFormatted: depStartTime,
                                                format: 'MMMM Do'"></td>
                                 <!--Feature field-->
-                                <td data-bind="with: $root.featureFromID(feaID()),
+                                <td data-bind="with: featureFromID(feaID(), $root.feature()),
                                                 event: { click: $root.selectRecord},
                                                 css: $root.rowColor($data)">
                                     <span data-bind="text: feaName"></span>
@@ -102,7 +102,7 @@
                                                 event: { click: $root.selectRecord},
                                                 css: $root.rowColor($data)"></td>
                                 <!--Environment field-->
-                                <td data-bind="with: $root.environmentFromID(envID()),
+                                <td data-bind="with: environmentFromID(envID(), $root.environment()),
                                                 event: { click: $root.selectRecord},
                                                 css: $root.rowColor($data)">
                                     <span data-bind="text: envName"></span>
@@ -122,7 +122,7 @@
                                 <!--Deploy Status field-->
                                 <td data-bind='event: { click: $root.selectRecord}, css: $root.rowColor($data)'>
                                     <i data-bind="css: $root.statusIcon($data)"></i>
-                                    <span data-bind="with: $root.statusFromID(statusID())">
+                                    <span data-bind="with: statusFromID(statusID(), $root.status())">
                                         <span data-bind="text: statusName"></span>
                                     </span>
                                 </td>
@@ -130,7 +130,7 @@
                                 <td data-bind="css: $root.rowColor($data)">
                                     <button style="font-weight: bold" data-bind="click: $root.openStatusModal, enable: $data.smokeID() !== 1" class="btn btn-sm btn-outline-dark">
                                         <i data-bind="css: $root.smokeIcon($data)"></i>
-                                        <span data-bind="with: $root.smokeFromID(smokeID())">
+                                        <span data-bind="with: smokeFromID(smokeID(), $root.smoke())">
                                             <span data-bind="text: smokeName"></span>
                                         </span>
                                     </button>
@@ -160,16 +160,16 @@
                         <tbody id="queuedTableBody" data-bind="foreach: queuedDeploys" class="table">
                             <tr class="table table-on-hover">
                                 <td style="display:none" data-bind="text: depID"></td>
-                                <td data-bind="with: $root.featureFromID(feaID()), event: { click: $root.selectRecord}">
+                                <td data-bind="with: featureFromID(feaID(), $root.feature()), event: { click: $root.selectRecord}">
                                     <span data-bind="text: feaName"></span>
                                 </td>
                                 <td class="column3" data-bind="text: depVersion, event: { click: $root.selectRecord}"></td>
-                                <td data-bind="with: $root.environmentFromID(envID()), event: { click: $root.selectRecord}">
+                                <td data-bind="with: environmentFromID(envID(), $root.environment()), event: { click: $root.selectRecord}">
                                     <span data-bind="text: envName"></span>
                                 </td>
                                 <td class="column1" data-bind="dateFormatted: depPlannedDateTime, format: 'MMMM DD YYYY', event: { click: $root.selectRecord}"></td>
                                 <td class="column1" data-bind="timeFormatted: depPlannedDateTime, format: 'hh:mm a', event: { click: $root.selectRecord}"></td>
-                                <td class="column2" data-bind="with: $root.statusFromID(statusID()), event: { click: $root.selectRecord}">
+                                <td class="column2" data-bind="with: statusFromID(statusID(), $root.status()), event: { click: $root.selectRecord}">
                                     <span data-bind="text: statusName"></span>
                                 </td>
                             </tr>
@@ -210,7 +210,7 @@
                 <p>
                     <span>Change the SMOKE status of </span>
                     <span>
-                        <span data-bind="with: $root.featureFromID($root.selectedFeature())" id="spFeature" style="text-transform: uppercase; font-weight: bold">
+                        <span data-bind="with: featureFromID($root.selectedFeature(), $root.feature())" id="spFeature" style="text-transform: uppercase; font-weight: bold">
                             <span data-bind="text: feaName"></span>
                         </span>
                     </span>
@@ -242,7 +242,7 @@
             <div class="modal-content">
                 <!--Main Header-->
                 <div class="record-modal-header" id="recordModalHeader">
-                    <span data-bind="with: $root.featureFromID($root.selectedFeature())">
+                    <span data-bind="with: featureFromID($root.selectedFeature(), $root.feature())">
                         <span data-bind="text: feaName"></span>
                     </span>
                     <span data-bind="text: selected().depVersion"></span>
@@ -250,14 +250,14 @@
                 <!--Deploy Status Header-->
                 <div id="statusHeader" class="record-modal-header">
                     <span>Deploy Status: </span>
-                    <span data-bind="with: $root.statusFromID($root.selectedStatus())" class="status-text">
+                    <span data-bind="with: statusFromID($root.selectedStatus(), $root.status())" class="status-text">
                         <span data-bind="text: statusName"></span>
                     </span>
                 </div>
                 <!--Smoke Status Header-->
                 <div id="smokeHeader" class="record-modal-header">
                     <span>Smoke Status: </span>
-                    <span data-bind="with: $root.smokeFromID($root.selectedSmoke())" class="status-text">
+                    <span data-bind="with: smokeFromID($root.selectedSmoke(), $root.smoke())" class="status-text">
                         <span data-bind="text: smokeName"></span>
                     </span>
                 </div>
@@ -273,7 +273,7 @@
                                 </tr>
                                 <tr>
                                     <td><span class="record-label">Feature: </span></td>
-                                    <td data-bind="with: $root.featureFromID($root.selectedFeature())">
+                                    <td data-bind="with: featureFromID($root.selectedFeature(), $root.feature())">
                                         <span data-bind="text: feaName"></span>
                                     </td>
                                 </tr>
@@ -283,7 +283,7 @@
                                 </tr>
                                 <tr>
                                     <td><span class="record-label">Environment: </span></td>
-                                    <td data-bind="with: $root.environmentFromID($root.selectedEnvironment())">
+                                    <td data-bind="with: environmentFromID($root.selectedEnvironment(), $root.environment())">
                                         <span id="ctlEnvironment" data-bind="text: envName" />
                                     </td>
                                 </tr>

@@ -645,7 +645,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
 }; //Main viewmodel
 
-
 //SignalR Events
 $(function () {
     
