@@ -145,7 +145,7 @@
                                 <th class="fancy-header">Environment</th>
                                 <th class="column1 fancy-header">Planned Date</th>
                                 <th class="column1 fancy-header">Planned Time</th>
-                                <th class="column2 fancy-header">Status</th>
+                                <th class="fancy-header">Status</th>
                                 <th class="fancy-header">...</th>
                             </tr>
                         </thead>
@@ -443,22 +443,22 @@
     </div>
     <!--Delete Modal-->
     <div id="deleteModal" class="modal delete-modal" role="dialog" tabindex="-1">
-            <div class="delete-modal-content">
-                <!--Header-->
-                <div class="delete-modal-header">
-                    <span class="close" data-bind="click: $root.closeDeleteModal">&times;</span>
-                    <h4>Deleting record...</h4>
-                </div>
-                <!--Body-->
-                <div class="delete-modal-body">
-                    <span class="text-center">Are you sure you want to delete this record?</span>
-                </div>
-                <!--Footer-->
-                <div class="delete-modal-footer">
-                    <button id="btnDeleteDelModal" class="btn btn-sm btn-danger" data-bind="click: $root.deleteRecord">Confirm Deletion</button>
-                    <button id="btnCancelDelModal" class="btn btn-sm btn-warning" data-bind="click: $root.closeDeleteModal">Cancel</button>
-                </div>
+        <div class="delete-modal-content">
+            <!--Header-->
+            <div class="delete-modal-header">
+                <span class="close" data-bind="click: $root.closeDeleteModal">&times;</span>
+                <h4>Deleting record...</h4>
             </div>
+            <!--Body-->
+            <div class="delete-modal-body">
+                <span class="text-center">Are you sure you want to delete this record?</span>
+            </div>
+            <!--Footer-->
+            <div class="delete-modal-footer">
+                <button id="btnDeleteDelModal" class="btn btn-sm btn-danger" data-bind="click: $root.deleteRecord">Confirm Deletion</button>
+                <button id="btnCancelDelModal" class="btn btn-sm btn-warning" data-bind="click: $root.closeDeleteModal">Cancel</button>
+            </div>
+        </div>
     </div>
     <!--Quick Deploy Modal-->
     <div id="quickDeployModal" class="modal qd-modal" role="dialog" tabindex="-1">
@@ -473,15 +473,19 @@
                 <table>
                     <tr>
                         <td><label>Feature: </label></td>
-                        <td><select id="qdFeature" data-bind="options: $root.feature, 
-                                                                optionsText: 'feaName', 
-                                                                optionsValue: 'feaID'"></select></td>
+                        <td>
+                            <select id="qdFeature" data-bind="options: $root.feature,
+                                                                optionsText: 'feaName',
+                                                                optionsValue: 'feaID'"></select>
+                        </td>
                         <td><label>Version: </label></td>
-                        <td><input id="qdVersion"/></td>
+                        <td><input id="qdVersion" /></td>
                         <td><label>Environment: </label></td>
-                        <td><select id="qdEnvironment" data-bind="options: $root.environment, 
-                                                                    optionsText: 'envName', 
-                                                                    optionsValue: 'envID'"></select></td>
+                        <td>
+                            <select id="qdEnvironment" data-bind="options: $root.environment,
+                                                                    optionsText: 'envName',
+                                                                    optionsValue: 'envID'"></select>
+                        </td>
                     </tr>
                 </table>
             </div>

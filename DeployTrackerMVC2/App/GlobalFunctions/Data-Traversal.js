@@ -220,7 +220,14 @@ var NoteBody = function (id, body) {
     this.id = id;
     this.body = ko.observable(body);
 }
-
+//Status modal model
+var StatusVariables = function (id, feature, version, status, smoke) {
+    this.id = id;
+    this.feature = feature;
+    this.version = version;
+    this.status = status;
+    this.smoke = smoke;
+}
 //Helper functions
 
 //Diff function, used to compare old values with new. Use by passing (OldDeploy, NewDeploy) parameters

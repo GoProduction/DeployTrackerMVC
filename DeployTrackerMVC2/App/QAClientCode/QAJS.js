@@ -423,6 +423,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
         self.selected(deploy);
         self.selectedFeature(deploy.feaID());
+        self.selectedEnvironment(deploy.envID());
+        
         modal.style.display = "block";
         $("#commentBody").fadeOut();
         console.log('Status modal triggered');
@@ -447,12 +449,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
     } // Close Modal
     self.submitStatus = function () {
-        //Selected deploy values
-        var selFeature = ko.utils.unwrapObservable(self.selected().feaID);
-        var selVersion = ko.utils.unwrapObservable(self.selected().depVersion);
-        var selEnv = ko.utils.unwrapObservable(self.selected().envID);
-        console.log("Selected values: ", selFeature, selVersion, selEnv);
-
         //HTML elements
         var modal = document.getElementById("statusModal");
         var ctl = document.getElementById("ctlmodalStatus");
@@ -462,6 +458,14 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         var commentBody = document.getElementById("commentBody");
         var feature = document.getElementById("spFeature").innerText;
         var icon = '';
+        self.selectedSmoke(ctl.value);
+
+        //Selected deploy values
+        var selFeature = ko.unwrap(self.featureFromID(self.selectedFeature()).feaName);
+        var selVersion = ko.unwrap(self.selected().depVersion);
+        var selEnv = ko.unwrap(self.environmentFromID(self.selectedEnvironment()).envName);
+        var selSmoke = ko.unwrap(self.smokeFromID(self.selectedSmoke()).smokeName);
+        console.log("Selected values: ", selFeature, selVersion, selEnv, selSmoke);
 
         //Checks if status has NOT been changed
         if (objstatus == ctl.value) {
@@ -512,9 +516,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         });
 
         //Evaluate status and assign icon
-        var icon = assignIcon(ctl.value);
+        var icon = assignIcon(selSmoke);
         //Build message
-        var message = assignMessage(selFeature, selVersion, selEnv, ctl.value);
+        var message = assignMessage(selFeature, selVersion, selEnv, selSmoke);
         //Send notification to server
         deploySignalR.server.notification("Smoke", message, icon);
         $("#statusModal").fadeOut();

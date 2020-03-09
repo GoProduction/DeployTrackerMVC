@@ -137,7 +137,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         console.log("New JS object", jvsObject);
         self.deploy.push(newDeploy);
         self.watchModel(newDeploy, self.modelChanged);
-        
+
     } // Updates the viewmodel when new DEPLOYS have been submitted
     self.updateViewModelComment = function (payload) {
         var jvsObject = JSON.parse(payload);
@@ -175,7 +175,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             }
         }
     }
-    
+
     // Checks to make sure properties are observable
     self.subscribeToProperty = function (model, key, callback) {
         model[key].subscribe(function (val) {
@@ -197,7 +197,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         payload[key] = val;
         console.log("self.modelChanged()", payload);
     };
-    
+
     //GET REQUESTS
     $.getJSON('/odata/Deploys', function (data) {
         self.deploy(ko.utils.arrayMap(data.value, function (deploy) {
@@ -212,7 +212,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 depPlannedDateTime: ko.observable(deploy.depPlannedDateTime),
                 depStartTime: ko.observable(deploy.depStartTime),
                 depEndTime: ko.observable(deploy.depEndTime)
-                
+
             }
 
             return obsDeploy;
@@ -233,7 +233,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 feaID: feature.feaID,
                 feaName: ko.observable(feature.feaName)
             }
-            
+
             return obsFeature;
         }));
         loadingVar++;
@@ -251,7 +251,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 envID: environment.envID,
                 envName: ko.observable(environment.envName)
             }
-            
+
             return obsEnvironment;
         }));
         loadingVar++;
@@ -308,7 +308,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 comUser: ko.observable(comment.comUser),
                 depID: ko.observable(comment.depID)
             }
-            
+
             return obsComment;
         }));
         loadingVar++;
@@ -485,8 +485,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                     //Push properties to JSON payload
                     payload["statusID"] = ko.utils.unwrapObservable(mainItem.statusID);
                     payload["depEndTime"] = ko.utils.unwrapObservable(mainItem.depEndTime)
-                    
-                    
+
+
                 }
                 //If its marked as Deploying
                 else if (ctl.value == 2) {
@@ -503,7 +503,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                     mainItem.statusID(ctl.value);
                     payload["statusID"] = ko.utils.unwrapObservable(mainItem.statusID);
                 }
-                
+
                 console.log(payload);
                 //Call the PATCH request
                 patchDeploy(payload, mainItem);
@@ -511,8 +511,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
             }
 
         });
-        var lookup = self.statusFromID(ctl.value);
-        var notifValue = String(lookup);
+        var notifValue = ko.unwrap(self.statusFromID(self.statusModalStatus()).statusName);
+        console.log("notifValue: ", notifValue);
         checkForNotification(notifValue, feature, version, deploySignalR);
         comment.value = "";
         self.closeModal();
@@ -658,7 +658,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         notePage.style.display = "block";
         recordPage.style.display = "none";
     }
-    
+
 
     ///DELETE MODAL FUNCTIONS
     self.openDeleteModal = function (deploy) {
@@ -860,7 +860,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
 //SignalR Events
 $(function () {
-    
+
     $("editPlannedDate").datepicker();
     var deploySignalR = $.connection.deploy;
     var viewModel = new DeployViewModel(deploySignalR, curTypeCached, curTimeCached, smokeTypeCached, smokeTimeCached);
@@ -883,7 +883,7 @@ $(function () {
 
     //SIGNALR FUNCTIONS//////////////////////////////////////////////
     deploySignalR.client.updateAll = function (payload) {
-        
+
         console.log(viewModel.obsCheckEdit());
         //Warning toast triggered if client is engaged in editing a row
         if (viewModel.obsCheckEdit() >= 1) {
@@ -986,7 +986,7 @@ function evalSmoke(divID, value) {
 
 //Open when someone selects a record
 function openNav() {
-    
+
     $("#DetailsView").modal("show");
 }
 //Updates the paginate function (work in progress)
@@ -1058,19 +1058,19 @@ function checkSelID() {
 }
 //Shows comment field and buttons in record details modal
 function newComment() {
-    
+
     $("#comment-button-div-1").fadeOut("fast");
     $("#comment-button-div-2").fadeIn("fast");
     $("#record-comment-text-field").fadeIn("fast");
 }
 //Hides comment field and buttons in record details modal
 function cancelComment() {
-    
+
     $("#comment-button-div-1").fadeIn("fast");
     $("#comment-button-div-2").fadeOut("fast");
     $("#recordCommentField").val("");
     $("#record-comment-text-field").fadeOut("fast");
-    
+
 }
 //NOTE: The save comment function is located inside the viewmodel as submitComment
 
