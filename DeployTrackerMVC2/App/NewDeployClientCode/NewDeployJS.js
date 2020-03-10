@@ -253,7 +253,7 @@ var TempDeployViewModel = function (signalR) {
         self.directToFirstPage();
     }
     self.newCL = function () {
-        self.noteBeingEdited(new Note(-1, '', ''));
+        self.noteBeingEdited(new NoteBody(-1, '', ''));
         initTextEditor(self);
         self.enableEditSave(false);
         self.directToSecondPage();
@@ -327,33 +327,20 @@ var TempDeployViewModel = function (signalR) {
     self.editCL = function () {
         
         //var content = ko.unwrap(self.selectedCL().noteBody);
-        self.noteBeingEdited(new Note(
-            self.selectedCL().noteID,
-            ko.unwrap(self.selectedCL().noteBody),
-            ko.unwrap(self.selectedCL().noteDateTime)
-        ));
+        self.noteBeingEdited(ko.unwrap(new NoteBody(self.changeLogBody().id, self.changeLogBody().body)));
         initTextEditor(self);
         self.enableEditSave(false);
         self.directToEditPage();
     }
     self.refreshEditCL = function () {
         var content = tinymce.activeEditor.getContent({ format: 'html' });
-        self.noteBeingEdited().noteBody(content);
+        self.noteBeingEdited().body(content);
         
     }
     self.saveEditCL = function () {
         var payload = {};
-        payload["noteBody"] = ko.utils.unwrapObservable(self.noteBeingEdited().noteBody);
-        patchNote(payload, self.selectedCL());
-        var updatedNote = ko.unwrap(self.noteBeingEdited());
-        var noteID = ko.utils.unwrapObservable(updatedNote.noteID);
-        var noteBody = ko.utils.unwrapObservable(updatedNote.noteBody);
-        var noteDateTime = ko.utils.unwrapObservable(updatedNote.noteDateTime);
-
-        self.selectedCL().noteID = noteID;
-        self.selectedCL().noteBody(noteBody);
-        self.selectedCL().noteDateTime(noteDateTime);
-
+        payload["body"] = ko.utils.unwrapObservable(self.noteBeingEdited().body);
+        patchNote(payload, self.noteBeingEdited().id);
         self.noteBeingEdited(0);
         self.directToFirstPage();
         

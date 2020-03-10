@@ -167,11 +167,8 @@
                     </div>
                 </div>
                 <!--Page 2-->
-                <div id="clPage2" data-bind="foreach: $root.noteBeingEdited">
-                    <textarea id="clTextEditor1" data-bind="wysiwyg: noteBody" class="cl-text-area" cols="50"></textarea>
-                    <div>
-                        <label>noteBeingEdited().noteBody: </label>
-                    </div>
+                <div id="clPage2" data-bind="foreach: $root.noteBeingEdited()">
+                    <textarea id="clTextEditor1" data-bind="wysiwyg: body" class="cl-text-area" cols="50"></textarea>
                 </div>
             </div>
             <!--Footer-->
