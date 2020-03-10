@@ -60,16 +60,15 @@ var TempDeployViewModel = function (signalR) {
 
     //Observable for when enabling edit of a note
     self.noteBeingEdited = ko.observableArray([{
-        noteID: null,
-        noteBody: ko.observable(0),
-        noteDateTime: ko.observable(0)
+        id: null,
+        body: ko.observable(0)
     }]);
 
     //Note update function
     self.updateNotesVM = function (payload) {
         console.log("payload: ", payload);
         var jvsObject = JSON.parse(payload);
-        var newNote = new Note(jvsObject.noteID, jvsObject.noteBody, jvsObject.noteDateTime, jvsObject.noteVisID);
+        var newNote = new Note(jvsObject.noteID, jvsObject.noteDateTime, jvsObject.noteVisID );
         self.notes.push(newNote);
         self.watchModel(newNote, self.modelChanged);
         console.log("Updated notes to viewmodel");
@@ -254,7 +253,7 @@ var TempDeployViewModel = function (signalR) {
         self.directToFirstPage();
     }
     self.newCL = function () {
-        self.noteBeingEdited(new Note(-1, '', '', ''));
+        self.noteBeingEdited(new Note(-1, '', ''));
         initTextEditor(self);
         self.enableEditSave(false);
         self.directToSecondPage();
@@ -283,7 +282,7 @@ var TempDeployViewModel = function (signalR) {
         visID++;
         console.log("New visID: ", visID);
 
-        var newNote = new NewNote(ko.unwrap(self.noteBeingEdited().noteBody), dateForTimezone(new Date()), visID);
+        var newNote = new NewNote(ko.unwrap(dateForTimezone(new Date()), visID));
         postNote(signalR, newNote);
         
         self.directToFirstPage();
