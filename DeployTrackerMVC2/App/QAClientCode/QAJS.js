@@ -72,48 +72,6 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         }
     }
 
-    //Finder functions
-    self.featureFromID = function (id) {
-        return ko.utils.arrayFirst(self.feature(), function (item) {
-            if (item.feaID == id) {
-                //console.log("feaName: ", ko.unwrap(item.feaName));
-                return ko.unwrap(item.feaName);
-            }
-        })
-    };
-    self.environmentFromID = function (id) {
-        return ko.utils.arrayFirst(self.environment(), function (item) {
-            if (item.envID == id) {
-                //console.log("envName: ", ko.unwrap(item.envName));
-                return ko.unwrap(item.envName);
-            }
-        })
-    };
-    self.noteFromID = function (id) {
-        return ko.utils.arrayFirst(self.notes(), function (item) {
-            if (item.noteID == id) {
-                //console.log("envName: ", ko.unwrap(item.noteVisID));
-                return ko.unwrap(item.noteVisID);
-            }
-        })
-    };
-    self.smokeFromID = function (id) {
-        return ko.utils.arrayFirst(self.smoke(), function (item) {
-            if (item.smokeID == id) {
-                //console.log("envName: ", ko.unwrap(item.noteVisID));
-                return ko.unwrap(item.smokeName);
-            }
-        })
-    };
-    self.statusFromID = function (id) {
-        return ko.utils.arrayFirst(self.status(), function (item) {
-            if (item.statusID == id) {
-                //console.log("envName: ", ko.unwrap(item.noteVisID));
-                return ko.unwrap(item.statusName);
-            }
-        })
-    };
-
     //FILTER OBSERVABLES FOR TABLES
     self.typeArray = ko.observableArray([
         { text: 'All Current Deploys', val: 'All' },
@@ -142,7 +100,11 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.smoke = ko.observableArray(); //Smoke observable array
     self.comment = ko.observableArray(); // Comment observable array
     self.note = ko.observableArray();
-    self.selected = ko.observableArray(self.deploy()[0]); //Determines if record is selected
+    self.noteBody = ko.observableArray([{
+        id: null,
+        body: ko.observable('')
+    }]);
+    self.selected = ko.observable(0); //Determines if record is selected
 
     //ObSERVABLES///////////////////////////////////////////////////////////
     self.obsCheckEdit = ko.observable(0); // Observable that is used to check if any field is being edited
@@ -153,32 +115,65 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.selectedEnvironment = ko.observable(null);
     self.selectedStatus = ko.observable(null);
     self.selectedSmoke = ko.observable(null);
+    self.selectedNote = ko.observable(null);
+    self.startTimeVis = ko.observable(true);
+    self.endTimeVis = ko.observable(true);
+    self.loadingBody = ko.observable(false);
 
     //FUNCTIONS///////////////////////////////////////////////////////////
     self.dateAndUser = function (date, user) {
         return moment(date, 'MMM DD YYYY') + " " + user;
-    }
+    };
     self.selectRecord = function (data) {
-        //Assign variables
-        self.selected(data);
-        self.selectedFeature(data.feaID());
-        self.selectedEnvironment(data.envID());
-        self.selectedStatus(data.statusID());
-        self.selectedSmoke(data.smokeID());
-
-        selID = self.selected().depID;
-        self.obsID(selID);
-        console.log("obsID: ");
-        console.log(self.obsID);
-        console.log("selID: ");
-        console.log(selID);
-        openNav();
-        var statusHeader = document.getElementById("statusHeader");
-        var smokeHeader = document.getElementById("smokeHeader");
-        checkModalStatus(data.statusID(), data.smokeID(), statusHeader, smokeHeader)
+        console.log("selectRecord()");
+        
+        try {
+            //Assign variables
+            self.selected(new Deploy(
+                data.depID,
+                data.feaID,
+                data.depVersion,
+                data.envID,
+                data.depPlannedDateTime,
+                data.depStartTime,
+                data.depEndTime,
+                data.statusID,
+                data.smokeID,
+                data.noteID
+            ));
+            self.selectedFeature(data.feaID());
+            self.selectedEnvironment(data.envID());
+            self.selectedStatus(data.statusID());
+            self.selectedSmoke(data.smokeID());
+            self.selectedNote(data.noteID());
+            self.obsID(data.depID);
+            self.directToRecordPage();
+            //Evaluate start time and end time field visibility
+            if (self.selected().depStartTime() == null) {
+                self.startTimeVis(false);
+            }
+            else {
+                self.startTimeVis(true);
+            }
+            if (self.selected().depEndTime() == null) {
+                self.endTimeVis(false);
+            }
+            else {
+                self.endTimeVis(true);
+            }
+            
+            openNav();
+            var statusHeader = document.getElementById("statusHeader");
+            var smokeHeader = document.getElementById("smokeHeader");
+            checkModalStatus(data.statusID(), data.smokeID(), statusHeader, smokeHeader)
+        }
+        catch (err) {
+            console.log(err);
+        }
 
     }; // Run when record is selected, and open the record modal
     self.updateViewModel = function (payload) {
+        console.log("updateViewModel()");
         var jvsObject = JSON.parse(payload);
         var newDeploy = new incomingDeploy(
             jvsObject.depID,
@@ -195,8 +190,9 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.deploy.push(newDeploy);
         self.watchModel(newDeploy, self.modelChanged);
 
-    } // Updates the viewmodel when new DEPLOYS have been submitted
+    }; // Updates the viewmodel when new DEPLOYS have been submitted
     self.updateViewModelComment = function (payload) {
+        console.log("updateViewModelComment()");
         var jvsObject = JSON.parse(payload);
         var newComment = new Comment(
             jvsObject.comID,
@@ -207,11 +203,13 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         );
         console.log("New comment: ", jvsObject);
         self.comment.push(newComment);
-    } // Updates the viewmodel when new COMMENT has been submitted
+    }; // Updates the viewmodel when new COMMENT has been submitted
     self.removeDeploy = function (deploy) {
+        console.log("removeDeploy()");
         self.deploy.remove(deploy);
-    }
+    };
     self.watchModel = function (model, callback) {
+        console.log("watchModel()");
         for (var key in model) {
             if (model.hasOwnProperty(key) && ko.isObservable(model[key]) && key != 'Edit' && key != 'depLocked') {
                 self.subscribeToProperty(model, key, function (key, val) {
@@ -219,19 +217,20 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 });
             }
         }
-    } // Checks to make sure properties are observable
+    }; // Checks to make sure properties are observable
     self.subscribeToProperty = function (model, key, callback) {
+        console.log("subscribeToProperty()");
         model[key].subscribe(function (val) {
             callback(key, val);
         });
-    } // Subscribes to observable objects, and listens for changes
+    }; // Subscribes to observable objects, and listens for changes
 
     //modelChanged function, to trigger when a row value changes (with jQuery PATCH request)
     //PATCH request will only send the changed property to the database, minimizing network traffic
     self.modelChanged = function (model, key, val) {
         var payload = {};
         payload[key] = val;
-        console.log("self.modelChanged()", payload);
+        console.log("modelChanged()", payload);
     }
 
     //GET REQUESTS///////////////////////////////////////////////////////
@@ -246,7 +245,8 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
                 depStartTime: ko.observable(deploy.depStartTime),
                 depEndTime: ko.observable(deploy.depEndTime),
                 statusID: ko.observable(deploy.statusID),
-                smokeID: ko.observable(deploy.smokeID)
+                smokeID: ko.observable(deploy.smokeID),
+                noteID: ko.observable(deploy.noteID)
             }
 
             return obsDeploy;
@@ -415,7 +415,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
     ///MODAL FUNCTIONS/////////////////////////////////////////////////
     self.openStatusModal = function (deploy) {
-        
+        console.log("openStatusModal()");
         var modal = document.getElementById("statusModal");
         var ctl = document.getElementById("ctlmodalStatus");
         var id = document.getElementById("ctlmodalID");
@@ -442,6 +442,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         }
     } // Open Modal
     self.closeModal = function () {
+        console.log("closeModal()");
         var error = document.getElementById("errorStatusModalChange");
         var comment = document.getElementById("commentBody");
         $("#statusModal").fadeOut();
@@ -449,6 +450,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
     } // Close Modal
     self.submitStatus = function () {
+        console.log("submitStatus()");
         //HTML elements
         var modal = document.getElementById("statusModal");
         var ctl = document.getElementById("ctlmodalStatus");
@@ -530,6 +532,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         
     } // Submit new status
     self.submitComment = function () {
+        console.log("submitComment()");
         var commentField = document.getElementById("recordCommentField");
         if (commentField.value.trim() == "") {
             console.log("Empty comment field... can not continue.");
@@ -545,7 +548,40 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         //Disable the comment field
         cancelComment();
     } //Submit new comment (in RECORD DETAILS modal)
-    
+    self.directToRecordPage = function () {
+        var notePage = document.getElementById("notePage");
+        var recordPage = document.getElementById("recordPage");
+        notePage.style.display = "none";
+        recordPage.style.display = "block";
+    }
+    self.directToNotePage = function (data) {
+        var notePage = document.getElementById("notePage");
+        var recordPage = document.getElementById("recordPage");
+        notePage.style.display = "block";
+        recordPage.style.display = "none";
+        self.loadingBody(true);
+        $.ajax({
+            url: '/odata/Notes(' + data + ')/NoteBody',
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            async: true,
+            success: function (response) {
+                var value = response.value;
+                var clID = value[0].id;
+                var clBody = value[0].body;
+                //console.log("response body: ", clBody);
+                self.noteBody(new NoteBody(clID, clBody));
+                console.log("self.noteBody(): ", self.noteBody);
+            },
+            fail: function (err) {
+                console.log(err);
+            },
+            complete: function () {
+                self.loadingBody(false);
+            }
+        })
+    }
 
     //ANIMATIONS//////////////////////////////////////////////////////
     self.showRow = function (elem) {

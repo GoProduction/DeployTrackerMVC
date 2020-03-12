@@ -26,7 +26,7 @@ var DeployModel = function (feaID, envID, statusID, smokeID, noteID, depVersion,
 var TempDeployViewModel = function (signalR) {
 
     var self = this;
-
+    self.testObservable = ko.observableArray();
     //Loading variables
     var loadingVar = 0;
     var loadingVarMax = 3;
@@ -253,8 +253,9 @@ var TempDeployViewModel = function (signalR) {
         self.directToFirstPage();
     }
     self.newCL = function () {
+        var selector = '#clTextEditor1';
         self.noteBeingEdited(new NoteBody(-1, '', ''));
-        initTextEditor(self);
+        initNoteTextEditor(self, selector);
         self.enableEditSave(false);
         self.directToSecondPage();
     }
@@ -282,8 +283,8 @@ var TempDeployViewModel = function (signalR) {
         visID++;
         console.log("New visID: ", visID);
 
-        var newNote = new NewNote(ko.unwrap(dateForTimezone(new Date()), visID));
-        postNote(signalR, newNote);
+        var newNote = new NewNote(dateForTimezone(new Date()), visID);
+        postNote(signalR, newNote, textBody);
         
         self.directToFirstPage();
     }
@@ -325,10 +326,13 @@ var TempDeployViewModel = function (signalR) {
     }
     
     self.editCL = function () {
-        
+        var selector = '#clTextEditor1';
         //var content = ko.unwrap(self.selectedCL().noteBody);
-        self.noteBeingEdited(ko.unwrap(new NoteBody(self.changeLogBody().id, self.changeLogBody().body)));
-        initTextEditor(self);
+        self.noteBeingEdited(new NoteBody(
+            ko.unwrap(self.changeLogBody().id),
+            ko.unwrap(self.changeLogBody().body)));
+        console.log("noteBeingEdited: ", self.noteBeingEdited());
+        initNoteTextEditor(self, selector);
         self.enableEditSave(false);
         self.directToEditPage();
     }
@@ -339,8 +343,9 @@ var TempDeployViewModel = function (signalR) {
     }
     self.saveEditCL = function () {
         var payload = {};
-        payload["body"] = ko.utils.unwrapObservable(self.noteBeingEdited().body);
-        patchNote(payload, self.noteBeingEdited().id);
+        payload["id"] = ko.unwrap(self.noteBeingEdited().id);
+        payload["body"] = ko.unwrap(self.noteBeingEdited().body);
+        patchNote(payload, self.noteBeingEdited());
         self.noteBeingEdited(0);
         self.directToFirstPage();
         
@@ -553,25 +558,7 @@ $(function () {
     });
 });
 
-function initTextEditor(viewModel) {
-   
-    tinymce.init({
-        selector: '#clTextEditor1',
-        height: 500,
-        
-        plugins: ['link'],
-        toolbar: 'undo redo | bold italic | bullist numlist | link',
-        menubar: false,
-        statusbar: false,
-        init_instance_callback: function (editor) {
-            console.log("Editor: " + editor.id + " is now initialized.");
-            editor.on('input', function () {
-                viewModel.refreshEditCL();
-                viewModel.enableEditSave(true);
-            })
-        }
-    });
-}
+
 
 //Converts HTML to regular text
 function stripHTML(html) {

@@ -1,4 +1,8 @@
-﻿
+﻿.overflow-at-800{
+    max-height: 800px;
+    overflow-y: scroll;
+}
+
 .table {
     border-collapse: collapse;
     width: 100%;

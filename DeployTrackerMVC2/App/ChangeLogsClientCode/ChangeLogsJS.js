@@ -110,19 +110,21 @@
         $("#paneLoadingDiv").fadeOut('fast');
     }
     self.newChangeLog = function () {
+        var selector = '#textEditor';
         self.clearEditor();
         self.enableEditSave(false);
-        initTextEditor(self);
+        initNoteTextEditor(self, selector);
         self.directToSecondPage();
     }
     self.edit = function () {
+        var selector = '#textEditor';
         console.log('edit');
         self.enableEditSave(false);
         self.editorCL(new NoteBody(
             ko.unwrap(self.changeLogBody().id),
             ko.unwrap(self.changeLogBody().body)
         ));
-        initTextEditor(self);
+        initNoteTextEditor(self, selector);
         self.directToEditPage();
         
     }
@@ -256,21 +258,3 @@ $(function () {
     });
 
 });
-function initTextEditor(viewModel) {
-
-    tinymce.init({
-        selector: '#textEditor',
-        height: 500,
-        plugins: ['link'],
-        toolbar: 'undo redo | bold italic | bullist numlist | link',
-        menubar: false,
-        statusbar: false,
-        init_instance_callback: function (editor) {
-            console.log("Editor: " + editor.id + " is now initialized.");
-            editor.on('input', function () {
-                viewModel.refreshEditCL();
-                viewModel.enableEditSave(true);
-            })
-        }
-    });
-}

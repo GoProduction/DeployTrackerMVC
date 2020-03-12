@@ -1,14 +1,14 @@
 ﻿TODO:
 
-Remove noteBody from tblNotes, and create new table, tblNoteBody, that stores the note body. This
-will be used for the client to ONLY load notes details on load of page. The user will get the note body
-on request.
+*Remove noteBody from tblNotes, and create new table, tblNoteBody, that stores the note body. This
+	will be used for the client to ONLY load notes details on load of page. The user will get the note body
+	on request.
 
-Loading change logs: Implement a GET request, and loading sequence, for displaying the note body from the tblNoteBody table.
-	-Change Logs page
-	-New Deploy page
-	-Developers page
-	-QA page
+*Loading change logs: Implement a GET request, and loading sequence, for displaying the note body from the tblNoteBody table.
+	*-Change Logs page
+	*-New Deploy page
+	*-Developers page
+	*-QA page
 
 
 DeploysController:
@@ -33,7 +33,7 @@ Global:
 				-depSmoke -> smokeID
 				-depStatus -> statusID
 			
-		QA:
+		*QA:
 			*-Current Table
 			*-Queue Table
 			*-Status Modal
@@ -45,7 +45,7 @@ Global:
 				-depEnvironment -> envID
 				-depSmoke -> smokeID
 				-depStatus -> statusID
-		Developer:
+		*Developer:
 			*-Current Table
 			*-Queue Table
 			*-Status Modal
@@ -58,7 +58,7 @@ Global:
 				-depEnvironment -> envID
 				-depSmoke -> smokeID
 				-depStatus -> statusID
-		New Deploy:
+		*New Deploy:
 			*-Feature drop-down
 			*-Environment drop-down
 			*-Edit Template (table)
@@ -73,16 +73,20 @@ db.tblNotes:
 *-Add visID field
 
 ChangeLog/Index.html and ChangeLogJS
-*-Add noteVisID field that auto-increments upon creation of new note
 -Calculate time with timezone included (noteDateTime)
+-Keep table header static when scrolling
+*-Add noteVisID field that auto-increments upon creation of new note
 *-Have the text editor bind to an observable array
 *-Display the text preview as HTML value, and binded to observable array property (noteBody)
 *-Add an "Edit" button AND functionality
 *-Remove some tools from the text editor
--Keep table header static when scrolling
+
 
 NewDeploy/Index.html and NewDeployJS
 -Calculate time with timezone included (noteDateTime)
+-Add a few more formatting tools to text editor
+-Implement empty table template (low priority)
+-Change focus to selected row when opening modal(low priority)
 *-Add functionality to select master change log to apply to seperate deploys by default; once a master deploy has been selected,
 	a "Selected Change Log" field should appear, and the "Select Change Log" button should change to "Select a Different Change Log"
 *-Deploy should have a noteID field
@@ -97,32 +101,33 @@ NewDeploy/Index.html and NewDeployJS
 *-Add a "Remove CL" button in deploys table
 *-Add an "Edit" button AND function in the change log modal
 *-Refresh UI after new change log
--Add a few more formatting tools to text editor
--Implement empty table template (low priority)
--Change focus to selected row when opening modal(low priority)
 
 Developer/Index.html and DeveloperJS
+-Change comment box to tinyMCE text editor
+-Have comment text field be read as html
 *-Calculate timezone on quick deploy
 *-Calculate timezone on record edit
 *-OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.
 	-Add a Smoke Status field into the current deploys table.
 	-Inside the deploy status field, add the update status button, with the deploy status text embedded inside.
 *-Update table headers with black background/white text with global class (.fancy-header?)
--FIX status change when set to fail
--Add a tblNotes GET request
--Add a change log button to deploy modal
--Copy/Paste change log modal and functionality from NewDeployJS and html file
--Have deploy details modal transition to change log modal on request
+*-FIX status change when set to fail
+*-Add a tblNotes GET request
+*-Add a change log button to deploy modal
+*-Copy/Paste change log modal and functionality from NewDeployJS and html file
+*-Have deploy details modal transition to change log modal on request
 *-Remove green from color-scheme when deploy has FINISHED deploying
 
 QA/Index.html and QAJS
+-Change comment box to tinyMCE text editor
+-Have comment text field be read as html
 *-FIX: Planned date and time in details modals
--OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.
+*-OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.
 	-Add a Smoke Status field into the current deploys table. In this field will be the update status button with the smoke status text
 	embedded inside
--Update table headers with black background/white text with global class (.fancy-header?)
--Add a tblNotes GET request
--Add a change log button to deploy modal
--Copy/Paste change log modal and functionality from NewDeployJS and html file WITHOUT the ability to view/change other change logs
--Have deploy details modal transition to change log modal on request
--Remove green from color-scheme when deploy has FINISHED deploying
+*-Update table headers with black background/white text with global class (.fancy-header?)
+*-Add a tblNotes GET request
+*-Add a change log button to deploy modal
+*-Copy/Paste change log modal and functionality from NewDeployJS and html file WITHOUT the ability to view/change other change logs
+*-Have deploy details modal transition to change log modal on request
+*-Remove green from color-scheme when deploy has FINISHED deploying

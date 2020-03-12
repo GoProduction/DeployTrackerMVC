@@ -1,4 +1,10 @@
-﻿
+﻿ko.bindingHandlers['wysiwyg'].defaults = {
+    plugins: ['link'],
+    toolbar: 'undo redo | bold italic | bullist numlist | link',
+    menubar: false,
+    statusbar: false
+}
+
 ko.bindingHandlers['modal'] = {
     init: function (element, valueAccessor, allBindingsAccessor) {
         var allBindings = allBindingsAccessor();

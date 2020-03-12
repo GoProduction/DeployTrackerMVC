@@ -417,3 +417,49 @@ function findNote(id, arrayName) {
         }
     });
 }
+
+//Initialize tinyMCE text editor for notes (change logs)
+function initNoteTextEditor(viewModel, selector) {
+
+    tinymce.init({
+        selector: selector,
+        height: 500,
+
+        plugins: ['link'],
+        toolbar: 'undo redo | bold italic | bullist numlist | link',
+        menubar: false,
+        statusbar: false,
+        init_instance_callback: function (editor) {
+            console.log("Editor: " + editor.id + " is now initialized.");
+            editor.on('input', function () {
+                viewModel.refreshEditCL();
+                viewModel.enableEditSave(true);
+            })
+        }
+    });
+};
+//Initialize tinyMCE text editor for comments
+function initCommentTextEditor(selector) {
+
+    tinymce.init({
+        selector: selector,
+        height: 200,
+        plugins: ['link'],
+        toolbar: 'undo redo | bold italic | bullist numlist | link',
+        menubar: false,
+        statusbar: false,
+        init_instance_callback: function (editor) {
+            console.log("Editor: " + editor.id + " is now initialized for COMMENTS.");
+            
+        }
+    });
+};
+//Un-initialize tinyMCE text editor
+function removeTextEditor(selector) {
+    tinymce.remove(selector);
+};
+//Clear tinyMCE text editor
+function clearTextEditor() {
+    tinymce.activeEditor.setContent('');
+    console.log("Text editor cleared");
+}

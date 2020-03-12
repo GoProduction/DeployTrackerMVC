@@ -240,109 +240,158 @@
     <div class="modal fade right" id="DetailsView" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
-                <!--Main Header-->
-                <div class="record-modal-header" id="recordModalHeader">
-                    <span data-bind="with: featureFromID($root.selectedFeature(), $root.feature())">
-                        <span data-bind="text: feaName"></span>
-                    </span>
-                    <span data-bind="text: selected().depVersion"></span>
-                </div> 
-                <!--Deploy Status Header-->
-                <div id="statusHeader" class="record-modal-header">
-                    <span>Deploy Status: </span>
-                    <span data-bind="with: statusFromID($root.selectedStatus(), $root.status())" class="status-text">
-                        <span data-bind="text: statusName"></span>
-                    </span>
-                </div>
-                <!--Smoke Status Header-->
-                <div id="smokeHeader" class="record-modal-header">
-                    <span>Smoke Status: </span>
-                    <span data-bind="with: smokeFromID($root.selectedSmoke(), $root.smoke())" class="status-text">
-                        <span data-bind="text: smokeName"></span>
-                    </span>
-                </div>
-                <!-- Overlay content -->
-                <div class="modal-body">
-                    <!--Details column-->
-                    <div class="row">
-                        <div id="leftColumn" class="col record-modal-col">
-                            <table>
-                                <tr>
-                                    <td><span class="record-label">ID: </span></td>
-                                    <td><span id="ctlID" data-bind="text: selected().depID" /></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="record-label">Feature: </span></td>
-                                    <td data-bind="with: featureFromID($root.selectedFeature(), $root.feature())">
-                                        <span data-bind="text: feaName"></span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><span class="record-label">Version: </span></td>
-                                    <td><span id="ctlVersion" data-bind="text: selected().depVersion" /></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="record-label">Environment: </span></td>
-                                    <td data-bind="with: environmentFromID($root.selectedEnvironment(), $root.environment())">
-                                        <span id="ctlEnvironment" data-bind="text: envName" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><span class="record-label">Planned Date: </span></td>
-                                    <td><span id="ctlPlannedDate" data-bind="dateFormatted: selected().depPlannedDateTime, format: 'MMMM DD YYYY'" /></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="record-label">Planned Time: </span></td>
-                                    <td><span id="ctlPlannedTime" data-bind="timeFormatted: selected().depPlannedDateTime, format: 'LT'" /></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="record-label">Start Time: </span></td>
-                                    <td><span id="ctlStartTime" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" /></td>
-                                </tr>
-                                <tr>
-                                    <td><span class="record-label">End Time: </span></td>
-                                    <td><span id="ctlEndTime" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" /></td>
-                                </tr>
-                            </table>
-                        </div>
-                        <!--Comments column-->
-                        <div id="rightColumn" class="col record-modal-col">
-                            <h4 style="text-align: center">Comments:</h4>
-                            <table class="table-comments">
-                                <tbody data-bind="foreach: commentsFiltered">
-                                    <tr class="date-time-header">
-                                        <td data-bind="fullDateTime: comDateTime" style="height: 2px">
-                                            <span>by User: </span>
-                                        </td>
-                                    </tr>
+                <!--Record Page-->
+                <div id="recordPage">
+                    <!--Main Header-->
+                    <div class="record-modal-header" id="recordModalHeader">
+                        <span data-bind="with: featureFromID($root.selectedFeature(), $root.feature())">
+                            <span data-bind="text: feaName"></span>
+                        </span>
+                        <span data-bind="text: selected().depVersion"></span>
+                    </div>
+                    <!--Deploy Status Header-->
+                    <div id="statusHeader" class="record-modal-header">
+                        <span>Deploy Status: </span>
+                        <span data-bind="with: statusFromID($root.selectedStatus(), $root.status())" class="status-text">
+                            <span data-bind="text: statusName"></span>
+                        </span>
+                    </div>
+                    <!--Smoke Status Header-->
+                    <div id="smokeHeader" class="record-modal-header">
+                        <span>Smoke Status: </span>
+                        <span data-bind="with: smokeFromID($root.selectedSmoke(), $root.smoke())" class="status-text">
+                            <span data-bind="text: smokeName"></span>
+                        </span>
+                    </div>
+                    <!-- Overlay content -->
+                    <div class="modal-body">
+                        <!--Details column-->
+                        <div class="row">
+                            <div id="leftColumn" class="col record-modal-col">
+                                <table>
+                                    <!--ID-->
                                     <tr>
-                                        <td>
-                                            <span data-bind="text: comBody"></span>
+                                        <td><span class="record-label">ID: </span></td>
+                                        <td><span id="ctlID" data-bind="text: selected().depID" /></td>
+                                    </tr>
+                                    <!--Feature-->
+                                    <tr>
+                                        <td><span class="record-label">Feature: </span></td>
+                                        <td data-bind="with: featureFromID($root.selectedFeature(), $root.feature())">
+                                            <span data-bind="text: feaName"></span>
                                         </td>
                                     </tr>
-                                </tbody>
-                            </table>
-                            <div id="comment-button-div-1">
-                                <button class="btn btn-info btn-sm" style="text-align:center; width:100%" data-bind="click: newComment">
-                                    <i class="fa fa-comment"></i>
-                                    <span>New Comment</span>
-                                </button>
+                                    <!--Version-->
+                                    <tr>
+                                        <td><span class="record-label">Version: </span></td>
+                                        <td><span id="ctlVersion" data-bind="text: selected().depVersion" /></td>
+                                    </tr>
+                                    <!--Environment-->
+                                    <tr>
+                                        <td><span class="record-label">Environment: </span></td>
+                                        <td data-bind="with: environmentFromID($root.selectedEnvironment(), $root.environment())">
+                                            <span id="ctlEnvironment" data-bind="text: envName" />
+                                        </td>
+                                    </tr>
+                                    <!--Planned Date-->
+                                    <tr>
+                                        <td><span class="record-label">Planned Date: </span></td>
+                                        <td><span id="ctlPlannedDate" data-bind="dateFormatted: selected().depPlannedDateTime, format: 'MMMM DD YYYY'" /></td>
+                                    </tr>
+                                    <!--Planned Time-->
+                                    <tr>
+                                        <td><span class="record-label">Planned Time: </span></td>
+                                        <td><span id="ctlPlannedTime" data-bind="timeFormatted: selected().depPlannedDateTime, format: 'LT'" /></td>
+                                    </tr>
+                                    <!--Start Time-->
+                                    <tr data-bind="visible: $root.startTimeVis()">
+                                        <td><span class="record-label">Start Time: </span></td>
+                                        <td><span id="ctlStartTime" data-bind="timeFormatted: selected().depStartTime, format: 'LT'" /></td>
+                                    </tr>
+                                    <!--End Time-->
+                                    <tr data-bind="visible: $root.endTimeVis()">
+                                        <td><span class="record-label">End Time: </span></td>
+                                        <td><span id="ctlEndTime" data-bind="timeFormatted: selected().depEndTime, format: 'LT'" /></td>
+                                    </tr>
+                                    <!--Change Log-->
+                                    <tr>
+                                        <td><label class="record-label">Change-log: </label></td>
+                                        <td>
+                                            <button data-bind="click: $root.directToNotePage($root.selectedNote()), enable: $root.selectedNote() != null" class="btn btn-sm btn-info">
+                                                <i class="fa fa-clipboard"></i>
+                                                <span data-bind="visible: $root.selectedNote() != null">CL# </span>
+                                                <span data-bind="with: noteFromID($root.selectedNote(), $root.note())">
+                                                    <span data-bind="text: noteVisID"></span>
+                                                </span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </table>
                             </div>
-                            <div id="record-comment-text-field" style="display:none; width:100%; text-align:center">
-                                <textarea id="recordCommentField" rows="10" cols="10" style="width:100%; -moz-box-sizing:border-box; box-sizing: border-box"></textarea>
-                            </div>
-                            <div id="comment-button-div-2" class="status-modal-footer" style="display:none">
-                                <button class="btn btn-primary btn-sm" style="text-align:center; width:40%" data-bind="click: $root.submitComment">
-                                    <i class="fa fa-cloud"></i>
-                                    <span>Submit</span>
-                                </button>
-                                <button class="btn btn-warning btn-sm" style="text-align:center; width:40%" data-bind="click: cancelComment">Cancel</button>
+                            <!--Comments column-->
+                            <div id="rightColumn" class="col record-modal-col">
+                                <h4 style="text-align: center">Comments:</h4>
+                                <table class="table-comments">
+                                    <tbody data-bind="foreach: $root.commentsFiltered()">
+                                        <tr class="date-time-header">
+                                            <td data-bind="fullDateTime: comDateTime" style="height: 2px">
+                                                <span>by User: </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <span data-bind="text: comBody"></span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div id="comment-button-div-1">
+                                    <button class="btn btn-info btn-sm" style="text-align:center; width:100%" data-bind="click: newComment">
+                                        <i class="fa fa-comment"></i>
+                                        <span>New Comment</span>
+                                    </button>
+                                </div>
+                                <div id="record-comment-text-field" style="display:none; width:100%; text-align:center">
+                                    <textarea id="recordCommentField" rows="10" cols="10" style="width:100%; -moz-box-sizing:border-box; box-sizing: border-box"></textarea>
+                                </div>
+                                <div id="comment-button-div-2" class="status-modal-footer" style="display:none">
+                                    <button class="btn btn-primary btn-sm" style="text-align:center; width:40%" data-bind="click: $root.submitComment">
+                                        <i class="fa fa-cloud"></i>
+                                        <span>Submit</span>
+                                    </button>
+                                    <button class="btn btn-warning btn-sm" style="text-align:center; width:40%" data-bind="click: cancelComment">Cancel</button>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btnNew btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btnNew btn-secondary" data-dismiss="modal">Close</button>
+                <!--Note Page-->
+                <div id="notePage">
+                    <div class="modal-header">
+                        <span data-bind="with: noteFromID($root.selectedNote(), $root.note())" style="font-weight: bold">
+                            <span>CL# </span>
+                            <span data-bind="text: noteVisID"></span>
+                        </span>
+                    </div>
+                    <div class="modal-body overflow-at-600">
+                        <!--ko if: loadingBody-->
+                        <div class="loading-class-for-pane"></div>
+                        <!--/ko-->
+                        <div>
+                            <div data-bind="with: $root.noteBody()" class="modal-body">
+                                <span data-bind="html: $root.noteBody().body" style="text-align: center"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button data-bind="click: $root.directToRecordPage" class="btn btn-sm btn-light">
+                            <i class="fa fa-arrow-circle-left"></i>
+                            <span>Back</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -50,6 +50,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.originalDeploy = ko.observable(0);
     self.tempTime = ko.observable(new Date());
     self.loadingBody = ko.observable(false);
+    self.commentBody = ko.observable('');
 
     //FILTERS AND SORTS/////////////////////////
     ///1) Header Filters
@@ -339,22 +340,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         comment.value = "";
         self.closeModal();
     } // Submit new status
-    self.submitComment = function () {
-        var commentField = document.getElementById("recordCommentField");
-        if (commentField.value.trim() == "") {
-            console.log("Empty comment field... can not continue.");
-            return;
-        }
-        //Prepare value for POSTing comment
-        var payload = {};
-        payload["comBody"] = commentField.value;
-        payload["comDateTime"] = dateNow();
-        payload["depID"] = self.deployBeingEdited().depID;
-        //POST comment
-        postComment(deploySignalR, payload);
-        //Disable the comment field
-        cancelComment();
-    } //Submit new comment (in RECORD DETAILS modal)
+    
         //Dynamic observables for status modal
     self.statusModalFeature = ko.observable();
     self.statusModalVersion = ko.observable();
@@ -471,6 +457,40 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
         self.disableEdit();
 
     } // Function to disable the 'LOCKED' status of the row
+    self.newComment = function () {
+        self.commentBody('');
+        $("#comment-button-div-1").fadeOut("fast");
+        $("#comment-button-div-2").fadeIn("fast");
+        $("#record-comment-div").fadeIn("fast");
+        var selector = '#recordCommentField';
+        initCommentTextEditor(selector);
+    }
+    self.submitComment = function () {
+        
+        if (ko.unwrap(self.commentBody()) == '') {
+            console.log("Empty field, return");
+            return;
+        }
+        //Prepare value for POSTing comment
+        var payload = {};
+        payload["comBody"] = ko.unwrap(self.commentBody());
+        payload["comDateTime"] = dateNow();
+        payload["depID"] = self.deployBeingEdited().depID;
+        //POST comment
+        postComment(deploySignalR, payload);
+        //Disable the comment field
+        self.cancelComment();
+    } //Submit new comment (in RECORD DETAILS modal)
+    self.cancelComment = function () {
+        var selector = '#recordCommentField';
+        tinymce.activeEditor.setContent('');
+        $("#comment-button-div-1").fadeIn("fast");
+        $("#comment-button-div-2").fadeOut("fast");
+        $("#recordCommentField").val("");
+        $("#record-comment-div").fadeOut("fast");
+        self.commentBody('');
+        //clearTextEditor();
+    }
     self.directToRecordPage = function () {
         var notePage = document.getElementById("notePage");
         var recordPage = document.getElementById("recordPage");
@@ -1037,17 +1057,12 @@ function checkSelID() {
 //Shows comment field and buttons in record details modal
 function newComment() {
 
-    $("#comment-button-div-1").fadeOut("fast");
-    $("#comment-button-div-2").fadeIn("fast");
-    $("#record-comment-text-field").fadeIn("fast");
+    
 }
 //Hides comment field and buttons in record details modal
 function cancelComment() {
 
-    $("#comment-button-div-1").fadeIn("fast");
-    $("#comment-button-div-2").fadeOut("fast");
-    $("#recordCommentField").val("");
-    $("#record-comment-text-field").fadeOut("fast");
+    
 
 }
 //NOTE: The save comment function is located inside the viewmodel as submitComment
