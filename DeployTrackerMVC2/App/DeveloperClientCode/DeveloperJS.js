@@ -967,9 +967,19 @@ $(function () {
             deploySignalR.server.unlock(deploy.depID);
         }
     } // Disconnecting from SignalR hub
-
-
+    //Determines what happens when RECORD MODAL is closed
+    $('#recordModal').on('hidden.bs.modal', function (e) {
+        viewModel.cancelComment();
+    });
+    // Prevent Bootstrap dialog from blocking focusin
+    $(document).on('focusin', function (e) {
+        if ($(e.target).closest(".tox-tinymce-aux, .moxman-window, .tam-assetmanager-root").length) {
+            e.stopImmediatePropagation();
+        }
+    });
 });
+
+
 //Evaluates the current smoke status of the record, and enables/disabled based off its value
 function evalSmoke(divID, value) {
     console.log("evalSmoke(divID) = ", divID);

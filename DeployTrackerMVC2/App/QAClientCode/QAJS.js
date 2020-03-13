@@ -119,6 +119,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
     self.startTimeVis = ko.observable(true);
     self.endTimeVis = ko.observable(true);
     self.loadingBody = ko.observable(false);
+    self.commentBody = ko.observable('');
 
     //FUNCTIONS///////////////////////////////////////////////////////////
     self.dateAndUser = function (date, user) {
@@ -531,23 +532,82 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
         
     } // Submit new status
+    self.done = function () {
+
+        //Prep properties for PATCH request
+        var oldDeploy = ko.toJS(self.originalDeploy());
+        var newDeploy = ko.toJS(self.deployBeingEdited());
+        var payload = diff(oldDeploy, newDeploy);
+        if ('depPlannedDateTime' in payload) {
+            console.log("Date change from: ", payload, " to :", moment(payload.depPlannedDateTime).format());
+            payload.depPlannedDateTime = moment(payload.depPlannedDateTime).format();
+        }
+        console.log("Change payload: ", payload);
+        //Send the PATCH request
+        patchDeploy(payload, self.originalDeploy());
+
+        //Assign changes to variables
+        var updatedDeploy = ko.utils.unwrapObservable(self.deployBeingEdited());
+        var depID = updatedDeploy.depID;
+        var feaID = ko.utils.unwrapObservable(updatedDeploy.feaID);
+        var depVersion = ko.utils.unwrapObservable(updatedDeploy.depVersion);
+        var envID = ko.utils.unwrapObservable(updatedDeploy.envID);
+        var depPlannedDateTime = dateForTimezone(ko.utils.unwrapObservable(updatedDeploy.depPlannedDateTime));
+        var depStartTime = ko.utils.unwrapObservable(updatedDeploy.depStartTime);
+        var depEndTime = ko.utils.unwrapObservable(updatedDeploy.depEndTime);
+        var statusID = ko.utils.unwrapObservable(updatedDeploy.statusID);
+        var smokeID = ko.utils.unwrapObservable(updatedDeploy.smokeID);
+        var noteID = ko.utils.unwrapObservable(updatedDeploy.noteID);
+        //Update deploy with assigned variables
+        self.originalDeploy().depID = depID;
+        self.originalDeploy().feaID(feaID);
+        self.originalDeploy().depVersion(depVersion);
+        self.originalDeploy().envID(envID);
+        self.originalDeploy().depPlannedDateTime(depPlannedDateTime);
+        self.originalDeploy().depStartTime(depStartTime);
+        self.originalDeploy().depEndTime(depEndTime);
+        self.originalDeploy().statusID(statusID);
+        self.originalDeploy().smokeID(smokeID);
+        self.originalDeploy().noteID(noteID);
+
+        //Disable the edit fields
+        self.disableEdit();
+
+    } // Function to disable the 'LOCKED' status of the row
+    self.newComment = function () {
+        self.commentBody('');
+        $("#comment-button-div-1").fadeOut("fast");
+        $("#comment-button-div-2").fadeIn("fast");
+        $("#record-comment-div").fadeIn("fast");
+        var selector = '#recordCommentField';
+        initCommentTextEditor(selector);
+    }
     self.submitComment = function () {
-        console.log("submitComment()");
-        var commentField = document.getElementById("recordCommentField");
-        if (commentField.value.trim() == "") {
-            console.log("Empty comment field... can not continue.");
+
+        if (ko.unwrap(self.commentBody()) == '') {
+            console.log("Empty field, return");
             return;
         }
         //Prepare value for POSTing comment
         var payload = {};
-        payload["comBody"] = commentField.value;
+        payload["comBody"] = ko.unwrap(self.commentBody());
         payload["comDateTime"] = dateNow();
         payload["depID"] = self.selected().depID;
         //POST comment
         postComment(deploySignalR, payload);
         //Disable the comment field
-        cancelComment();
+        self.cancelComment();
     } //Submit new comment (in RECORD DETAILS modal)
+    self.cancelComment = function () {
+        var selector = '#recordCommentField';
+        tinymce.activeEditor.setContent('');
+        $("#comment-button-div-1").fadeIn("fast");
+        $("#comment-button-div-2").fadeOut("fast");
+        $("#recordCommentField").val("");
+        $("#record-comment-div").fadeOut("fast");
+        self.commentBody('');
+        //clearTextEditor();
+    }
     self.directToRecordPage = function () {
         var notePage = document.getElementById("notePage");
         var recordPage = document.getElementById("recordPage");
@@ -681,7 +741,7 @@ var DeployViewModel = function (deploySignalR, curTypeCached, curTimeCached, smo
 
 }; //Main viewmodel
 
-//SignalR Events
+//SignalR Events and other functions
 $(function () {
     
     var deploySignalR = $.connection.deploy;
@@ -769,6 +829,16 @@ $(function () {
             deploySignalR.server.unlock(deploy.depID);
         }
     } // Disconnecting from SignalR hub
+    //Determines what happens when RECORD MODAL is closed
+    $('#DetailsView').on('hidden.bs.modal', function (e) {
+        viewModel.cancelComment();
+    });
+    // Prevent Bootstrap dialog from blocking focusin
+    $(document).on('focusin', function (e) {
+        if ($(e.target).closest(".tox-tinymce-aux, .moxman-window, .tam-assetmanager-root").length) {
+            e.stopImmediatePropagation();
+        }
+    });
 
 });
 

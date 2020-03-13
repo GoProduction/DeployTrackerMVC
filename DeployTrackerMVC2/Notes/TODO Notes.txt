@@ -103,8 +103,8 @@ NewDeploy/Index.html and NewDeployJS
 *-Refresh UI after new change log
 
 Developer/Index.html and DeveloperJS
--Change comment box to tinyMCE text editor
--Have comment text field be read as html
+*-Change comment box to tinyMCE text editor
+*-Have comment text field be read as html
 *-Calculate timezone on quick deploy
 *-Calculate timezone on record edit
 *-OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.
@@ -119,8 +119,8 @@ Developer/Index.html and DeveloperJS
 *-Remove green from color-scheme when deploy has FINISHED deploying
 
 QA/Index.html and QAJS
--Change comment box to tinyMCE text editor
--Have comment text field be read as html
+*-Change comment box to tinyMCE text editor
+*-Have comment text field be read as html
 *-FIX: Planned date and time in details modals
 *-OVERHAUL: Get rid of the Smoke Queue. It's a little overwhelming.
 	-Add a Smoke Status field into the current deploys table. In this field will be the update status button with the smoke status text

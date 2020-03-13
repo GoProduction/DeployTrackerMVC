@@ -218,6 +218,7 @@
     <Compile Include="Controllers\PageControllers.cs" />
     <Compile Include="Controllers\Environments\EnvironmentsController.cs" />
     <Compile Include="Controllers\Features\FeaturesController.cs" />
+    <Compile Include="Controllers\Sanitize.cs" />
     <Compile Include="Controllers\Smokes\SmokesController.cs" />
     <Compile Include="Controllers\Status\StatusController.cs" />
     <Compile Include="Global.asax.cs">

@@ -87,11 +87,15 @@ namespace DeployTrackerMVC2.Controllers.Comments
         [ResponseType(typeof(Comment))]
         public IHttpActionResult Post(Comment tblComment)
         {
+            
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
+            //Sanitize body
+            String originalBody = tblComment.comBody;
+            String sant = Sanitize.SanitizeInput(originalBody);
+            tblComment.comBody = sant;
             db.Comments.Add(tblComment);
             db.SaveChanges();
             System.Diagnostics.Debug.WriteLine("Comment posted: " + tblComment.comBody);

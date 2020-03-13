@@ -250,7 +250,7 @@
         </div>
     </div>
     <!--Record/Edit Modal-->
-    <div data-bind="modal: deployBeingEdited" class="modal fade right" role="dialog" tabindex="-1">
+    <div id="recordModal" data-bind="modal: deployBeingEdited" class="modal fade right" role="dialog" tabindex="-1">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content" data-bind="if: $root.deployBeingEdited()">
                 <!--Record Page-->
@@ -399,10 +399,6 @@
                                     </div>
                                     <div id="record-comment-div" style="display:none; width:100%; text-align:center">
                                         <div id="recordCommentField" data-bind="wysiwyg: $root.commentBody"></div>
-                                        <div>
-                                            <span>commentBody(): </span>
-                                            <span data-bind="text: $root.commentBody"></span>
-                                        </div>
                                     </div>
                                     <div id="comment-button-div-2" class="status-modal-footer" style="display:none">
                                         <button class="btn btn-primary btn-sm" style="text-align:center; width:40%" data-bind="click: $root.submitComment">
